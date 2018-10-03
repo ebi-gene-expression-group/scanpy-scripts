@@ -1,11 +1,45 @@
-#!/usr/bin/env python -W ignore::DeprecationWarning
+#!/usr/bin/env python
 
 from __future__ import print_function
 import sys
+import signal
 import logging
+signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 import argparse
-import warnings
-warnings.filterwarnings('ignore', category=DeprecationWarning)
+import pandas as pd
+
+
+def parse_cmd_arguments():
+    cs_str = generate_comma_separated_list('string')
+    cs_float = generate_comma_separated_list('numeric')
+    cs_names = cs_str('subset-names')
+    cs_high = cs_float('high-thresholds')
+    cs_low = cs_float('low-thresholds')
+
+    parser = argparse.ArgumentParser(description='Filter genes for ScanPy')
+
+    parser.add_argument('-i', '--input-object-file', required=True,
+                        help='Path to anndata or loom file')
+    parser.add_argument('--input-format', choices=['loom', 'anndata', 'auto-detect'],
+                        help='Format for input object. Could be loom or anndata', default='auto-detect')
+    parser.add_argument('-o', '--output-object-file', required=True,
+                        help='File name in which to store serialized python object')
+    parser.add_argument('-f', '--output-format', choices=['loom', 'anndata'], required=True,
+                        help='Format for output object. Could be loom or anndata', default='anndata')
+    parser.add_argument('-s', '--subset-names', type=cs_names, default=[],
+                        help='Parameters to subset on. Eg, the name of a gene, PC1, '
+                        'a column name in anndata object, etc. ')
+    parser.add_argument('-l', '--low-thresholds', type=cs_low, default=[],
+                        help='Low cutoffs for the parameters (default is -Inf).')
+    parser.add_argument('-j', '--high-thresholds', type=cs_high, default=[],
+                        help='High cutoffs for the parameters (default is Inf).')
+    parser.add_argument('-g', '--genes-use',
+                        help='Comma-separated list of gene names to use as a subset. Alternatively, '
+                        'text file with one gene per line.')
+    parser.add_argument('--debug', action='store_true',
+                        help='Print debug information')
+    args = parser.parse_args()
+    return args
 
 
 def generate_comma_separated_list(dtyp):
@@ -63,6 +97,11 @@ def main(args):
         logging.error('should not reach here')
         return 1
 
+    if args.genes_use is not None:
+        genes_to_use = list(pd.read_table(args.genes_use, header=None).iloc[:,0])
+        logging.debug(len(genes_to_use))
+        adata = adata[adata.var_names.isin(genes_to_use)]
+
     for name,h,l in zip(args.subset_names, args.high_thresholds, args.low_thresholds):
         if name not in adata.var.columns:
             logging.warn('subset-name "{}" not present in data, omitted'.format(name))
@@ -78,34 +117,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    cs_str = generate_comma_separated_list('string')
-    cs_float = generate_comma_separated_list('numeric')
-    cs_names = cs_str('subset-names')
-    cs_high = cs_float('high-thresholds')
-    cs_low = cs_float('low-thresholds')
-
-    parser = argparse.ArgumentParser(description='Filter genes for ScanPy')
-    parser.add_argument('-i', '--input-object-file', required=True,
-                        help='Path to anndata or loom file')
-    parser.add_argument('--input-format', choices=['loom', 'anndata', 'auto-detect'],
-                        help='Format for input object. Could be loom or anndata', default='auto-detect')
-    parser.add_argument('-o', '--output-object-file', required=True,
-                        help='File name in which to store serialized python object')
-    parser.add_argument('-f', '--output-format', choices=['loom', 'anndata'], required=True,
-                        help='Format for output object. Could be loom or anndata', default='anndata')
-    parser.add_argument('-s', '--subset-names', type=cs_names, default=[],
-                        help='Parameters to subset on. Eg, the name of a gene, PC1, '
-                        'a column name in anndata object, etc. ')
-    parser.add_argument('-l', '--low-thresholds', type=cs_low, default=[],
-                        help='Low cutoffs for the parameters (default is -Inf).')
-    parser.add_argument('-j', '--high-thresholds', type=cs_high, default=[],
-                        help='High cutoffs for the parameters (default is Inf).')
-    parser.add_argument('-g', '--genes-use',
-                        help='Comma-separated list of gene names to use as a subset. Alternatively, '
-                        'text file with one gene per line.')
-    parser.add_argument('--debug', action='store_true',
-                        help='Print debug information')
-    args = parser.parse_args()
+    args = parse_cmd_arguments()
 
     if args.debug:
         log_level = logging.DEBUG
