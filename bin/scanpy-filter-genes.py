@@ -1,13 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python -W ignore::DeprecationWarning
 
 from __future__ import print_function
-import argparse
 import sys
 import logging
-logging.basicConfig(
-    level=logging.WARN,
-    format='%(asctime)s; %(levelname)s; %(filename)s; %(funcName)s(): %(message)s',
-    datefmt='%y-%m-%d %H:%M:%S')
+import argparse
+import warnings
+warnings.filterwarnings('ignore', category=DeprecationWarning)
 
 
 def generate_comma_separated_list(dtyp):
@@ -36,6 +34,49 @@ def generate_comma_separated_list(dtyp):
     return generate_named_comma_separated_list
 
 
+def main(args):
+    logging.debug(args)
+    import scanpy.api as sc
+
+    if len(args.subset_names) != len(args.low_thresholds):
+        logging.error('--low-thresholds should have a comma separated list of numerics of the same size as --subset-names')
+        return 1
+
+    if len(args.subset_names) != len(args.high_thresholds):
+        logging.error('--high-thresholds should have a comma separated list of numerics of the same size as --subset-names')
+        return 1
+
+    if args.input_format == 'auto-detect':
+        if args.input_object_file.endswith('.loom'):
+            args.input_format = 'loom'
+        elif args.input_object_file.endswith('.h5ad'):
+            args.input_format = 'anndata'
+        else:
+            logging.error('unknown input format: "{}", please check suffix is either ".loom" or ".h5ad"'.format(args.input_object_file))
+            return 1
+
+    if args.input_format == 'anndata':
+        adata = sc.read(args.input_object_file)
+    elif args.input_format == 'loom':
+        adata = sc.read_loom(args.input_object_file)
+    else:
+        logging.error('should not reach here')
+        return 1
+
+    for name,h,l in zip(args.subset_names, args.high_thresholds, args.low_thresholds):
+        if name not in adata.var.columns:
+            logging.warn('subset-name "{}" not present in data, omitted'.format(name))
+            continue
+        adata = adata[(adata.var[name] < h) & (adata.var[name] > l), :]
+
+    if args.output_format == 'loom':
+        adata.write_loom(args.output_object_file)
+    elif args.output_format == 'anndata':
+        adata.write(args.output_object_file)
+
+    return 0
+
+
 if __name__ == '__main__':
     cs_str = generate_comma_separated_list('string')
     cs_float = generate_comma_separated_list('numeric')
@@ -48,7 +89,7 @@ if __name__ == '__main__':
                         help='Path to anndata or loom file')
     parser.add_argument('--input-format', choices=['loom', 'anndata', 'auto-detect'],
                         help='Format for input object. Could be loom or anndata', default='auto-detect')
-    parser.add_argument('--output-object-file', '-o', required=True,
+    parser.add_argument('-o', '--output-object-file', required=True,
                         help='File name in which to store serialized python object')
     parser.add_argument('-f', '--output-format', choices=['loom', 'anndata'], required=True,
                         help='Format for output object. Could be loom or anndata', default='anndata')
@@ -62,40 +103,17 @@ if __name__ == '__main__':
     parser.add_argument('-g', '--genes-use',
                         help='Comma-separated list of gene names to use as a subset. Alternatively, '
                         'text file with one gene per line.')
+    parser.add_argument('--debug', action='store_true',
+                        help='Print debug information')
     args = parser.parse_args()
-    logging.debug(args)
 
-    if len(args.subset_names) != len(args.low_thresholds):
-        logging.error('--low-thresholds should have a comma separated list of numerics of the same size as --subset-names')
-        sys.exit(1)
-
-    if len(args.subset_names) != len(args.high_thresholds):
-        logging.error('--high-thresholds should have a comma separated list of numerics of the same size as --subset-names')
-        sys.exit(1)
-
-    if args.input_format == 'auto-detect':
-        if args.input_object_file.endswith('.loom'):
-            args.input_format == 'loom'
-        elif args.input_object_file.endswith('.h5ad'):
-            args.input_format == 'anndata'
-        else:
-            logging.error('unknown input format: "{}", please check suffix is either ".loom" or ".h5ad"'.format(args.input_object_file))
-            sys.exit(1)
-
-    import scanpy.api as sc
-
-    if args.input_format == 'anndata':
-        adata = sc.read(args.input_object_file)
-    elif args.input_format == 'loom':
-        adata = sc.read_loom(args.input_object_file)
+    if args.debug:
+        log_level = logging.DEBUG
     else:
-        logging.error('should not reach here')
-        sys.exit(1)
+        log_level = logging.WARN
+    logging.basicConfig(
+        level=log_level,
+        format='%(asctime)s; %(levelname)s; %(filename)s; %(funcName)s(): %(message)s',
+        datefmt='%y-%m-%d %H:%M:%S')
 
-    for name,h,l in zip(args.subset_names, args.high_thresholds, args.low_thresholds):
-        adata = adata[adata.obs[name] < h & adata.obs[name] > l, :]
-
-    if args.output_format == 'loom':
-        adata.write_loom(args.output_object_file)
-    elif args.output_format == 'anndata':
-        adata.write(args.output_object_file)
+    main(args)
