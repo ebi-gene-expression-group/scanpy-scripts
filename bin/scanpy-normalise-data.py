@@ -6,7 +6,6 @@ import signal
 import logging
 signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 import argparse
-import pandas as pd
 from scanpy_wrapper_utils import *
 
 
@@ -14,20 +13,11 @@ def main(args):
     logging.debug(args)
     import scanpy.api as sc
 
-    if args.input_format == 'anndata':
-        adata = sc.read(file_name)
-    elif args.input_format == 'loom':
-        adata = sc.read_loom(file_name)
-    else:
-        logging.error('should not reach here')
-        sys.exit(1)
+    adata = read_input_object(args.input_object_file, args.input_format)
 
     sc.pp.normalize_per_cell(adata, counts_per_cell_after=args.counts_per_cell)
 
-    if args.output_format == 'loom':
-        adata.write_loom(args.output_object_file)
-    elif args.output_format == 'anndata':
-        adata.write(args.output_object_file)
+    write_output_object(adata, args.output_object_file, args.output_format)
 
     logging.info('Done')
     return 0
