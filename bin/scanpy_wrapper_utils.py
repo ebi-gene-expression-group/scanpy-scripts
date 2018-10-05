@@ -3,7 +3,7 @@
 import sys
 import logging
 import argparse
-import scanpy as sc
+import scanpy.api as sc
 
 
 def comma_separated_list(name, dtyp):
@@ -36,7 +36,8 @@ class ScanpyArgParser(object):
         self.parser = argparse.ArgumentParser(description=description)
         self.parser.add_argument('--debug', action='store_true',
                                  help='Print debug information.')
-        self.names = set()
+        self.events = [{'handler':'_set_logging_level',
+                        'argv':'debug'}]
 
 
     def add_input_object(self):
@@ -47,8 +48,8 @@ class ScanpyArgParser(object):
                                  choices=['loom', 'anndata', 'auto-detect'],
                                  default='auto-detect',
                                  help='Format for input object: loom/anndata/[auto-detect].')
-        self.names.add('input-object-file')
-        self.names.add('input-format')
+        self.events.append({'handler':'_detect_io_format',
+                            'argv':['input_format','input_object_file']})
 
 
     def add_output_object(self):
@@ -59,8 +60,8 @@ class ScanpyArgParser(object):
                                  choices=['loom', 'anndata', 'auto-detect'],
                                  default='auto-detect',
                                  help='Format for output object: loom/anndata/[auto-detect].')
-        self.names.add('output-object-file')
-        self.names.add('output-format')
+        self.events.append({'handler':'_detect_io_format',
+                            'argv':['output_format','output_object_file']})
 
 
     def add_subset_parameters(self):
@@ -77,9 +78,12 @@ class ScanpyArgParser(object):
                                  type=comma_separated_list('high-thresholds', 'numeric'),
                                  default=[],
                                  help='High cutoffs for the parameters (default is Inf).')
+        self.events.append({'handler':'_check_parameter_range',
+                            'argv':['subset_names','low_thresholds','high_thresholds']})
 
 
-    def _set_logging_level(self, debug=False):
+    def _set_logging_level(self, args, argv):
+        debug = getattr(args, argv)
         log_level = logging.DEBUG if debug else logging.WARN
         logging.basicConfig(
             level=log_level,
@@ -87,27 +91,47 @@ class ScanpyArgParser(object):
             datefmt='%y-%m-%d %H:%M:%S')
 
 
-    def _auto_detect_format(self, filename):
-        if filename.endswith('.loom'):
-            return 'loom'
-        elif filename.endswith('.h5ad'):
-            return 'anndata'
+    def _detect_io_format(self, args, argv):
+        fmt_key,fn_key = argv
+        fmt = getattr(args, fmt_key)
+        fn = getattr(args, fn_key)
+        if fmt != 'auto-detect':
+            return
+        if fn.endswith('.loom'):
+            setattr(args, fmt_key, 'loom')
+        elif fn.endswith('.h5ad'):
+            setattr(args, fmt_key, 'anndata')
         else:
-            logging.error('unknown input format: "{}", ',
-                          'please check suffix is either ".loom" or ".h5ad"'.format(filename))
+            logging.error('Unspecified unknown format: "{}", ',
+                          'please check suffix is either ".loom" or ".h5ad"'.format(fn))
             sys.exit(1)
+
+
+    def _check_parameter_range(self, args, argv):
+        names,lows,highs = [getattr(args,k) for k in argv]
+        n = len(names)
+        if len(lows) == 0:
+            lows = [float('-Inf')] * n
+        elif len(lows) != n:
+            logging.error('--low-thresholds should be a comma separated list of numerics of the same size as {}'.format(argv[0]))
+            sys.exit(1)
+        if len(highs) == 0:
+            highs = [float('Inf')] * n
+        elif len(highs) != n:
+            logging.error('--high-thresholds should be a comma separated list of numerics of the same size as {}'.format(argv[0]))
+            sys.exit(1)
+
+
+    def _handle_event(self, args, ev):
+        handler = getattr(self, ev['handler'])
+        handler(args, ev['argv'])
 
 
     def get_args(self):
         args = self.parser.parse_args()
 
-        self._set_logging_level(args.debug)
-
-        if 'input-format' in self.names and args.input_format == 'auto-detect':
-            args.input_format = _auto_detect_format(args.input_object_file)
-
-        if 'output-format' in self.names and args.output_format == 'auto-detect':
-            args.output_format = _auto_detect_format(args.output_object_file)
+        for ev in self.events:
+            self._handle_event(args, ev)
 
         return args
 
