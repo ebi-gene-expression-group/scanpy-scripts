@@ -2,10 +2,6 @@
 
 import sys
 import logging
-#logging.basicConfig(
-#    level=logging.WARN,
-#    format='%(asctime)s; %(levelname)s; %(filename)s; %(funcName)s(): %(message)s',
-#    datefmt='%y-%m-%d %H:%M:%S')
 import argparse
 import scanpy as sc
 
@@ -38,8 +34,8 @@ def comma_separated_list(name, dtyp):
 class ScanpyArgParser(object):
     def __init__(self, description=None):
         self.parser = argparse.ArgumentParser(description=description)
-        parser.add_argument('--debug', action='store_true',
-                            help='Print debug information.')
+        self.parser.add_argument('--debug', action='store_true',
+                                 help='Print debug information.')
         self.names = set()
 
 
@@ -126,7 +122,7 @@ def read_input_object(filename, format):
         sys.exit(1)
     return adata
 
-def write_output_object(filename, format):
+def write_output_object(adata, filename, format):
     if format == "anndata":
         adata.write(filename)
     elif format == "loom":
