@@ -31,6 +31,6 @@ if __name__ == '__main__':
                                   type=float,
                                   default=1e4,
                                   help='Aimed counts per cell after normalisation, default: 1e4')
-    argparser.get_args()
+    args = argparser.get_args()
 
     main(args)
