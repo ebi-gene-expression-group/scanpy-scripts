@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import sys
 import signal
 import logging
-signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 import pandas as pd
 import scanpy.api as sc
-from scanpy_wrapper_utils import *
+from scanpy_wrapper_utils import ScanpyArgParser, read_input_object, write_output_object
+signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 
 def main(args):
@@ -16,11 +15,11 @@ def main(args):
     adata = read_input_object(args.input_object_file, args.input_format)
 
     if args.genes_use is not None:
-        genes_to_use = list(pd.read_table(args.genes_use, header=None).iloc[:,0].values)
-        adata = adata[:,adata.var_names.isin(genes_to_use)]
+        genes_to_use = list(pd.read_table(args.genes_use, header=None).iloc[:, 0].values)
+        adata = adata[:, adata.var_names.isin(genes_to_use)]
 
-    inf,neg_inf = float('Inf'),float('-Inf')
-    for name,h,l in zip(args.subset_names, args.high_thresholds, args.low_thresholds):
+    inf, neg_inf = float('Inf'), float('-Inf')
+    for name, h, l in zip(args.subset_names, args.high_thresholds, args.low_thresholds):
         if name == 'n_cells':
             if l > neg_inf:
                 sc.pp.filter_genes(adata, min_cells=l)
@@ -32,10 +31,9 @@ def main(args):
             if h < inf:
                 sc.pp.filter_genes(adata, max_counts=h)
         elif name not in adata.var.columns:
-            logging.warn('subset-name "{}" not present in data, omitted'.format(name))
+            logging.warning('subset-name "{}" not present in data, omitted'.format(name))
         else:
-            #adata = adata[(adata.var[name] < h) & (adata.var[name] > l), :]
-            adata._inplace_subset_var((adata.var[name] < h) & (adata.var[name] > l))
+            adata = adata[(adata.var[name] < h) & (adata.var[name] > l), :]
 
     write_output_object(adata, args.output_object_file, args.output_format)
 
