@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import sys
 import signal
 import logging
 signal.signal(signal.SIGPIPE, signal.SIG_DFL)
-import argparse
 import pandas as pd
 import os.path
 from scanpy_wrapper_utils import *
