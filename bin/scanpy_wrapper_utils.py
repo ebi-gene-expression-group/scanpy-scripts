@@ -9,7 +9,7 @@ import scanpy.api as sc
 def comma_separated_list(name, dtyp):
     supported_dtypes = {'integer':int, 'numeric':float, 'string':str}
     if dtyp not in supported_dtypes:
-        logging.warn('unsupported data type: "{}", default to "string"'.format(dtyp))
+        logging.warning('unsupported data type: "{}", default to "string"'.format(dtyp))
         dtype_name = 'string'
         dtype = str
     else:
@@ -23,7 +23,8 @@ def comma_separated_list(name, dtyp):
             try:
                 v = dtype(s)
             except ValueError:
-                logging.error('--{} expects comma separated list of [{}] but received "{}"'.format(arg_name, dtype_name, s))
+                logging.error('--{} expects comma separated list '
+                              'of [{}] but received "{}"'.format(arg_name, dtype_name, s))
                 break
             V.append(v)
         return V
@@ -49,7 +50,7 @@ class ScanpyArgParser(object):
                                  default='auto-detect',
                                  help='Format for input object: loom/anndata/[auto-detect].')
         self.events.append({'handler':'_detect_io_format',
-                            'argv':['input_format','input_object_file']})
+                            'argv':['input_format', 'input_object_file']})
 
 
     def add_output_object(self):
@@ -61,7 +62,7 @@ class ScanpyArgParser(object):
                                  default='auto-detect',
                                  help='Format for output object: loom/anndata/[auto-detect].')
         self.events.append({'handler':'_detect_io_format',
-                            'argv':['output_format','output_object_file']})
+                            'argv':['output_format', 'output_object_file']})
 
 
     def add_subset_parameters(self):
@@ -79,7 +80,7 @@ class ScanpyArgParser(object):
                                  default=[],
                                  help='High cutoffs for the parameters (default is Inf).')
         self.events.append({'handler':'_check_parameter_range',
-                            'argv':['subset_names','low_thresholds','high_thresholds']})
+                            'argv':['subset_names', 'low_thresholds', 'high_thresholds']})
 
 
     def _set_logging_level(self, argv):
@@ -92,7 +93,7 @@ class ScanpyArgParser(object):
 
 
     def _detect_io_format(self, argv):
-        fmt_key,fn_key = argv
+        fmt_key, fn_key = argv
         fmt = getattr(self.args, fmt_key)
         fn = getattr(self.args, fn_key)
         if fmt != 'auto-detect':
@@ -108,17 +109,19 @@ class ScanpyArgParser(object):
 
 
     def _check_parameter_range(self, argv):
-        names,lows,highs = [getattr(self.args,k) for k in argv]
+        names, lows, highs = [getattr(self.args, k) for k in argv]
         n = len(names)
-        if len(lows) == 0:
+        if not lows:
             lows = [float('-Inf')] * n
-        elif len(lows) != n:
-            logging.error('--low-thresholds should be a comma separated list of numerics of the same size as {}'.format(argv[0]))
+        elif not highs != n:
+            logging.error('--low-thresholds should be a comma separated list '
+                          'of numerics of the same size as {}'.format(argv[0]))
             sys.exit(1)
         if len(highs) == 0:
             highs = [float('Inf')] * n
         elif len(highs) != n:
-            logging.error('--high-thresholds should be a comma separated list of numerics of the same size as {}'.format(argv[0]))
+            logging.error('--high-thresholds should be a comma separated list '
+                          'of numerics of the same size as {}'.format(argv[0]))
             sys.exit(1)
 
 
