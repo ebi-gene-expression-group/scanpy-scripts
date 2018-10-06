@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import sys
 import signal
 import logging
+from scanpy_wrapper_utils import ScanpyArgParser, read_input_object, write_output_object
 signal.signal(signal.SIGPIPE, signal.SIG_DFL)
-import argparse
-from scanpy_wrapper_utils import *
 
 
 def main(args):
