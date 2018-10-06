@@ -102,7 +102,7 @@ class ScanpyArgParser(object):
         elif fn.endswith('.h5ad'):
             setattr(args, fmt_key, 'anndata')
         else:
-            logging.error('Unspecified unknown format: "{}", ',
+            logging.error('Unspecified unknown format: "{}", '
                           'please check suffix is either ".loom" or ".h5ad"'.format(fn))
             sys.exit(1)
 
@@ -136,20 +136,20 @@ class ScanpyArgParser(object):
         return args
 
 
-def read_input_object(filename, format):
-    if format == 'anndata':
+def read_input_object(filename, fmt):
+    if fmt == 'anndata':
         adata = sc.read(filename)
-    elif format == 'loom':
+    elif fmt == 'loom':
         adata = sc.read_loom(filename)
     else:
         logging.error('should not reach here')
         sys.exit(1)
     return adata
 
-def write_output_object(adata, filename, format):
-    if format == "anndata":
+def write_output_object(adata, filename, fmt):
+    if fmt == "anndata":
         adata.write(filename)
-    elif format == "loom":
+    elif fmt == "loom":
         adata.write_loom(filename)
     else:
         logging.error('should not reach here')
