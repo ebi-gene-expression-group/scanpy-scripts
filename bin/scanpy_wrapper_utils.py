@@ -82,8 +82,8 @@ class ScanpyArgParser(object):
                             'argv':['subset_names','low_thresholds','high_thresholds']})
 
 
-    def _set_logging_level(self, args, argv):
-        debug = getattr(args, argv)
+    def _set_logging_level(self, argv):
+        debug = getattr(self.args, argv)
         log_level = logging.DEBUG if debug else logging.WARN
         logging.basicConfig(
             level=log_level,
@@ -91,24 +91,24 @@ class ScanpyArgParser(object):
             datefmt='%y-%m-%d %H:%M:%S')
 
 
-    def _detect_io_format(self, args, argv):
+    def _detect_io_format(self, argv):
         fmt_key,fn_key = argv
-        fmt = getattr(args, fmt_key)
-        fn = getattr(args, fn_key)
+        fmt = getattr(self.args, fmt_key)
+        fn = getattr(self.args, fn_key)
         if fmt != 'auto-detect':
             return
         if fn.endswith('.loom'):
-            setattr(args, fmt_key, 'loom')
+            setattr(self.args, fmt_key, 'loom')
         elif fn.endswith('.h5ad'):
-            setattr(args, fmt_key, 'anndata')
+            setattr(self.args, fmt_key, 'anndata')
         else:
-            logging.error('Unspecified unknown format: "{}", ',
+            logging.error('Unspecified unknown format: "{}", '
                           'please check suffix is either ".loom" or ".h5ad"'.format(fn))
             sys.exit(1)
 
 
-    def _check_parameter_range(self, args, argv):
-        names,lows,highs = [getattr(args,k) for k in argv]
+    def _check_parameter_range(self, argv):
+        names,lows,highs = [getattr(self.args,k) for k in argv]
         n = len(names)
         if len(lows) == 0:
             lows = [float('-Inf')] * n
@@ -122,34 +122,34 @@ class ScanpyArgParser(object):
             sys.exit(1)
 
 
-    def _handle_event(self, args, ev):
+    def _handle_event(self, ev):
         handler = getattr(self, ev['handler'])
-        handler(args, ev['argv'])
+        handler(ev['argv'])
 
 
     def get_args(self):
-        args = self.parser.parse_args()
+        self.args = self.parser.parse_args()
 
         for ev in self.events:
-            self._handle_event(args, ev)
+            self._handle_event(ev)
 
-        return args
+        return self.args
 
 
-def read_input_object(filename, format):
-    if format == 'anndata':
+def read_input_object(filename, fmt):
+    if fmt == 'anndata':
         adata = sc.read(filename)
-    elif format == 'loom':
+    elif fmt == 'loom':
         adata = sc.read_loom(filename)
     else:
         logging.error('should not reach here')
         sys.exit(1)
     return adata
 
-def write_output_object(adata, filename, format):
-    if format == "anndata":
+def write_output_object(adata, filename, fmt):
+    if fmt == "anndata":
         adata.write(filename)
-    elif format == "loom":
+    elif fmt == "loom":
         adata.write_loom(filename)
     else:
         logging.error('should not reach here')
