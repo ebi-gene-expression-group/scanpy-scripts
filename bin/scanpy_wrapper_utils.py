@@ -133,20 +133,21 @@ class ScanpyArgParser():
 
 
     def _check_parameter_range(self, name_key, low_key, high_key):
+        name_arg, low_arg, high_arg = [k.replace('_', '-') for k in (name_key, low_key, high_key)]
         names, lows, highs = [getattr(self._args, k) for k in (name_key, low_key, high_key)]
         n_par = len(names)
         if not lows:
             lows = [float('-Inf')] * n_par
         elif len(lows) != n_par:
-            msg = ('--low-thresholds should be a comma separated list of numerics '
-                   'of the same size as {}').format(name_key)
+            msg = ('--{} should be a comma separated list of the same size as --{}').format(
+                low_arg, name_arg)
             logging.error(msg)
             sys.exit(1)
         if not highs:
             highs = [float('Inf')] * n_par
         elif len(highs) != n_par:
-            msg = ('--high-thresholds should be a comma separated list of numerics '
-                   'of the same size as {}').format(name_key)
+            msg = ('--{} should be a comma separated list of the same size as --{}').format(
+                high_arg, name_arg)
             logging.error(msg)
             sys.exit(1)
 
