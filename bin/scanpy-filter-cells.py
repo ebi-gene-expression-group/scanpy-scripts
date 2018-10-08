@@ -1,84 +1,62 @@
 #!/usr/bin/env python
 
-import argparse
-import sys
 from __future__ import print_function
+import signal
+import logging
+import pandas as pd
+import scanpy.api as sc
+from scanpy_wrapper_utils import ScanpyArgParser, read_input_object, write_output_object
+signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 
-def _validate_subset_thresholds():
-    subset_names = args.subset_names.split(",")
-    if args.low_thresholds is not None:
-        low_thresholds = args.low_thresholds.split(",")
+def read_subset_items(input_string):
+    if ',' in input_string:
+        list_parser = comma_separated_list('cells-use', str)
+        return list_parser(input_string)
     else:
-        print("--low-thresholds should have a comma separated list of numbers"
-              " of the same size as --subset-names", file=sys.stderr)
-        exit(1)
-    if args.high_thresholds is not None:
-        high_thresholds = args.high_thresholds.split(",")
-    else:
-        print("--high-thresholds should have a comma separated list of numbers"
-              " of the same size as --subset-names", file=sys.stderr)
-        exit(1)
-    if len(subset_names) != len(low_thresholds) or len(subset_names) != len(high_thresholds):
-        print("--high-thresholds, --low-thresholds and --subset-names should be all"
-              " of the same size", file=sys.stderr)
-        exit(1)
-    return subset_names, low_thresholds, high_thresholds
-
-    # TODO filter by name
+        return list(pd.read_table(input_string, header=None).iloc[:, 0].values)
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Filter cells for ScanPy')
-    parser.add_argument('--input-object-file', '-i', required=True,
-                        help='Path to anndata or loom file')
-    parser.add_argument('--input-format', choices=['loom', 'anndata', 'auto-detect'],
-                        help='Format for input object. Could be loom or anndata', default="auto-detect")
-    parser.add_argument('-o', '--output-object-file', required=True,
-                        help='File name in which to store serialized python object.')
-    parser.add_argument('-f', '--output-format', choices=['loom', 'anndata'], required=True,
-                        help='Format for output. Could be loom or anndata', default="anndata")
-    parser.add_argument('-s', '--subset-names',
-                        help='Parameters to subset on. Eg, the name of a gene, PC1, '
-                             'a column name in anndata object, etc. ')
-    parser.add_argument('-l', '--low-thresholds',
-                        help='Low cutoffs for the parameters (default is -Inf).')
-    parser.add_argument('-j', '--high-thresholds',
-                        help='High cutoffs for the parameters (default is Inf).')
-    parser.add_argument('-c', '--cells-use',
-                        help='Comma-separated list of cell names to use as a subset. Alternatively, '
-                             'text file with one cell per line.')
+def main(args):
+    logging.debug(args)
 
-    args = parser.parse_args()
-
-    import scanpy.api as sc
-
-    if args.input_format == "anndata":
-        adata = sc.read(args.input_object_file)
-    elif args.input_format == "loom":
-        from anndata import read_loom
-
-        adata = read_loom(args.input_object_file)
-
-    if args.subset_names is not None:
-        names, high_t, low_t = _validate_subset_thresholds()
-
-        from numbers import Number
-        for name, h, l in zip(names, high_t, low_t):
-            if not isinstance(h, Number):
-                print("ERROR: For subset name %s high threshold is not numeric: %s" % (name, h),
-                      file=sys.stderr)
-            if not isinstance(l, Number):
-                print("ERROR: For subset name %s low threshold is not numeric: %s" % (name, l),
-                      file=sys.stderr)
-            adata = adata[l < adata.obs[name] < h, :]
+    adata = read_input_object(args.input_object_file, args.output_object_file)
 
     if args.cells_use is not None:
-        
+        cells_to_use = read_subset_items(args.cells_use)
+        adata = adata[:, adata.obs.isin(cells_to_use)]
 
+    inf, neg_inf = float('Inf'), float('-Inf')
+    for name, h, l in zip(args.subset_names, args.high_thresholds, args.low_thresholds):
+        if name == 'n_genes':
+            if l > neg_inf:
+                sc.pp.filter_cells(adata, min_genes=l)
+            if h < inf:
+                sc.pp.filter_cells(adata, max_genes=h)
+        elif name == 'n_counts':
+            if l > neg_inf:
+                sc.pp.filter_cells(adata, min_counts=l)
+            if h < inf:
+                sc.pp.filter_genes(adata, max_counts=h)
+        elif name not in adata.obs.columns:
+            logging.warning('subset-name "{}" not present in data, omitted'.format(name))
+        else:
+            adata = adata[(adata.obs[name] < h) & (adata.obs[name] > l), :]
 
+    write_output_object(adata, args.output_object_file, args.output_format)
 
+    logging.info('Done')
+    return 0
+ 
 
+if __name__ == "__main__":
+    argparser = ScanpyArgParser('Filter genes for ScanPy')
+    argparser.add_input_object()
+    argparser.add_output_object()
+    argparser.add_subset_parameters()
+    argparser.parser.add_argument('-c', '--cells-use',
+                                  help='Comma-separated list of cell names to use as a subset. '
+                                       'Alternatively, text file with one cell per line.')
+    args = argparser.get_args()
 
-
-
+    main(args)
