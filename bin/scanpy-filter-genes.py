@@ -9,13 +9,21 @@ from scanpy_wrapper_utils import ScanpyArgParser, read_input_object, write_outpu
 signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 
+def read_subset_items(input_string):
+    if ',' in input_string:
+        list_parser = comma_separated_list('genes-use', str)
+        return list_parser(input_string)
+    else:
+        return list(pd.read_table(input_string, header=None).iloc[:, 0].values)
+
+
 def main(args):
     logging.debug(args)
 
     adata = read_input_object(args.input_object_file, args.input_format)
 
     if args.genes_use is not None:
-        genes_to_use = list(pd.read_table(args.genes_use, header=None).iloc[:, 0].values)
+        genes_to_use = read_subset_items(args.genes_use)
         adata = adata[:, adata.var_names.isin(genes_to_use)]
 
     inf, neg_inf = float('Inf'), float('-Inf')
