@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-'''scanpy_wrapper_utils
+"""scanpy_wrapper_utils
 
 * Provides
     1. A utilities class, ScanpyArgParser, for command line parsing.
     2. Utilities functions, read_input_object() and write_output_object(), for IO operations.
-'''
+"""
 
 import sys
 import logging
@@ -13,7 +13,7 @@ import scanpy.api as sc
 
 
 def comma_separated_list(arg_name, data_type):
-    '''Generate functions that parse command arguments in the form of
+    """Generate functions that parse command arguments in the form of
     comma separated string.
 
     * Parameters
@@ -25,7 +25,7 @@ def comma_separated_list(arg_name, data_type):
     * Returns:
         + f : function
         A function that converts a comma separated string to a list of values of specified type.
-    '''
+    """
     def parse_comma_separated_list(arg, name=arg_name, dtype=data_type):
         strings = arg.split(',')
         values = []
@@ -44,7 +44,7 @@ def comma_separated_list(arg_name, data_type):
 
 
 class ScanpyArgParser():
-    '''An command line argument parser for scanpy wrapper scripts using argparse.ArgumentParser
+    """An command line argument parser for scanpy wrapper scripts using argparse.ArgumentParser
 
     * Parameters
         + description : str
@@ -53,7 +53,7 @@ class ScanpyArgParser():
     * Attributes
         + parser : argparse.ArgumentParser
         The actual argument parser that parses the command line input
-    '''
+    """
     def __init__(self, description=None):
         self.parser = argparse.ArgumentParser(description=description)
         self.parser.add_argument('--debug', action='store_true',
@@ -64,7 +64,7 @@ class ScanpyArgParser():
 
 
     def add_input_object(self):
-        '''Add options "-i/--input-object-file" and "-f/--input-format"'''
+        """Add options "-i/--input-object-file" and "-f/--input-format""""
         self.parser.add_argument('-i', '--input-object-file',
                                  required=True,
                                  help='Path to anndata or loom file.')
@@ -77,7 +77,7 @@ class ScanpyArgParser():
 
 
     def add_output_object(self):
-        '''Add options "-o/--output-object-file" and "-F/--output-format"'''
+        """Add options "-o/--output-object-file" and "-F/--output-format""""
         self.parser.add_argument('-o', '--output-object-file',
                                  required=True,
                                  help='File name in which to store serialized python object.')
@@ -90,7 +90,7 @@ class ScanpyArgParser():
 
 
     def add_subset_parameters(self):
-        '''Add options "-s/--subset-names", "-l/--low-thresholds" and "-j/--high-thresholds"'''
+        """Add options "-s/--subset-names", "-l/--low-thresholds" and "-j/--high-thresholds""""
         self.parser.add_argument('-s', '--subset-names',
                                  required=True,
                                  type=comma_separated_list('subset-names', str),
@@ -153,7 +153,7 @@ class ScanpyArgParser():
 
 
     def get_args(self):
-        '''Return parsed command arguments'''
+        """Return parsed command arguments"""
         if self._args is None:
             self._args = self.parser.parse_args()
 
@@ -166,7 +166,7 @@ class ScanpyArgParser():
 
 
 def read_input_object(filename, fmt):
-    '''Read an AnnData object from an input file
+    """Read an AnnData object from an input file
 
     * Parameters
         + filename : str
@@ -177,7 +177,7 @@ def read_input_object(filename, fmt):
     * Returns
         + adata : AnnData
         An AnnData object
-    '''
+    """
     if fmt == 'anndata':
         adata = sc.read(filename)
     elif fmt == 'loom':
@@ -188,7 +188,7 @@ def read_input_object(filename, fmt):
     return adata
 
 def write_output_object(adata, filename, fmt):
-    '''Write an AnnData object to an output ile
+    """Write an AnnData object to an output ile
 
     * Parameters
         + adata : AnnData
@@ -197,7 +197,7 @@ def write_output_object(adata, filename, fmt):
         Path of the output file
         + fmt : str
         Format of the output file, either "loom" or "anndata"
-    '''
+    """
     if fmt == "anndata":
         adata.write(filename)
     elif fmt == "loom":
