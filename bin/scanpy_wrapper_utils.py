@@ -64,7 +64,7 @@ class ScanpyArgParser():
 
 
     def add_input_object(self):
-        """Add options "-i/--input-object-file" and "-f/--input-format""""
+        """Add options -i/--input-object-file and -f/--input-format"""
         self.parser.add_argument('-i', '--input-object-file',
                                  required=True,
                                  help='Path to anndata or loom file.')
@@ -77,7 +77,7 @@ class ScanpyArgParser():
 
 
     def add_output_object(self):
-        """Add options "-o/--output-object-file" and "-F/--output-format""""
+        """Add options -o/--output-object-file and -F/--output-format"""
         self.parser.add_argument('-o', '--output-object-file',
                                  required=True,
                                  help='File name in which to store serialized python object.')
@@ -90,7 +90,7 @@ class ScanpyArgParser():
 
 
     def add_subset_parameters(self):
-        """Add options "-s/--subset-names", "-l/--low-thresholds" and "-j/--high-thresholds""""
+        """Add options -s/--subset-names, -l/--low-thresholds and -j/--high-thresholds"""
         self.parser.add_argument('-s', '--subset-names',
                                  required=True,
                                  type=comma_separated_list('subset-names', str),
