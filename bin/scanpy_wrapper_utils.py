@@ -36,7 +36,7 @@ def comma_separated_list(arg_name, data_type):
                 msg = '--{} expects comma separated list of [{}] but received "{}"'.format(
                     name, dtype.__name__, string)
                 logging.error(msg)
-                break
+                sys.exit(1)
             values.append(value)
         return values
 
