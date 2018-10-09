@@ -7,8 +7,10 @@
 """
 
 import sys
+import os.path
 import logging
 import argparse
+import pandas as pd
 import scanpy.api as sc
 
 
@@ -90,10 +92,10 @@ class ScanpyArgParser():
 
 
     def add_subset_parameters(self):
-        """Add options -s/--subset-names, -l/--low-thresholds and -j/--high-thresholds"""
-        self.parser.add_argument('-s', '--subset-names',
+        """Add options -p/--parameter-names, -l/--low-thresholds and -j/--high-thresholds"""
+        self.parser.add_argument('-p', '--parameter-names',
                                  required=True,
-                                 type=comma_separated_list('subset-names', str),
+                                 type=comma_separated_list('parameter-names', str),
                                  default=[],
                                  help='Parameters to subset on.')
         self.parser.add_argument('-l', '--low-thresholds',
@@ -105,7 +107,15 @@ class ScanpyArgParser():
                                  default=[],
                                  help='High cutoffs for the parameters (default is Inf).')
         self._events.append({'handler':self._check_parameter_range,
-                             'argv':['subset_names', 'low_thresholds', 'high_thresholds']})
+                             'argv':['parameter_names', 'low_thresholds', 'high_thresholds']})
+
+    def add_subset_list(self):
+        """Add option -s/--subset-list"""
+        self.parser.add_argument('-s', '--subset-list',
+                                 default='',
+                                 help='Comma-separated list of entries to use as a subset. '
+                                      'Alternatively, text file with one entry per line.')
+        self._events.append({'handler':self._list_or_read_file, 'argv':['subset_list']})
 
 
     def _set_logging_level(self):
@@ -133,23 +143,34 @@ class ScanpyArgParser():
 
 
     def _check_parameter_range(self, name_key, low_key, high_key):
-        name_arg, low_arg, high_arg = [k.replace('_', '-') for k in (name_key, low_key, high_key)]
+        name_opt, low_opt, high_opt = [k.replace('_', '-') for k in (name_key, low_key, high_key)]
         names, lows, highs = [getattr(self._args, k) for k in (name_key, low_key, high_key)]
         n_par = len(names)
         if not lows:
             lows = [float('-Inf')] * n_par
         elif len(lows) != n_par:
             msg = ('--{} should be a comma separated list of the same size as --{}').format(
-                low_arg, name_arg)
+                low_opt, name_opt)
             logging.error(msg)
             sys.exit(1)
         if not highs:
             highs = [float('Inf')] * n_par
         elif len(highs) != n_par:
             msg = ('--{} should be a comma separated list of the same size as --{}').format(
-                high_arg, name_arg)
+                high_opt, name_opt)
             logging.error(msg)
             sys.exit(1)
+
+
+    def _list_or_read_file(self, key):
+        opt = key.replace('_', '-')
+        str_list_parser = comma_separated_list(opt, str)
+        input_string = getattr(self._args, key)
+        if input_string:
+            entries = str_list_parser(input_string)
+            if len(entries) == 1 and os.path.isfile(entries[0]):
+                entries = list(pd.read_table(entries[0], header=None).iloc[:,0].values)
+            setattr(self._args, key, entries)
 
 
     def get_args(self):
