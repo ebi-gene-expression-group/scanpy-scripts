@@ -19,12 +19,12 @@ def main(args):
         if name == 'n_genes':
             if low > neg_inf:
                 sc.pp.filter_cells(adata, min_genes=low)
-            if high < neg_inf:
+            if high < inf:
                 sc.pp.filter_cells(adata, max_genes=high)
         elif name == 'n_counts':
             if low > neg_inf:
                 sc.pp.filter_cells(adata, min_counts=low)
-            if high < neg_inf:
+            if high < inf:
                 sc.pp.filter_cells(adata, max_counts=high)
         elif name not in adata.obs.columns:
             msg = 'parameter-name "{}" not present in data, omitted'.format(name)
