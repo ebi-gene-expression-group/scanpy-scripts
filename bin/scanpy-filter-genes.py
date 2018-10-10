@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import signal
 import logging
-import pandas as pd
 import scanpy.api as sc
 from scanpy_wrapper_utils import ScanpyArgParser, read_input_object, write_output_object
-signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 
 def main(args):
@@ -18,21 +15,22 @@ def main(args):
         adata = adata[:, adata.var_names.isin(args.subset_list)]
 
     inf, neg_inf = float('Inf'), float('-Inf')
-    for name, h, l in zip(args.parameter_names, args.high_thresholds, args.low_thresholds):
+    for name, high, low in zip(args.parameter_names, args.high_thresholds, args.low_thresholds):
         if name == 'n_cells':
-            if l > neg_inf:
-                sc.pp.filter_genes(adata, min_cells=l)
-            if h < inf:
-                sc.pp.filter_genes(adata, max_cells=h)
+            if low > neg_inf:
+                sc.pp.filter_genes(adata, min_cells=low)
+            if high < inf:
+                sc.pp.filter_genes(adata, max_cells=high)
         elif name == 'n_counts':
-            if l > neg_inf:
-                sc.pp.filter_genes(adata, min_counts=l)
-            if h < inf:
-                sc.pp.filter_genes(adata, max_counts=h)
+            if low > neg_inf:
+                sc.pp.filter_genes(adata, min_counts=low)
+            if high < inf:
+                sc.pp.filter_genes(adata, max_counts=high)
         elif name not in adata.var.columns:
-            logging.warning('parameter-name "{}" not present in data, omitted'.format(name))
+            msg = 'parameter-name "{}" not present in data, omitted'.format(name)
+            logging.warning(msg)
         else:
-            adata = adata[(adata.var[name] < h) & (adata.var[name] > l), :]
+            adata = adata[(adata.var[name] < high) & (adata.var[name] > low), :]
 
     write_output_object(adata, args.output_object_file, args.output_format)
 
@@ -41,7 +39,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    argparser = ScanpyArgParser('Filter genes for ScanPy')
+    argparser = ScanpyArgParser('Filter genes by properties and/or simple stats')
     argparser.add_input_object()
     argparser.add_output_object()
     argparser.add_subset_parameters()
