@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import signal
 import logging
 from scanpy_wrapper_utils import ScanpyArgParser, read_input_object, write_output_object
-signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 
 def main(args):
@@ -25,10 +23,10 @@ if __name__ == '__main__':
     argparser = ScanpyArgParser('Normalise per-cell quantification data')
     argparser.add_input_object()
     argparser.add_output_object()
-    argparser.parser.add_argument('-s', '--scale-factor',
-                                  type=float,
-                                  default=1e4,
-                                  help='Aimed counts per cell after normalisation, default: 1e4')
+    argparser.add_argument('-s', '--scale-factor',
+                           type=float,
+                           default=1e4,
+                           help='Aimed counts per cell after normalisation, default: 1e4')
     args = argparser.get_args()
 
     main(args)
