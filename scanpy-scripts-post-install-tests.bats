@@ -16,14 +16,14 @@
 # Run scanpy-read-10x.py
 
 @test "Scanpy AnnData object creation from 10x" {
-    if [ "$use_existing_outputs" = 'true' ] && [ -f "$raw_scanpy_object" ]; then
-        skip "$raw_scanpy_object exists and use_existing_outputs is set to 'true'"
+    if [ "$use_existing_outputs" = 'true' ] && [ -f "$input_object" ]; then
+        skip "$input_object exists and use_existing_outputs is set to 'true'"
     fi
 
-    run rm -f $raw_scanpy_object && bin/scanpy-read-10x.py -d $data_dir -o $raw_scanpy_object
+    run rm -f $input_object && bin/scanpy-read-10x.py -d $data_dir -o $input_object
 
     [ "$status" -eq 0 ]
-    [ -f  "$raw_scanpy_object" ]
+    [ -f  "$input_object" ]
 }
 
 
@@ -34,7 +34,7 @@
         skip "$filtered_cells_object exists and use_existing_outputs is set to 'true'"
     fi
 
-    run rm -f $filtered_cells_object && scanpy-filter-cells.py -i $raw_scanpy_object -s n_genes,n_counts -l $min_genes,$min_gene_counts -o $filtered_cells_object
+    run rm -f $filtered_cells_object && scanpy-filter-cells.py -i $input_object -o $filtered_cells_object -p $FC_parameters -l $FC_min_genes -j $FC_max_genes
 
     [ "$status" -eq 0 ]
     [ -f  "$filtered_cells_object" ]
@@ -47,7 +47,7 @@
         skip "$filtered_genes_object exists and use_existing_outputs is set to 'true'"
     fi
 
-    run rm -f $filtered_genes_object && scanpy-filter-genes.py -i $filtered_cells_object -o $filtered_genes_object
+    run rm -f $filtered_genes_object && scanpy-filter-genes.py -i $filtered_cells_object -o $filtered_genes_object -p $FT_parameters -l $FT_min_cells
 
     [ "$status" -eq 0 ]
     [ -f  "$filtered_genes_object" ]
@@ -60,7 +60,7 @@
         skip "$normalised_per_cell_object exists and use_existing_outputs is set to 'true'"
     fi
 
-    run scanpy-normalise-data.py -i $filtered_genes_object -t $transformation_method -s $scale_factor -o $normalised_per_cell_object
+    run scanpy-normalise-data.py -i $filtered_genes_object -s $ND_scale_factor -o $normalised_per_cell_object
 
     [ "$status" -eq 0 ]
     [ -f  "$normalised_per_cell_object" ]
@@ -73,64 +73,40 @@
         skip "$variable_genes_list exists and use_existing_outputs is set to 'true'"
     fi
 
-    run scanpy-find-variable-genes.py -i $normalised_per_cell_object -m $mean_function -s mean,disp -l $min_mean,$min_disp -j $high_mean,$high_disp -o $variable_genes_object -v $variable_genes_list
+    run scanpy-find-variable-genes.py -i $normalised_per_cell_object --flavor $FVG_flavor -b $FVG_nbins -p $FVG_parameters -l $FVG_min_mean,$FVG_min_disp -j $FVG_high_mean,$FVG_high_disp -o $variable_genes_object -P $variable_image_file
 
     [ "$status" -eq 0 ]
-    [ -f  "$variable_genes_list" ]
+    [ -f  "$variable_genes_object" ] && [ -f "$variable_image_file" ]
 }
 
-## # Get a random set of genes to use in testing argments to scale-data.R
-##
-## @test "Generate random gene list" {
-##     if [ "$use_existing_outputs" = 'true' ] && [ -f "$test_genes" ]; then
-##         skip "$test_genes exists and use_existing_outputs is set to 'true'"
-##     fi
-##
-##     run seurat-get-random-genes.R $normalised_seurat_object $test_genes 10000
-##
-##     [ "$status" -eq 0 ]
-##     [ -f  "$test_genes" ]
-## }
-##
-## # Scale expression values
-##
-## @test "Scale expression values" {
-##     if [ "$use_existing_outputs" = 'true' ] && [ -f "$scaled_seurat_object" ]; then
-##         skip "$scaled_seurat_object exists and use_existing_outputs is set to 'true'"
-##     fi
-##
-##     run seurat-scale-data.R -i $variable_genes_seurat_object -e $test_genes -v $vars_to_regress -m $model_use -u $use_umi -s $do_scale -c $do_center -x $scale_max -b $block_size -d $min_cells_to_block -a $assay_type -n $check_for_norm -o $scaled_seurat_object
-##
-##     [ "$status" -eq 0 ]
-##     [ -f  "$scaled_seurat_object" ]
-## }
-##
-## # Run PCA
-##
-## @test "Run principal component analysis" {
-##     if [ "$use_existing_outputs" = 'true' ] && [ -f "$pca_seurat_object" ]; then
-##         skip "$scaled_seurat_object exists and use_existing_outputs is set to 'true'"
-##     fi
-##
-##     run seurat-run-pca.R -i $scaled_seurat_object -e $test_genes -p $pcs_compute -m $use_imputed -o $pca_seurat_object -b $pca_embeddings_file -l $pca_loadings_file -s $pca_stdev_file
-##
-##     [ "$status" -eq 0 ]
-##     [ -f  "$pca_seurat_object" ]
-## }
-##
-## # Plot the PCA
-##
-## @test "Plot dimension reduction" {
-##     if [ "$use_existing_outputs" = 'true' ] && [ -f "$pca_image_file" ]; then
-##         skip "$scaled_seurat_object exists and use_existing_outputs is set to 'true'"
-##     fi
-##
-##     run seurat-dim-plot.r -i $pca_seurat_object -r pca -a $pca_dim_one -b $pca_dim_two -p $pt_size -l $label_size -d $do_label -f $group_by -t '$pca_plot_title' -w $pca_png_width -j $pca_png_height -o $pca_image_file
-##
-##     [ "$status" -eq 0 ]
-##     [ -f  "$pca_image_file" ]
-## }
-##
+
+# Scale expression values
+
+@test "Scale expression values" {
+    if [ "$use_existing_outputs" = 'true' ] && [ -f "$scaled_object" ]; then
+        skip "$scaled_object exists and use_existing_outputs is set to 'true'"
+    fi
+
+    run scanpy-scale-data.py -i $variable_genes_object -v $SD_vars_to_regress -c $SD_do_center -x $SD_scale_max -o $scaled_object
+
+    [ "$status" -eq 0 ]
+    [ -f  "$scaled_object" ]
+}
+
+# Run PCA
+
+@test "Run principal component analysis" {
+    if [ "$use_existing_outputs" = 'true' ] && [ -f "$pca_object" ]; then
+        skip "$scaled_object exists and use_existing_outputs is set to 'true'"
+    fi
+
+    run scanpy-run-pca.py -i $scaled_object -n $PCA_npcs --svd-solver $PCA_svd_solver -s $PCA_random_seed -o $pca_object -P $pca_image_file
+
+    [ "$status" -eq 0 ]
+    [ -f  "$pca_object" ] && [ -f "$pca_image_file" ]
+}
+
+
 ## # Generate clusters
 ##
 ## @test "Generate cell clusters from expression values" {
@@ -169,3 +145,7 @@
 ##     [ "$status" -eq 0 ]
 ##     [ -f  "$marker_text_file" ]
 ## }
+
+# Local Variables:
+# mode: sh
+# End:

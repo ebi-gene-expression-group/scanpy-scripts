@@ -61,15 +61,15 @@ fi
 ################################################################################
 
 export raw_matrix="$data_dir/matrix.mtx"
-export raw_scanpy_object="$output_dir/raw_scanpy.loom"
+export input_object="$output_dir/input.loom"
 export filtered_cells_object="$output_dir/filtered_cells.loom"
 export filtered_genes_object="$output_dir/filtered_genes.loom"
 export normalised_per_cell_object="$output_dir/normalised_per_cell.loom"
 export variable_genes_object="$output_dir/variable_genes.loom"
-export variable_genes_list="$output_dir/variable_genes.txt"
-export test_genes="$output_dir/random_genes.txt"
-export scaled_seurat_object="$output_dir/scaled_seurat.rds"
-export pca_seurat_object="$output_dir/pca_seurat.rds"
+export variable_image_file="$output_dir/variable_genes.png"
+export scaled_object="$output_dir/scaled.loom"
+export pca_object="$output_dir/pca.loom"
+export pca_image_file='$output_dir/pca.png'
 export pca_embeddings_file="$output_dir/pca_embeddings.csv"
 export pca_loadings_file="$output_dir/pca_loadings.csv"
 export pca_stdev_file="$output_dir/pca_stdev.txt"
@@ -83,70 +83,58 @@ export marker_text_file="$output_dir/markers.csv"
 ## Test parameters- would form config file in real workflow. DO NOT use these
 ## as default values without being sure what they mean.
 
+# Filter cells.
+export FC_parameters='n_genes'
+export FC_min_genes=200
+export FC_max_genes=2500
+
+# Filter genes.
+export FT_parameters='n_cells'
+export FT_min_cells=3
+
 # Normalisation.
+export ND_scale_factor=10000
+export ND_save_raw=True
 
-export min_genes=200
-export min_gene_counts=1000
+# Find variable genes.
+export FVG_flavor=seurat
+export FVG_nbins=20
+export FVG_parameters='mean,disp'
+export FVG_low_mean='0.0125'
+export FVG_high_mean=3
+export FVG_low_disp='0.5'
+export FVG_high_disp='Inf'
 
-# Normalisation. See Seurat ?NormalizeData
-
-export transformation_method='LogNormalize'
-export scale_factor=10000
-
-# Find variable genes. See ?FindVariableGenes
-
-export mean_function='ExpMean'
-export dispersion_function='LogVMR'
-export low_mean='0.0125'
-export high_mean='3'
-export low_disp='0.5'
-export high_disp='Inf'
-
-# Scale and center the data. See ?ScaleData
-export vars_to_regress='nUMI'
-export model_use='linear'
-export use_umi='TRUE'
-export do_scale='TRUE'
-export do_center='TRUE'
-export scale_max='10'
-export block_size='1000'
-export min_cells_to_block='1000'
-export check_for_norm='TRUE'
+# Scale and center the data
+export SD_vars_to_regress='nUMI'
+export SD_do_scale='TRUE'
+export SD_do_center='TRUE'
+export SD_scale_max='10'
 
 # Run PCA
-export pcs_compute=50
-export use_imputed='FALSE'
+export PCA_npcs=50
+export PCA_svd_solver=arpack
+export PCA_random_seed=0
 
-# Plot PCA
-export pca_dim_one=1
-export pca_dim_two=2
-export pt_size=1
-export label_size=4
-export do_label='FALSE'
-export group_by='ident'
-export pca_plot_title='Test PCA plot'
-export pca_png_width=1000
-export pca_png_height=1000
-
-# Find clusters
-export reduction_type='pca'
-export dims_use='1,2,3,4,5,6,7,8,9,10'
-export k_param=30
-export resolution=0.8
-export cluster_algorithm=1
-export cluster_tmp_file_location='/tmp'
-
-# t-SNE
-export tsne_do_fast='TRUE'
-
-# Marker detection
-export logfc_threshold=0.25
-export marker_min_pct=0.1
-export marker_only_pos='FALSE'
-export marker_test_use='wilcox'
-export marker_max_cells_per_ident='Inf'
-export marker_min_cells_gene=3
-export marker_min_cells_group=3
+## # Find clusters
+## export reduction_type='pca'
+## export dims_use='1,2,3,4,5,6,7,8,9,10'
+## export k_param=30
+## export resolution=0.8
+## export cluster_algorithm=1
+## export cluster_tmp_file_location='/tmp'
+## 
+## # t-SNE
+## export tsne_do_fast='TRUE'
+## 
+## # Marker detection
+## export logfc_threshold=0.25
+## export marker_min_pct=0.1
+## export marker_only_pos='FALSE'
+## export marker_test_use='wilcox'
+## export marker_max_cells_per_ident='Inf'
+## export marker_min_cells_gene=3
+## export marker_min_cells_group=3
 
 ################################################################################
 # Test individual scripts
