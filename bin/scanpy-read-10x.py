@@ -4,9 +4,9 @@ from __future__ import print_function
 import os.path
 import logging
 import signal
-signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 import pandas as pd
 from scanpy_wrapper_utils import ScanpyArgParser, write_output_object
+signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 
 def main(args):
@@ -18,7 +18,7 @@ def main(args):
     cells = pd.read_csv(os.path.join(args.data_dir, 'barcodes.tsv'), header=None)
 
     adata.var_names = genes[0]
-    adata.var['gene_names'] = genes[1].values  # add the gene ids as annotation of the variables/genes
+    adata.var['gene_names'] = genes[1].values
     adata.var_names_make_unique()
 
     adata.obs_names = cells[0]
