@@ -106,9 +106,8 @@ export FVG_low_disp='0.5'
 export FVG_high_disp='Inf'
 
 # Scale and center the data
-export SD_vars_to_regress='nUMI'
-export SD_do_scale='TRUE'
-export SD_do_center='TRUE'
+export SD_vars_to_regress='n_counts'
+export SD_zero_center='-z'
 export SD_scale_max='10'
 
 # Run PCA

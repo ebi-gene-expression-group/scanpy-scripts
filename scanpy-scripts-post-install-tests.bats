@@ -87,7 +87,7 @@
         skip "$scaled_object exists and use_existing_outputs is set to 'true'"
     fi
 
-    run scanpy-scale-data.py -i $variable_genes_object -v $SD_vars_to_regress -c $SD_do_center -x $SD_scale_max -o $scaled_object
+    run scanpy-scale-data.py -i $variable_genes_object -v $SD_vars_to_regress -x $SD_scale_max $SD_zero_center -o $scaled_object
 
     [ "$status" -eq 0 ]
     [ -f  "$scaled_object" ]
