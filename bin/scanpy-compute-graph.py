@@ -23,12 +23,6 @@ def main(args):
 
     write_output_object(adata, args.output_object_file, args.output_format)
 
-    if args.output_plot:
-        sc.set_figure_params(format=args.output_plot_format)
-        sc.settings.verbosity = 0
-        sc.pl.umap(adata, show=False, save=True)
-        save_output_plot('umap', args.output_plot)
-
     logging.info('Done')
     return 0
 
@@ -82,7 +76,6 @@ if __name__ == '__main__':
                                 '"rogerstanimoto", "russellrao", "seuclidean", "sokalmichener", '
                                 '"sokalsneath", "sqeuclidean", "yule", "wminkowski", '
                                 '"precomputed". Default "euclidean".')
-    argparser.add_output_plot()
     args = argparser.get_args()
 
     main(args)
