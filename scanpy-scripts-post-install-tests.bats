@@ -16,7 +16,7 @@
 
 # Run scanpy-read-10x.py
 
-@test "Scanpy Loom object creation from 10x" {
+@test "Scanpy object creation from 10x" {
     if [ "$use_existing_outputs" = 'true' ] && [ -f "$input_object" ]; then
         skip "$input_object exists and use_existing_outputs is set to 'true'"
     fi
@@ -32,7 +32,7 @@
 
 # Run scanpy-filter-cells.py
 
-@test "Filter cells from a raw Loom object" {
+@test "Filter cells from a raw object" {
     if [ "$use_existing_outputs" = 'true' ] && [ -f "$filtered_cells_object" ]; then
         skip "$filtered_cells_object exists and use_existing_outputs is set to 'true'"
     fi
@@ -50,7 +50,7 @@
 
 # Run scanpy-filter-genes.py
 
-@test "Filter genes from a cell-filtered Loom object" {
+@test "Filter genes from a cell-filtered object" {
     if [ "$use_existing_outputs" = 'true' ] && [ -f "$filtered_genes_object" ]; then
         skip "$filtered_genes_object exists and use_existing_outputs is set to 'true'"
     fi
