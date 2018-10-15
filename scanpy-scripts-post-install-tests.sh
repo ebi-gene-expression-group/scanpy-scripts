@@ -73,13 +73,14 @@ export pca_image_file='$output_dir/pca.png'
 #export pca_embeddings_file="$output_dir/pca_embeddings.csv"
 #export pca_loadings_file="$output_dir/pca_loadings.csv"
 #export pca_stdev_file="$output_dir/pca_stdev.txt"
-export pca_image_file="$output_dir/pcatest.png"
 export graph_object="$output_dir/graph.loom"
-export cluster_seurat_object="$output_dir/cluster_seurat.rds"
-export cluster_text_file="$output_dir/clusters.txt"
-export tsne_seurat_object="$output_dir/tsne_seurat.rds"
-export tsne_embeddings_file="$output_dir/tsne_embeddings.csv"
-export marker_text_file="$output_dir/markers.csv"
+export umap_object="$output_dir/umap.loom"
+export umap_image_file="$output_dir/umap.png"
+#export cluster_seurat_object="$output_dir/cluster_seurat.rds"
+#export cluster_text_file="$output_dir/clusters.txt"
+#export tsne_seurat_object="$output_dir/tsne_seurat.rds"
+#export tsne_embeddings_file="$output_dir/tsne_embeddings.csv"
+#export marker_text_file="$output_dir/markers.csv"
 
 ## Test parameters- would form config file in real workflow. DO NOT use these
 ## as default values without being sure what they mean.
@@ -122,6 +123,19 @@ export CG_npcs=50
 export CG_knn='--knn'
 export CG_random_seed=0
 export CG_method=umap
+
+# Run UMAP
+export UMAP_min_dist='0.5'
+export UMAP_spread='1.0'
+export UMAP_use_raw='--no-raw'
+export UMAP_ncomp=2
+export UMAP_random_seed=0
+export UMAP_alpha=1.0
+export UMAP_gamma=1.0
+export UMAP_initpos=spectral
+export UMAP_color=CST3
+export UMAP_projection=2d
+export UMAP_frameon='--frameoff'
 
 ## # Find clusters
 ## export reduction_type='pca'

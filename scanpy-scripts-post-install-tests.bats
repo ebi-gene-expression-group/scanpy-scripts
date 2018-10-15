@@ -119,6 +119,31 @@
     [ -f  "$graph_object" ]
 }
 
+# Run UMAP
+
+@test "Run UMAP analysis" {
+    if [ "$use_existing_outputs" = 'true' ] && [ -f "$umap_object" ]; then
+        skip "$umap_object exists and use_existing_outputs is set to 'true'"
+    fi
+
+    run rm -f $umap_object $umap_image_file && \
+	bin/scanpy-run-umap.py -i $graph_object -o $umap_object \
+			       -s $UMAP_random_seed \
+			       -n $UMAP_ncomp \
+			       --min-dist $UMAP_min_dist \
+			       --spread $UMAP_spread \
+			       --alpha $UMAP_alpha \
+			       --gamma $UMAP_gamma \
+			       --init-pos $UMAP_initpos \
+			       -P $umap_image_file \
+			       --color $UMAP_color \
+			       --projection $UMAP_projection \
+			       $UMAP_frameon
+
+    [ "$status" -eq 0 ]
+    [ -f  "$umap_object" ] && [ -f "$umap_image_file" ]
+}
+
 ## # Generate clusters
 ##
 ## @test "Generate cell clusters from expression values" {
