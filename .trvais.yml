@@ -1,0 +1,46 @@
+before_install:
+  - if test -e $HOME/miniconda/bin; then
+        echo "miniconda already installed.";
+    else
+      if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+        wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+      else
+        wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+      fi
+
+      rm -rf $HOME/miniconda;
+      bash miniconda.sh -b -p $HOME/miniconda;
+      export PATH="$HOME/miniconda/bin:$PATH";
+      hash -r;
+      conda config --set always_yes yes --set changeps1 no;
+      conda update -q conda;
+
+      conda info -a;
+
+      conda config --add channels defaults;
+      conda config --add channels conda-forge;
+      conda config --add channels bioconda;
+    fi
+
+install:
+    - export PATH="$HOME/miniconda/bin:$PATH";
+    - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
+    - source activate test-environment
+    - conda install scanpy
+    - pip install -U --upgrade-strategy only-if-needed scanpy
+    - pip install -U --upgrade-strategy only-if-needed loompy
+
+before_script:
+    - export PATH=`pwd`:$PATH
+
+script: ./scanpy-scripts-post-install-tests.sh
+
+cache:
+  directories:
+      - $HOME/miniconda
+      - post_install_tests
+
+before_cache:
+    - if ! [[ $TRAVIS_TAG ]]; then rm -rf $HOME/miniconda/conda-bld; fi
+    - rm -rf post_install_tests/outputs
+    - rm -rf $HOME/miniconda/locks $HOME/miniconda/pkgs $HOME/miniconda/var $HOME/miniconda/conda-meta/history
