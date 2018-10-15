@@ -74,8 +74,14 @@ if __name__ == '__main__':
                            help='Use "umap" or "gauss" with adpative width for '
                                 'computing connectivities.')
     argparser.add_argument('-M', '--metric',
-                           default=None,
-                           help='A known metric\'s name.')
+                           default='euclidean',
+                           help='A known metric\'s name. Choices are "euclidean", "l2", "l1", '
+                                '"manhattan", "cityblock", "braycurtis", "canberra", "chebyshev", '
+                                '"correlation", "cosine", "dice", "hamming", "jaccard", '
+                                '"kulsinski", "mahalanobis", "matching", "minkowski", '
+                                '"rogerstanimoto", "russellrao", "seuclidean", "sokalmichener", '
+                                '"sokalsneath", "sqeuclidean", "yule", "wminkowski", '
+                                '"precomputed". Default "euclidean".')
     argparser.add_output_plot()
     args = argparser.get_args()
 
