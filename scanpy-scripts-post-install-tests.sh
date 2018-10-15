@@ -11,7 +11,7 @@ function usage {
 }
 
 action=${1:-'test'}
-use_existing_outputs=${2:-'true'}
+use_existing_outputs=${2:-'false'}
 
 if [[ $action != 'test' ]] && [[ $action != 'clean' ]]; then
     echo "Invalid action"
@@ -76,6 +76,8 @@ export pca_image_file='$output_dir/pca.png'
 export graph_object="$output_dir/graph.h5ad"
 export umap_object="$output_dir/umap.h5ad"
 export umap_image_file="$output_dir/umap.png"
+export tsne_object="$output_dir/tsne.h5ad"
+export tsne_image_file="$output_dir/tsne.png"
 #export cluster_seurat_object="$output_dir/cluster_seurat.rds"
 #export cluster_text_file="$output_dir/clusters.txt"
 #export tsne_seurat_object="$output_dir/tsne_seurat.rds"
@@ -136,6 +138,15 @@ export UMAP_initpos=spectral
 export UMAP_color=ENSG00000101439
 export UMAP_projection=2d
 export UMAP_frameon='--frameoff'
+
+# Run t-SNE
+export TSNE_perplexity=30
+export TSNE_early_exaggeration=12
+export TSNE_learning_rate=1000
+export TSNE_random_seed=0
+export TSNE_color=ENSG00000101439
+export TSNE_projection=2d
+export TSNE_frameon='--frameoff'
 
 ## # Find clusters
 ## export reduction_type='pca'
