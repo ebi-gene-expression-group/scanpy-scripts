@@ -29,10 +29,10 @@ def main(args):
 
 if __name__ == "__main__":
     argparser = ScanpyArgParser('Read10x data for ScanPy')
-    argparser.parser.add_argument('-d', '--data-dir',
-                                  required=True,
-                                  help='Directory containing the matrix.mtx, genes.tsv, '
-                                       'and barcodes.tsv files provided by 10X.')
+    argparser.add_argument('-d', '--data-dir',
+                           required=True,
+                           help='Directory containing the matrix.mtx, genes.tsv, '
+                                'and barcodes.tsv files provided by 10X.')
     argparser.add_output_object()
     args = argparser.get_args()
 

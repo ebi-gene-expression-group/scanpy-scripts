@@ -47,7 +47,7 @@ if __name__ == '__main__':
                            help='Compute standard PCA from covariance matrix. '
                                 'See also --no-zero-center. '
                                 'If neither --zero-center nor --no-zero-center is set, '
-                                'automatically set to TRUE if input is sparse, otherwise FALSE.')
+                                'automatically set to FALSE if input is sparse, otherwise TRUE.')
     argparser.add_argument('-Z', '--no-zero-center',
                            action='store_false',
                            dest='zero_center',
