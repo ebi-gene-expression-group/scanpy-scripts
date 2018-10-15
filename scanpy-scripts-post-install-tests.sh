@@ -61,20 +61,20 @@ fi
 ################################################################################
 
 export raw_matrix="$data_dir/matrix.mtx"
-export input_object="$output_dir/input.loom"
-export filtered_cells_object="$output_dir/filtered_cells.loom"
-export filtered_genes_object="$output_dir/filtered_genes.loom"
-export normalised_object="$output_dir/normalised.loom"
-export variable_genes_object="$output_dir/variable_genes.loom"
+export input_object="$output_dir/input.h5ad"
+export filtered_cells_object="$output_dir/filtered_cells.h5ad"
+export filtered_genes_object="$output_dir/filtered_genes.h5ad"
+export normalised_object="$output_dir/normalised.h5ad"
+export variable_genes_object="$output_dir/variable_genes.h5ad"
 export variable_image_file="$output_dir/variable_genes.png"
-export scaled_object="$output_dir/scaled.loom"
-export pca_object="$output_dir/pca.loom"
+export scaled_object="$output_dir/scaled.h5ad"
+export pca_object="$output_dir/pca.h5ad"
 export pca_image_file='$output_dir/pca.png'
 #export pca_embeddings_file="$output_dir/pca_embeddings.csv"
 #export pca_loadings_file="$output_dir/pca_loadings.csv"
 #export pca_stdev_file="$output_dir/pca_stdev.txt"
-export graph_object="$output_dir/graph.loom"
-export umap_object="$output_dir/umap.loom"
+export graph_object="$output_dir/graph.h5ad"
+export umap_object="$output_dir/umap.h5ad"
 export umap_image_file="$output_dir/umap.png"
 #export cluster_seurat_object="$output_dir/cluster_seurat.rds"
 #export cluster_text_file="$output_dir/clusters.txt"
@@ -133,7 +133,7 @@ export UMAP_random_seed=0
 export UMAP_alpha=1.0
 export UMAP_gamma=1.0
 export UMAP_initpos=spectral
-export UMAP_color=CST3
+export UMAP_color=ENSG00000101439
 export UMAP_projection=2d
 export UMAP_frameon='--frameoff'
 
