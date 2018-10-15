@@ -42,7 +42,7 @@ def main(args):
                    palette=args.palette,
                    frameon=args.frameon)
 
-        save_output_plot('pca', args.output_plot)
+        save_output_plot('umap', args.output_plot)
 
     logging.info('Done')
     return 0
