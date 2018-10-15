@@ -113,7 +113,7 @@
         skip "$scaled_object exists and use_existing_outputs is set to 'true'"
     fi
 
-    run rm -f $graph_object $graph_image_file && bin/scanpy-compute-graph.py -i $scaled_object -N $CG_nneighbor -n $CG_npcs $CG_knn --random-seed $CG_random_seed --method $CG_method -s $CG_random_seed -o $graph_object -P $graph_image_file
+    run rm -f $graph_object $graph_image_file && bin/scanpy-compute-graph.py -i $pca_object -N $CG_nneighbor -n $CG_npcs $CG_knn --random-seed $CG_random_seed --method $CG_method -s $CG_random_seed -o $graph_object -P $graph_image_file
 
     [ "$status" -eq 0 ]
     [ -f  "$graph_object" ] && [ -f "$graph_image_file" ]
