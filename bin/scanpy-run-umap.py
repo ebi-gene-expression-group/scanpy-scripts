@@ -42,14 +42,14 @@ def main(args):
                    palette=args.palette,
                    frameon=args.frameon)
 
-        save_output_plot('pca', args.output_plot)
+        save_output_plot('umap', args.output_plot)
 
     logging.info('Done')
     return 0
 
 
 if __name__ == '__main__':
-    argparser = ScanpyArgParser('Run PCA on normalised data')
+    argparser = ScanpyArgParser('Run UMAP on data with neighborhood graph computed')
     argparser.add_input_object()
     argparser.add_output_object()
     argparser.add_argument('--min-dist',
