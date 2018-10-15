@@ -75,7 +75,6 @@ export pca_image_file='$output_dir/pca.png'
 #export pca_stdev_file="$output_dir/pca_stdev.txt"
 export pca_image_file="$output_dir/pcatest.png"
 export graph_object="$output_dir/graph.loom"
-export graph_image_file="$output_dir/graph.png"
 export cluster_seurat_object="$output_dir/cluster_seurat.rds"
 export cluster_text_file="$output_dir/clusters.txt"
 export tsne_seurat_object="$output_dir/tsne_seurat.rds"
