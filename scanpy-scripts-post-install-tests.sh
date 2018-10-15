@@ -11,7 +11,7 @@ function usage {
 }
 
 action=${1:-'test'}
-use_existing_outputs=${2:-'false'}
+use_existing_outputs=${2:-'true'}
 
 if [[ $action != 'test' ]] && [[ $action != 'clean' ]]; then
     echo "Invalid action"
@@ -64,16 +64,18 @@ export raw_matrix="$data_dir/matrix.mtx"
 export input_object="$output_dir/input.loom"
 export filtered_cells_object="$output_dir/filtered_cells.loom"
 export filtered_genes_object="$output_dir/filtered_genes.loom"
-export normalised_per_cell_object="$output_dir/normalised_per_cell.loom"
+export normalised_object="$output_dir/normalised.loom"
 export variable_genes_object="$output_dir/variable_genes.loom"
 export variable_image_file="$output_dir/variable_genes.png"
 export scaled_object="$output_dir/scaled.loom"
 export pca_object="$output_dir/pca.loom"
 export pca_image_file='$output_dir/pca.png'
-export pca_embeddings_file="$output_dir/pca_embeddings.csv"
-export pca_loadings_file="$output_dir/pca_loadings.csv"
-export pca_stdev_file="$output_dir/pca_stdev.txt"
+#export pca_embeddings_file="$output_dir/pca_embeddings.csv"
+#export pca_loadings_file="$output_dir/pca_loadings.csv"
+#export pca_stdev_file="$output_dir/pca_stdev.txt"
 export pca_image_file="$output_dir/pcatest.png"
+export graph_object="$output_dir/graph.loom"
+export graph_image_file="$output_dir/graph.png"
 export cluster_seurat_object="$output_dir/cluster_seurat.rds"
 export cluster_text_file="$output_dir/clusters.txt"
 export tsne_seurat_object="$output_dir/tsne_seurat.rds"
@@ -115,6 +117,13 @@ export PCA_npcs=50
 export PCA_svd_solver=arpack
 export PCA_random_seed=0
 
+# Run compute graph
+export CG_nneighbor=15
+export CG_npcs=50
+export CG_knn='--knn'
+export CG_random_seed=0
+export CG_method=umap
+
 ## # Find clusters
 ## export reduction_type='pca'
 ## export dims_use='1,2,3,4,5,6,7,8,9,10'
@@ -150,4 +159,4 @@ tests_file="${script_name%.*}".bats
 
 # Execute the bats tests
 
-$tests_file
+./$tests_file

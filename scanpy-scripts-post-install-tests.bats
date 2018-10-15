@@ -15,7 +15,7 @@
 
 # Run scanpy-read-10x.py
 
-@test "Scanpy AnnData object creation from 10x" {
+@test "Scanpy Loom object creation from 10x" {
     if [ "$use_existing_outputs" = 'true' ] && [ -f "$input_object" ]; then
         skip "$input_object exists and use_existing_outputs is set to 'true'"
     fi
@@ -29,12 +29,12 @@
 
 # Run scanpy-filter-cells.py
 
-@test "Filter cells from a raw AnnData object" {
+@test "Filter cells from a raw Loom object" {
     if [ "$use_existing_outputs" = 'true' ] && [ -f "$filtered_cells_object" ]; then
         skip "$filtered_cells_object exists and use_existing_outputs is set to 'true'"
     fi
 
-    run rm -f $filtered_cells_object && scanpy-filter-cells.py -i $input_object -o $filtered_cells_object -p $FC_parameters -l $FC_min_genes -j $FC_max_genes
+    run rm -f $filtered_cells_object && bin/scanpy-filter-cells.py -i $input_object -o $filtered_cells_object -p $FC_parameters -l $FC_min_genes -j $FC_max_genes
 
     [ "$status" -eq 0 ]
     [ -f  "$filtered_cells_object" ]
@@ -42,12 +42,12 @@
 
 # Run scanpy-filter-genes.py
 
-@test "Filter genes from a cell-filtered AnnData object" {
+@test "Filter genes from a cell-filtered Loom object" {
     if [ "$use_existing_outputs" = 'true' ] && [ -f "$filtered_genes_object" ]; then
         skip "$filtered_genes_object exists and use_existing_outputs is set to 'true'"
     fi
 
-    run rm -f $filtered_genes_object && scanpy-filter-genes.py -i $filtered_cells_object -o $filtered_genes_object -p $FT_parameters -l $FT_min_cells
+    run rm -f $filtered_genes_object && bin/scanpy-filter-genes.py -i $filtered_cells_object -o $filtered_genes_object -p $FT_parameters -l $FT_min_cells
 
     [ "$status" -eq 0 ]
     [ -f  "$filtered_genes_object" ]
@@ -56,24 +56,24 @@
 # Run scanpy-normalise-data.py
 
 @test "Normalise expression values per cell" {
-    if [ "$use_existing_outputs" = 'true' ] && [ -f "$normalised_per_cell_object" ]; then
-        skip "$normalised_per_cell_object exists and use_existing_outputs is set to 'true'"
+    if [ "$use_existing_outputs" = 'true' ] && [ -f "$normalised_object" ]; then
+        skip "$normalised_object exists and use_existing_outputs is set to 'true'"
     fi
 
-    run scanpy-normalise-data.py -i $filtered_genes_object -s $ND_scale_factor -o $normalised_per_cell_object
+    run rm -f $normalised_object && bin/scanpy-normalise-data.py -i $filtered_genes_object -s $ND_scale_factor -o $normalised_object
 
     [ "$status" -eq 0 ]
-    [ -f  "$normalised_per_cell_object" ]
+    [ -f  "$normalised_object" ]
 }
 
 # Run scanpy-find-variable-genes.R
 
 @test "Find variable genes" {
-    if [ "$use_existing_outputs" = 'true' ] && [ -f "$variable_genes_list" ]; then
-        skip "$variable_genes_list exists and use_existing_outputs is set to 'true'"
+    if [ "$use_existing_outputs" = 'true' ] && [ -f "$variable_genes_object" ]; then
+        skip "$variable_genes_object exists and use_existing_outputs is set to 'true'"
     fi
 
-    run scanpy-find-variable-genes.py -i $normalised_per_cell_object --flavor $FVG_flavor -b $FVG_nbins -p $FVG_parameters -l $FVG_min_mean,$FVG_min_disp -j $FVG_high_mean,$FVG_high_disp -o $variable_genes_object -P $variable_image_file
+    run rm -f $variable_genes_object $variable_image_file && bin/scanpy-find-variable-genes.py -i $normalised_object --flavor $FVG_flavor -b $FVG_nbins -p $FVG_parameters -l $FVG_low_mean,$FVG_low_disp -j $FVG_high_mean,$FVG_high_disp -o $variable_genes_object -P $variable_image_file
 
     [ "$status" -eq 0 ]
     [ -f  "$variable_genes_object" ] && [ -f "$variable_image_file" ]
@@ -87,7 +87,7 @@
         skip "$scaled_object exists and use_existing_outputs is set to 'true'"
     fi
 
-    run scanpy-scale-data.py -i $variable_genes_object -v $SD_vars_to_regress -x $SD_scale_max $SD_zero_center -o $scaled_object
+    run rm-f $scaled_object && bin/scanpy-scale-data.py -i $variable_genes_object -V $SD_vars_to_regress -x $SD_scale_max $SD_zero_center -o $scaled_object
 
     [ "$status" -eq 0 ]
     [ -f  "$scaled_object" ]
@@ -97,15 +97,27 @@
 
 @test "Run principal component analysis" {
     if [ "$use_existing_outputs" = 'true' ] && [ -f "$pca_object" ]; then
-        skip "$scaled_object exists and use_existing_outputs is set to 'true'"
+        skip "$pca_object exists and use_existing_outputs is set to 'true'"
     fi
 
-    run scanpy-run-pca.py -i $scaled_object -n $PCA_npcs --svd-solver $PCA_svd_solver -s $PCA_random_seed -o $pca_object -P $pca_image_file
+    run rm -f $pca_object $pca_image_file && bin/scanpy-run-pca.py -i $scaled_object -n $PCA_npcs --svd-solver $PCA_svd_solver -s $PCA_random_seed -o $pca_object -P $pca_image_file
 
     [ "$status" -eq 0 ]
     [ -f  "$pca_object" ] && [ -f "$pca_image_file" ]
 }
 
+# Run compute graph
+
+@test "Run compute neighbor graph" {
+    if [ "$use_existing_outputs" = 'true' ] && [ -f "$graph_object" ]; then
+        skip "$scaled_object exists and use_existing_outputs is set to 'true'"
+    fi
+
+    run rm -f $graph_object $graph_image_file && bin/scanpy-compute-graph.py -i $scaled_object -N $CG_nneighbor -n $CG_npcs $CG_knn --random-seed $CG_random_seed --method $CG_method -s $CG_random_seed -o $graph_object -P $graph_image_file
+
+    [ "$status" -eq 0 ]
+    [ -f  "$graph_object" ] && [ -f "$graph_image_file" ]
+}
 
 ## # Generate clusters
 ##
