@@ -28,7 +28,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    argparser = ScanpyArgParser('Run PCA on normalised data')
+    argparser = ScanpyArgParser('Compute neighborhood graph on PCA analysed data')
     argparser.add_input_object()
     argparser.add_output_object()
     argparser.add_argument('-N', '--n-neighbors',
