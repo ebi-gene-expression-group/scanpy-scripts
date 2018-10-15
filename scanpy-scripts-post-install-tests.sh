@@ -69,7 +69,7 @@ export variable_genes_object="$output_dir/variable_genes.h5ad"
 export variable_image_file="$output_dir/variable_genes.png"
 export scaled_object="$output_dir/scaled.h5ad"
 export pca_object="$output_dir/pca.h5ad"
-export pca_image_file='$output_dir/pca.png'
+export pca_image_file="$output_dir/pca.png"
 #export pca_embeddings_file="$output_dir/pca_embeddings.csv"
 #export pca_loadings_file="$output_dir/pca_loadings.csv"
 #export pca_stdev_file="$output_dir/pca_stdev.txt"
@@ -118,6 +118,9 @@ export SD_scale_max='10'
 export PCA_npcs=50
 export PCA_svd_solver=arpack
 export PCA_random_seed=0
+export PCA_color=ENSG00000101439
+export PCA_projection=2d
+export PCA_frameon='--frameoff'
 
 # Run compute graph
 export CG_nneighbor=15

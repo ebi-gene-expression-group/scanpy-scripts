@@ -134,7 +134,10 @@
 			      -n $PCA_npcs \
 			      --svd-solver $PCA_svd_solver \
 			      -s $PCA_random_seed \
-			      -P $pca_image_file
+			      -P $pca_image_file \
+			      --color $PCA_color \
+			      --projection $PCA_projection \
+			      $PCA_frameon
 
     [ "$status" -eq 0 ]
     [ -f  "$pca_object" ] && [ -f "$pca_image_file" ]
