@@ -37,7 +37,7 @@ if __name__ == '__main__':
     argparser = ScanpyArgParser('Run PCA on normalised data')
     argparser.add_input_object()
     argparser.add_output_object()
-    argparser.add_argument('-N', '--n-neighgors',
+    argparser.add_argument('-N', '--n-neighbors',
                            type=int,
                            default=15,
                            help='Size of local neighbourhood used for manifold approximation. '
