@@ -2,6 +2,8 @@
 
 from __future__ import print_function
 import logging
+import matplotlib
+matplotlib.use('Agg')
 import scanpy.api as sc
 from scanpy_wrapper_utils import ScanpyArgParser
 from scanpy_wrapper_utils import read_input_object

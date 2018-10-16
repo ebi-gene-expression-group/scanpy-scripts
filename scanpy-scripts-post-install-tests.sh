@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-script_dir=$(realpath "$(dirname "${BASH_SOURCE[0]}" )")
+script_dir=$(readlink -f "$(dirname "${BASH_SOURCE[0]}" )")
 script_name=$(basename "${BASH_SOURCE[0]}")
 
 function usage {
