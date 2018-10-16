@@ -3,7 +3,7 @@
 from __future__ import print_function
 import logging
 from scanpy_wrapper_utils import ScanpyArgParser
-from scanpy_wrapper_utils import read_input_object, write_output_object, save_output_plot
+from scanpy_wrapper_utils import read_input_object, write_output_object
 
 
 def main(args):
