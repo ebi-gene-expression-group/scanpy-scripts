@@ -151,26 +151,6 @@ export TSNE_color=ENSG00000101439
 export TSNE_projection=2d
 export TSNE_frameon='--frameoff'
 
-## # Find clusters
-## export reduction_type='pca'
-## export dims_use='1,2,3,4,5,6,7,8,9,10'
-## export k_param=30
-## export resolution=0.8
-## export cluster_algorithm=1
-## export cluster_tmp_file_location='/tmp'
-## 
-## # t-SNE
-## export tsne_do_fast='TRUE'
-## 
-## # Marker detection
-## export logfc_threshold=0.25
-## export marker_min_pct=0.1
-## export marker_only_pos='FALSE'
-## export marker_test_use='wilcox'
-## export marker_max_cells_per_ident='Inf'
-## export marker_min_cells_gene=3
-## export marker_min_cells_group=3
-
 ################################################################################
 # Test individual scripts
 ################################################################################
