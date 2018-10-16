@@ -103,24 +103,24 @@
 }
 
 
-# # Scale expression values
-# 
-# @test "Scale expression values" {
-#     if [ "$use_existing_outputs" = 'true' ] && [ -f "$scaled_object" ]; then
-#         skip "$scaled_object exists and use_existing_outputs is set to 'true'"
-#     fi
-# 
-#     run rm -f $scaled_object && \
-# 	bin/scanpy-scale-data.py -i $variable_genes_object \
-# 				 -x $SD_scale_max \
-# 				 -o $scaled_object \
-# 				 $SD_zero_center
-# 				 #-V $SD_vars_to_regress \
-# 
-#     [ "$status" -eq 0 ]
-#     [ -f  "$scaled_object" ]
-# }
-# 
+# Scale expression values
+
+@test "Scale expression values" {
+    if [ "$use_existing_outputs" = 'true' ] && [ -f "$scaled_object" ]; then
+        skip "$scaled_object exists and use_existing_outputs is set to 'true'"
+    fi
+
+    run rm -f $scaled_object && \
+	bin/scanpy-scale-data.py -i $variable_genes_object \
+				 -x $SD_scale_max \
+				 -o $scaled_object \
+				 -V $SD_vars_to_regress \
+				 $SD_zero_center
+
+    [ "$status" -eq 0 ]
+    [ -f  "$scaled_object" ]
+}
+
 # # Run PCA
 # 
 # @test "Run principal component analysis" {
