@@ -20,15 +20,14 @@ before_install:
       conda config --add channels defaults;
       conda config --add channels conda-forge;
       conda config --add channels bioconda;
+
+      conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION scanpy;
     fi
 
 install:
     - export PATH="$HOME/miniconda/bin:$PATH";
-    - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
-    - source activate test-environment
-    - conda install scanpy
-    - pip install -U --upgrade-strategy only-if-needed scanpy
-    - pip install -U --upgrade-strategy only-if-needed loompy
+    - source activate test-environment;
+
 
 before_script:
     - export PATH=`pwd`:$PATH
