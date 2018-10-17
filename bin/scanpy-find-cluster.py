@@ -22,6 +22,10 @@ def main(args):
 
     write_output_object(adata, args.output_object_file, args.output_format)
 
+    if args.output_text_file:
+        adata.obs[[args.key_added]].reset_index(level=0).rename(columns={'index':'cells'}).to_csv(
+            args.output_text_file, sep='\t', index=None)
+
     logging.info('Done')
     return 0
 
@@ -30,6 +34,9 @@ if __name__ == '__main__':
     argparser = ScanpyArgParser('Run Louvain clustering on data with neighborhood graph computed')
     argparser.add_input_object()
     argparser.add_output_object()
+    argparser.add_argument('--output-text-file',
+                           default=None,
+                           help='File name in which to store text format set of clusters')
     argparser.add_argument('--flavor',
                            choices=['vtraag', 'igraph'],
                            default='vtraag',

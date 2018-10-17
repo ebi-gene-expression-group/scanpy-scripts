@@ -167,6 +167,26 @@
 
     [ "$status" -eq 0 ]
     [ -f  "$graph_object" ]
+
+# Run find cluster
+
+@test "Run find cluster" {
+    if [ "$use_existing_outputs" = 'true' ] && [ -f "$cluster_object" ]; then
+        skip "$cluster_object exists and use_existing_outputs is set to 'true'"
+    fi
+
+    run rm -f $cluster_object $cluster_text_file && \
+	bin/scanpy-find-cluster.py -i $graph_object \
+				   -o $cluster_object \
+				   --output-text-file $cluster_text_file \
+				   --flavor $FC_flavor \
+				   --resolution $FC_resolution \
+				   --key-added $FC_key_added \
+				   -s $FC_random_seed \
+				   $FC_use_weight
+
+    [ "$status" -eq 0 ]
+    [ -f  "$cluster_object" ] && [ -f "$cluster_text_file" ]
 }
 
 # # Run UMAP

@@ -75,12 +75,12 @@ export pca_loadings_file="$output_dir/pca_loadings.csv"
 export pca_stdev_file="$output_dir/pca_stdev.txt"
 export pca_var_ratio_file="$output_dir/pca_var_ratio.txt"
 export graph_object="$output_dir/graph.h5ad"
+export cluster_object="$output_dir/cluster.h5ad"
+export cluster_text_file="$output_dir/clusters.txt"
 export umap_object="$output_dir/umap.h5ad"
 export umap_image_file="$output_dir/umap.png"
 export tsne_object="$output_dir/tsne.h5ad"
 export tsne_image_file="$output_dir/tsne.png"
-#export cluster_seurat_object="$output_dir/cluster_seurat.rds"
-#export cluster_text_file="$output_dir/clusters.txt"
 #export tsne_seurat_object="$output_dir/tsne_seurat.rds"
 #export tsne_embeddings_file="$output_dir/tsne_embeddings.csv"
 #export marker_text_file="$output_dir/markers.csv"
@@ -129,6 +129,13 @@ export CG_npcs=50
 export CG_knn='--knn'
 export CG_random_seed=0
 export CG_method=umap
+
+# Run find cluster
+export FC_flavor=vtraag
+export FC_resolution='1.0'
+export FC_key_added=louvain
+export FC_use_weight='--use-weights'
+export FC_random_seed=0
 
 # Run UMAP
 export UMAP_min_dist='0.5'
