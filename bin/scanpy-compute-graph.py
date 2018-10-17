@@ -65,8 +65,8 @@ if __name__ == '__main__':
     argparser.add_argument('-m', '--method',
                            choices=['umap', 'gauss'],
                            default='umap',
-                           help='Use "umap" or "gauss" with adpative width for '
-                                'computing connectivities.')
+                           help='Use "umap" or "gauss" with adpative width for computing '
+                                'connectivities. Default: "umap"')
     argparser.add_argument('-M', '--metric',
                            default='euclidean',
                            help='A known metric\'s name. Choices are "euclidean", "l2", "l1", '
