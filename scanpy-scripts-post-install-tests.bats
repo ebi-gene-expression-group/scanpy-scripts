@@ -157,13 +157,13 @@
     fi
 
     run rm -f $graph_object $graph_image_file && \
-	bin/scanpy-compute-graph.py -i $pca_object \
-				    -o $graph_object \
-				    -N $CG_nneighbor \
-				    -n $CG_npcs \
-				    -s $CG_random_seed \
-				    --method $CG_method \
-				    $CG_knn
+	bin/scanpy-neighbours.py -i $pca_object \
+				 -o $graph_object \
+				 -N $CG_nneighbor \
+				 -n $CG_npcs \
+				 -s $CG_random_seed \
+				 --method $CG_method \
+				 $CG_knn
 
     [ "$status" -eq 0 ]
     [ -f  "$graph_object" ]
