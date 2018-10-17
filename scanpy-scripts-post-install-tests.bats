@@ -121,28 +121,34 @@
     [ -f  "$scaled_object" ]
 }
 
-# # Run PCA
-# 
-# @test "Run principal component analysis" {
-#     if [ "$use_existing_outputs" = 'true' ] && [ -f "$pca_object" ]; then
-#         skip "$pca_object exists and use_existing_outputs is set to 'true'"
-#     fi
-# 
-#     run rm -f $pca_object $pca_image_file && \
-# 	bin/scanpy-run-pca.py -i $scaled_object \
-# 			      -o $pca_object \
-# 			      -n $PCA_npcs \
-# 			      --svd-solver $PCA_svd_solver \
-# 			      -s $PCA_random_seed \
-# 			      -P $pca_image_file \
-# 			      --color $PCA_color \
-# 			      --projection $PCA_projection \
-# 			      $PCA_frameon
-# 
-#     [ "$status" -eq 0 ]
-#     [ -f  "$pca_object" ] && [ -f "$pca_image_file" ]
-# }
-# 
+# Run PCA
+
+@test "Run principal component analysis" {
+    if [ "$use_existing_outputs" = 'true' ] && [ -f "$pca_object" ]; then
+        skip "$pca_object exists and use_existing_outputs is set to 'true'"
+    fi
+
+    run rm -f $pca_object $pca_image_file && \
+	bin/scanpy-run-pca.py -i $scaled_object \
+			      -o $pca_object \
+			      --output-embeddings-file $pca_embeddings_file \
+			      --output-loadings-file $pca_loadings_file \
+			      --output-stdev-file $pca_stdev_file \
+			      --output-var-ratio-file $pca_var_ratio_file \
+			      -n $PCA_npcs \
+			      --svd-solver $PCA_svd_solver \
+			      -s $PCA_random_seed \
+			      -P $pca_image_file \
+			      --color $PCA_color \
+			      --projection $PCA_projection \
+			      $PCA_frameon
+
+    [ "$status" -eq 0 ]
+    [ -f  "$pca_object" ] && [ -f "$pca_image_file" ] && \
+	[ -f "$pca_embeddings_file" ] && [ -f "$pca_loadings_file" ] && \
+	[ -f "$pca_stdev_file" ] && [ -f "$pca_var_ratio_file" ]
+}
+
 # # Run compute graph
 # 
 # @test "Run compute neighbor graph" {

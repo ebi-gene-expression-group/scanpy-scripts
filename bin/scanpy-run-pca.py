@@ -2,7 +2,10 @@
 
 from __future__ import print_function
 import logging
-from scanpy_wrapper_utils import ScanpyArgParser
+import matplotlib
+matplotlib.use('Agg')
+import numpy as np
+from scanpy_wrapper_utils import ScanpyArgParser, comma_separated_list
 from scanpy_wrapper_utils import read_input_object, write_output_object, save_output_plot
 
 
@@ -22,10 +25,32 @@ def main(args):
 
     write_output_object(adata, args.output_object_file, args.output_format)
 
+    if args.output_embeddings_file:
+        np.savetxt(args.output_embeddings_file, adata.obsm['X_pca'], delimiter=',', fmt='%.4e')
+
+    if args.output_loadings_file:
+        np.savetxt(args.output_loadings_file, adata.varm['PCs'], delimiter=',', fmt='%.4e')
+
+    if args.output_stdev_file:
+        np.savetxt(args.output_stdev_file, np.sqrt(adata.uns['pca']['variance']), fmt='%.4e')
+
+    if args.output_var_ratio_file:
+        np.savetxt(args.output_var_ratio_file, adata.uns['pca']['variance_ratio'], fmt='%.4e')
+
     if args.output_plot:
         sc.set_figure_params(format=args.output_plot_format)
         sc.settings.verbosity = 0
-        sc.pl.pca(adata, show=False, save=True)
+        sc.pl.pca(adata, show=False, save=True,
+                  color=args.color,
+                  use_raw=args.use_raw,
+                  edges=args.edges,
+                  arrows=args.arrows,
+                  sort_order=args.sort_order,
+                  groups=args.groups,
+                  projection=args.projection,
+                  components=args.components,
+                  palette=args.palette,
+                  frameon=args.frameon)
         save_output_plot('pca', args.output_plot)
 
     logging.info('Done')
@@ -36,6 +61,21 @@ if __name__ == '__main__':
     argparser = ScanpyArgParser('Run PCA on normalised data')
     argparser.add_input_object()
     argparser.add_output_object()
+    argparser.add_argument('--output-embeddings-file',
+                           default=None,
+                           help='File name in which to store a csv-format embeddings table with '
+                                'PCs by cell.')
+    argparser.add_argument('--output-loadings-file',
+                           default=None,
+                           help='File name in which to store a csv-format loadings table with '
+                                'PCs by gene.')
+    argparser.add_argument('--output-stdev-file',
+                           default=None,
+                           help='File name in which to store PC stdev values (one per line).')
+    argparser.add_argument('--output-var-ratio-file',
+                           default=None,
+                           help='File name in which to store proportion of variance explained by '
+                                'PCs (one per line).')
     argparser.add_argument('-n', '--n-pcs',
                            type=int,
                            default=50,
@@ -74,6 +114,52 @@ if __name__ == '__main__':
                            help='Number of observations to include in each chunk. '
                                 'Required if --chunked is set')
     argparser.add_output_plot()
+    argparser.add_argument('--color',
+                           type=comma_separated_list('color', str),
+                           default=[],
+                           help='String or list of strings. Default: []')
+    argparser.add_argument('--use-raw',
+                           action='store_true',
+                           default=False,
+                           help='Use raw attribute of adata if present. Default: False')
+    argparser.add_argument('--edges',
+                           action='store_true',
+                           default=False,
+                           help='Show edges. Default: False.')
+    argparser.add_argument('--arrows',
+                           action='store_true',
+                           default=False,
+                           help='Show arrwos (requires to run rna_velocity() before). '
+                                'Default: False.')
+    argparser.add_argument('--no-sort-order',
+                           dest='sort_order',
+                           action='store_false',
+                           default=True,
+                           help='For continuous annotations used as color parameter, by default '
+                                'plot data points with higher values on top of others. Disable '
+                                'this behavior if set.')
+    argparser.add_argument('--groups',
+                           type=str,
+                           default=None,
+                           help='Restrict to a few categories in observation annotation.')
+    argparser.add_argument('--projection',
+                           choices=['2d', '3d'],
+                           default='2d',
+                           help='Projection of plot. Default: 2d')
+    argparser.add_argument('--components',
+                           type=str,
+                           default='1,2',
+                           help='Components to plot. To plot all available components use "all". '
+                                'Default: "1,2"')
+    argparser.add_argument('--palette',
+                           default=None,
+                           help='Colors to use for plotting categorical annotation groups. '
+                                'Can be a valid matplotlib.pyplot.colormap name. Default: None')
+    argparser.add_argument('--frameoff',
+                           dest='frameon',
+                           action='store_false',
+                           default=True,
+                           help='Do not draw a frame around the scatter plot. Draw by default.')
     args = argparser.get_args()
 
     main(args)
