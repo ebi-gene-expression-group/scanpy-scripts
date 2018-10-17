@@ -4,6 +4,7 @@ from __future__ import print_function
 import logging
 import matplotlib
 matplotlib.use('Agg')
+import numpy as np
 from scanpy_wrapper_utils import ScanpyArgParser, comma_separated_list
 from scanpy_wrapper_utils import read_input_object, write_output_object, save_output_plot
 
@@ -23,6 +24,18 @@ def main(args):
               chunk_size=args.chunk_size)
 
     write_output_object(adata, args.output_object_file, args.output_format)
+
+    if args.output_embeddings_file:
+        np.savetxt(args.output_embeddings_file, adata.obsm['X_pca'], delimiter=',', fmt='%.4e')
+
+    if args.output_loadings_file:
+        np.savetxt(args.output_loadings_file, adata.varm['PCs'], delimiter=',', fmt='%.4e')
+
+    if args.output_stdev_file:
+        np.savetxt(args.output_stdev_file, np.sqrt(adata.uns['pca']['variance']), fmt='%.4e')
+
+    if args.output_var_ratio_file:
+        np.savetxt(args.output_var_ratio_file, adata.uns['pca']['variance_ratio'], fmt='%.4e')
 
     if args.output_plot:
         sc.set_figure_params(format=args.output_plot_format)
@@ -48,6 +61,21 @@ if __name__ == '__main__':
     argparser = ScanpyArgParser('Run PCA on normalised data')
     argparser.add_input_object()
     argparser.add_output_object()
+    argparser.add_argument('--output-embeddings-file',
+                           default=None,
+                           help='File name in which to store a csv-format embeddings table with '
+                                'PCs by cell.')
+    argparser.add_argument('--output-loadings-file',
+                           default=None,
+                           help='File name in which to store a csv-format loadings table with '
+                                'PCs by gene.')
+    argparser.add_argument('--output-stdev-file',
+                           default=None,
+                           help='File name in which to store PC stdev values (one per line).')
+    argparser.add_argument('--output-var-ratio-file',
+                           default=None,
+                           help='File name in which to store proportion of variance explained by '
+                                'PCs (one per line).')
     argparser.add_argument('-n', '--n-pcs',
                            type=int,
                            default=50,
