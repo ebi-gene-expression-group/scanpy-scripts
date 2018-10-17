@@ -167,6 +167,7 @@
 
     [ "$status" -eq 0 ]
     [ -f  "$graph_object" ]
+}
 
 # Run find cluster
 

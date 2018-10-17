@@ -50,7 +50,7 @@ if __name__ == '__main__':
                                 'Default: 1.0')
     argparser.add_argument('--restrict-to',
                            type=comma_separated_list('restrict-to', str),
-                           default=[],
+                           default=None,
                            help='Restrict the clustering to the categories within the key for '
                                 'sample annotation, tuple needs to contain (obs key, list of '
                                 'categories).')
