@@ -78,6 +78,7 @@ export graph_object="$output_dir/graph.h5ad"
 export cluster_object="$output_dir/cluster.h5ad"
 export cluster_text_file="$output_dir/clusters.txt"
 export umap_object="$output_dir/umap.h5ad"
+export umap_embeddings_file="$output_dir/umap_embeddings.csv"
 export umap_image_file="$output_dir/umap.png"
 export tsne_object="$output_dir/tsne.h5ad"
 export tsne_image_file="$output_dir/tsne.png"
@@ -146,7 +147,7 @@ export UMAP_random_seed=0
 export UMAP_alpha=1.0
 export UMAP_gamma=1.0
 export UMAP_initpos=spectral
-export UMAP_color=ENSG00000101439
+export UMAP_color=louvain
 export UMAP_projection=2d
 export UMAP_frameon='--frameoff'
 
