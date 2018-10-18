@@ -83,7 +83,9 @@ export umap_image_file="$output_dir/umap.png"
 export tsne_object="$output_dir/tsne.h5ad"
 export tsne_image_file="$output_dir/tsne.png"
 export tsne_embeddings_file="$output_dir/tsne_embeddings.csv"
-#export marker_text_file="$output_dir/markers.csv"
+export marker_object="$output_dir/marker.h5ad"
+export marker_image_file="$output_dir/markers.png"
+export marker_text_file="$output_dir/markers.csv"
 
 ## Test parameters- would form config file in real workflow. DO NOT use these
 ## as default values without being sure what they mean.
@@ -158,6 +160,15 @@ export TSNE_random_seed=0
 export TSNE_color=louvain
 export TSNE_projection=2d
 export TSNE_frameon='--frameoff'
+
+# Run find marker
+export FM_groupby=louvain
+export FM_groups=all
+export FM_reference=rest
+export FM_n_genes=50
+export FM_method='t-test_overestim_var'
+export FM_show_n_genes=5
+export FM_key='rank_genes_groups'
 
 ################################################################################
 # Test individual scripts

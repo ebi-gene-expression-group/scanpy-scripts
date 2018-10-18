@@ -197,7 +197,7 @@
         skip "$umap_object exists and use_existing_outputs is set to 'true'"
     fi
 
-    run rm -f $umap_object $umap_image_file && \
+    run rm -f $umap_object $umap_image_file $umap_embeddings_file && \
 	bin/scanpy-run-umap.py -i $cluster_object -o $umap_object \
 			       --output-embeddings-file $umap_embeddings_file \
 			       -s $UMAP_random_seed \
@@ -215,7 +215,7 @@
     [ "$status" -eq 0 ]
     [ -f  "$umap_object" ] && [ -f "$umap_image_file" ] && [ -f "$umap_embeddings_file" ]
 }
-# 
+
 # Run TSNE
 
 @test "Run TSNE analysis" {
@@ -223,7 +223,7 @@
         skip "$tsne_object exists and use_existing_outputs is set to 'true'"
     fi
 
-    run rm -f $tsne_object $tsne_image_file && \
+    run rm -f $tsne_object $tsne_image_file $tsne_embeddings_file && \
 	bin/scanpy-run-tsne.py -i $cluster_object -o $tsne_object \
 			       --output-embeddings-file $tsne_embeddings_file \
 			       -s $TSNE_random_seed \
@@ -237,6 +237,30 @@
 
     [ "$status" -eq 0 ]
     [ -f  "$tsne_object" ] && [ -f "$tsne_image_file" ] && [ -f "$tsne_embeddings_file" ]
+}
+
+# Run find markers
+
+@test "Run find markers" {
+    if [ "$use_existing_outputs" = 'true' ] && [ -f "$marker_object" ]; then
+        skip "$marker_object exists and use_existing_outputs is set to 'true'"
+    fi
+
+    run rm -f $marker_object $marker_image_file $marker_text_file && \
+	bin/scanpy-find-markers.py -i $cluster_object -o $marker_object \
+				   --output-text-file $marker_text_file \
+				   --groupby $FM_groupby \
+				   --groups $FM_groups \
+				   --reference $FM_reference \
+				   --n-genes $FM_n_genes \
+				   --method $FM_method \
+				   -P $marker_image_file \
+				   --show-n-genes $FM_show_n_genes \
+				   --debug \
+				   --key $FM_key
+
+    [ "$status" -eq 0 ]
+    [ -f  "$marker_object" ] && [ -f "$marker_image_file" ] && [ -f "$marker_text_file" ]
 }
 
 # Local Variables:
