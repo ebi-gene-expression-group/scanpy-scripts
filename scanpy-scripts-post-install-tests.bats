@@ -216,27 +216,28 @@
     [ -f  "$umap_object" ] && [ -f "$umap_image_file" ] && [ -f "$umap_embeddings_file" ]
 }
 # 
-# # Run TSNE
-# 
-# @test "Run TSNE analysis" {
-#     if [ "$use_existing_outputs" = 'true' ] && [ -f "$tsne_object" ]; then
-#         skip "$tsne_object exists and use_existing_outputs is set to 'true'"
-#     fi
-# 
-#     run rm -f $tsne_object $tsne_image_file && \
-# 	bin/scanpy-run-tsne.py -i $graph_object -o $tsne_object \
-# 			       -s $TSNE_random_seed \
-# 			       --perplexity $TSNE_perplexity \
-# 			       --early-exaggeration $TSNE_early_exaggeration \
-# 			       --learning-rate $TSNE_learning_rate \
-# 			       -P $tsne_image_file \
-# 			       --color $TSNE_color \
-# 			       --projection $TSNE_projection \
-# 			       $TSNE_frameon
-# 
-#     [ "$status" -eq 0 ]
-#     [ -f  "$tsne_object" ] && [ -f "$tsne_image_file" ]
-# }
+# Run TSNE
+
+@test "Run TSNE analysis" {
+    if [ "$use_existing_outputs" = 'true' ] && [ -f "$tsne_object" ]; then
+        skip "$tsne_object exists and use_existing_outputs is set to 'true'"
+    fi
+
+    run rm -f $tsne_object $tsne_image_file && \
+	bin/scanpy-run-tsne.py -i $cluster_object -o $tsne_object \
+			       --output-embeddings-file $tsne_embeddings_file \
+			       -s $TSNE_random_seed \
+			       --perplexity $TSNE_perplexity \
+			       --early-exaggeration $TSNE_early_exaggeration \
+			       --learning-rate $TSNE_learning_rate \
+			       -P $tsne_image_file \
+			       --color $TSNE_color \
+			       --projection $TSNE_projection \
+			       $TSNE_frameon
+
+    [ "$status" -eq 0 ]
+    [ -f  "$tsne_object" ] && [ -f "$tsne_image_file" ] && [ -f "$tsne_embeddings_file" ]
+}
 
 # Local Variables:
 # mode: sh
