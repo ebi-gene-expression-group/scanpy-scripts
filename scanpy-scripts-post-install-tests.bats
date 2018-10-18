@@ -22,8 +22,8 @@
     fi
 
     run rm -f $input_object && \
-	bin/scanpy-read-10x.py -d $data_dir \
-			       -o $input_object
+	./scanpy-read-10x.py -d $data_dir \
+			     -o $input_object
 
     [ "$status" -eq 0 ]
     [ -f  "$input_object" ]
@@ -38,11 +38,11 @@
     fi
 
     run rm -f $filtered_cells_object && \
-	bin/scanpy-filter-cells.py -i $input_object \
-				   -o $filtered_cells_object \
-				   -p $FC_parameters \
-				   -l $FC_min_genes \
-				   -j $FC_max_genes
+	./scanpy-filter-cells.py -i $input_object \
+				 -o $filtered_cells_object \
+				 -p $FC_parameters \
+				 -l $FC_min_genes \
+				 -j $FC_max_genes
 
     [ "$status" -eq 0 ]
     [ -f  "$filtered_cells_object" ]
@@ -56,10 +56,10 @@
     fi
 
     run rm -f $filtered_genes_object && \
-	bin/scanpy-filter-genes.py -i $filtered_cells_object \
-				   -o $filtered_genes_object \
-				   -p $FT_parameters \
-				   -l $FT_min_cells
+	./scanpy-filter-genes.py -i $filtered_cells_object \
+				 -o $filtered_genes_object \
+				 -p $FT_parameters \
+				 -l $FT_min_cells
 
     [ "$status" -eq 0 ]
     [ -f  "$filtered_genes_object" ]
@@ -73,9 +73,9 @@
     fi
 
     run rm -f $normalised_object && \
-	bin/scanpy-normalise-data.py -i $filtered_genes_object \
-				     -o $normalised_object \
-				     -s $ND_scale_factor
+	./scanpy-normalise-data.py -i $filtered_genes_object \
+				   -o $normalised_object \
+				   -s $ND_scale_factor
 
     [ "$status" -eq 0 ]
     [ -f  "$normalised_object" ]
@@ -89,14 +89,14 @@
     fi
 
     run rm -f $variable_genes_object $variable_image_file && \
-	bin/scanpy-find-variable-genes.py -i $normalised_object \
-					  -o $variable_genes_object \
-					  --flavor $FVG_flavor \
-					  -b $FVG_nbins \
-					  -p $FVG_parameters \
-					  -l $FVG_low_mean,$FVG_low_disp \
-					  -j $FVG_high_mean,$FVG_high_disp \
-					  -P $variable_image_file
+	./scanpy-find-variable-genes.py -i $normalised_object \
+					-o $variable_genes_object \
+					--flavor $FVG_flavor \
+					-b $FVG_nbins \
+					-p $FVG_parameters \
+					-l $FVG_low_mean,$FVG_low_disp \
+					-j $FVG_high_mean,$FVG_high_disp \
+					-P $variable_image_file
 
     [ "$status" -eq 0 ]
     [ -f  "$variable_genes_object" ] && [ -f "$variable_image_file" ]
@@ -111,11 +111,11 @@
     fi
 
     run rm -f $scaled_object && \
-	bin/scanpy-scale-data.py -i $variable_genes_object \
-				 -x $SD_scale_max \
-				 -o $scaled_object \
-				 -V $SD_vars_to_regress \
-				 $SD_zero_center
+	./scanpy-scale-data.py -i $variable_genes_object \
+			       -x $SD_scale_max \
+			       -o $scaled_object \
+			       -V $SD_vars_to_regress \
+			       $SD_zero_center
 
     [ "$status" -eq 0 ]
     [ -f  "$scaled_object" ]
@@ -129,19 +129,19 @@
     fi
 
     run rm -f $pca_object $pca_image_file && \
-	bin/scanpy-run-pca.py -i $scaled_object \
-			      -o $pca_object \
-			      --output-embeddings-file $pca_embeddings_file \
-			      --output-loadings-file $pca_loadings_file \
-			      --output-stdev-file $pca_stdev_file \
-			      --output-var-ratio-file $pca_var_ratio_file \
-			      -n $PCA_npcs \
-			      --svd-solver $PCA_svd_solver \
-			      -s $PCA_random_seed \
-			      -P $pca_image_file \
-			      --color $PCA_color \
-			      --projection $PCA_projection \
-			      $PCA_frameon
+	./scanpy-run-pca.py -i $scaled_object \
+			    -o $pca_object \
+			    --output-embeddings-file $pca_embeddings_file \
+			    --output-loadings-file $pca_loadings_file \
+			    --output-stdev-file $pca_stdev_file \
+			    --output-var-ratio-file $pca_var_ratio_file \
+			    -n $PCA_npcs \
+			    --svd-solver $PCA_svd_solver \
+			    -s $PCA_random_seed \
+			    -P $pca_image_file \
+			    --color $PCA_color \
+			    --projection $PCA_projection \
+			    $PCA_frameon
 
     [ "$status" -eq 0 ]
     [ -f  "$pca_object" ] && [ -f "$pca_image_file" ] && \
@@ -157,13 +157,13 @@
     fi
 
     run rm -f $graph_object $graph_image_file && \
-	bin/scanpy-neighbours.py -i $pca_object \
-				 -o $graph_object \
-				 -N $CG_nneighbor \
-				 -n $CG_npcs \
-				 -s $CG_random_seed \
-				 --method $CG_method \
-				 $CG_knn
+	./scanpy-neighbours.py -i $pca_object \
+			       -o $graph_object \
+			       -N $CG_nneighbor \
+			       -n $CG_npcs \
+			       -s $CG_random_seed \
+			       --method $CG_method \
+			       $CG_knn
 
     [ "$status" -eq 0 ]
     [ -f  "$graph_object" ]
@@ -177,14 +177,14 @@
     fi
 
     run rm -f $cluster_object $cluster_text_file && \
-	bin/scanpy-find-cluster.py -i $graph_object \
-				   -o $cluster_object \
-				   --output-text-file $cluster_text_file \
-				   --flavor $FC_flavor \
-				   --resolution $FC_resolution \
-				   --key-added $FC_key_added \
-				   -s $FC_random_seed \
-				   $FC_use_weight
+	./scanpy-find-cluster.py -i $graph_object \
+				 -o $cluster_object \
+				 --output-text-file $cluster_text_file \
+				 --flavor $FC_flavor \
+				 --resolution $FC_resolution \
+				 --key-added $FC_key_added \
+				 -s $FC_random_seed \
+				 $FC_use_weight
 
     [ "$status" -eq 0 ]
     [ -f  "$cluster_object" ] && [ -f "$cluster_text_file" ]
@@ -198,19 +198,19 @@
     fi
 
     run rm -f $umap_object $umap_image_file $umap_embeddings_file && \
-	bin/scanpy-run-umap.py -i $cluster_object -o $umap_object \
-			       --output-embeddings-file $umap_embeddings_file \
-			       -s $UMAP_random_seed \
-			       -n $UMAP_ncomp \
-			       --min-dist $UMAP_min_dist \
-			       --spread $UMAP_spread \
-			       --alpha $UMAP_alpha \
-			       --gamma $UMAP_gamma \
-			       --init-pos $UMAP_initpos \
-			       -P $umap_image_file \
-			       --color $UMAP_color \
-			       --projection $UMAP_projection \
-			       $UMAP_frameon
+	./scanpy-run-umap.py -i $cluster_object -o $umap_object \
+			     --output-embeddings-file $umap_embeddings_file \
+			     -s $UMAP_random_seed \
+			     -n $UMAP_ncomp \
+			     --min-dist $UMAP_min_dist \
+			     --spread $UMAP_spread \
+			     --alpha $UMAP_alpha \
+			     --gamma $UMAP_gamma \
+			     --init-pos $UMAP_initpos \
+			     -P $umap_image_file \
+			     --color $UMAP_color \
+			     --projection $UMAP_projection \
+			     $UMAP_frameon
 
     [ "$status" -eq 0 ]
     [ -f  "$umap_object" ] && [ -f "$umap_image_file" ] && [ -f "$umap_embeddings_file" ]
@@ -224,16 +224,16 @@
     fi
 
     run rm -f $tsne_object $tsne_image_file $tsne_embeddings_file && \
-	bin/scanpy-run-tsne.py -i $cluster_object -o $tsne_object \
-			       --output-embeddings-file $tsne_embeddings_file \
-			       -s $TSNE_random_seed \
-			       --perplexity $TSNE_perplexity \
-			       --early-exaggeration $TSNE_early_exaggeration \
-			       --learning-rate $TSNE_learning_rate \
-			       -P $tsne_image_file \
-			       --color $TSNE_color \
-			       --projection $TSNE_projection \
-			       $TSNE_frameon
+	./scanpy-run-tsne.py -i $cluster_object -o $tsne_object \
+			     --output-embeddings-file $tsne_embeddings_file \
+			     -s $TSNE_random_seed \
+			     --perplexity $TSNE_perplexity \
+			     --early-exaggeration $TSNE_early_exaggeration \
+			     --learning-rate $TSNE_learning_rate \
+			     -P $tsne_image_file \
+			     --color $TSNE_color \
+			     --projection $TSNE_projection \
+			     $TSNE_frameon
 
     [ "$status" -eq 0 ]
     [ -f  "$tsne_object" ] && [ -f "$tsne_image_file" ] && [ -f "$tsne_embeddings_file" ]
@@ -247,17 +247,17 @@
     fi
 
     run rm -f $marker_object $marker_image_file $marker_text_file && \
-	bin/scanpy-find-markers.py -i $cluster_object -o $marker_object \
-				   --output-text-file $marker_text_file \
-				   --groupby $FM_groupby \
-				   --groups $FM_groups \
-				   --reference $FM_reference \
-				   --n-genes $FM_n_genes \
-				   --method $FM_method \
-				   -P $marker_image_file \
-				   --show-n-genes $FM_show_n_genes \
-				   --debug \
-				   --key $FM_key
+	./scanpy-find-markers.py -i $cluster_object -o $marker_object \
+				 --output-text-file $marker_text_file \
+				 --groupby $FM_groupby \
+				 --groups $FM_groups \
+				 --reference $FM_reference \
+				 --n-genes $FM_n_genes \
+				 --method $FM_method \
+				 -P $marker_image_file \
+				 --show-n-genes $FM_show_n_genes \
+				 --debug \
+				 --key $FM_key
 
     [ "$status" -eq 0 ]
     [ -f  "$marker_object" ] && [ -f "$marker_image_file" ] && [ -f "$marker_text_file" ]
