@@ -44,9 +44,9 @@ def main(args):
     return 0
 
 
-def recarray_to_array(x):
-    dtyp = x.dtype[0]
-    return x.view(dtyp)
+def recarray_to_array(rec):
+    dtyp = rec.dtype[0]
+    return rec.view(dtyp)
 
 
 def export_marker_table(adata, filename):
