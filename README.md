@@ -27,7 +27,7 @@ This downloads [a well-known test 10X dataset]('https://s3-us-west-2.amazonaws.c
 
 Currently wrapper scripts are described below. Each script has usage instructions available via --help, consult function documentation in scanpy for further details.
 
-###  scanpy-read-10x.py: read 10X data and create the AnnData object (calls `sc.read()`)
+### scanpy-read-10x.py: read 10X data and create the AnnData object (calls `sc.read()`)
 
 ```
 scanpy-read-10x.py -d <10x data directory> -o <raw data object in .h5ad format>
