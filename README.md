@@ -96,5 +96,5 @@ scanpy-run-tsne.py -i <object with clusters in .h5ad format> -n <number of dimen
 ### scanpy-find-markers.py: find marker genes for each group/cluster of cells (calls `sc.tl.rank_genes_groups()`)
 
 ```
-scanpy-find-clusters.r -i <object with clusters in .h5ad format> -g <groupby> -n <number of genes to test for each group> -m <method of testing> --reference <reference group to compare agains> -o <output object in .h5ad format> --output-text-file <table of top tested candidate marker genes in csv format> -P <plot of candidate gene expression across groups> --show-n-genes <number of genes to plot>
+scanpy-find-clusters.py -i <object with clusters in .h5ad format> -g <groupby> -n <number of genes to test for each group> -m <method of testing> --reference <reference group to compare agains> -o <output object in .h5ad format> --output-text-file <table of top tested candidate marker genes in csv format> -P <plot of candidate gene expression across groups> --show-n-genes <number of genes to plot>
 ```
