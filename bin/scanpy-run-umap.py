@@ -2,6 +2,8 @@
 
 from __future__ import print_function
 import logging
+import matplotlib
+matplotlib.use('Agg')
 from scanpy_wrapper_utils import ScanpyArgParser, comma_separated_list
 from scanpy_wrapper_utils import read_input_object, write_output_object, save_output_plot
 
@@ -26,6 +28,9 @@ def main(args):
                b=args.b)
 
     write_output_object(adata, args.output_object_file, args.output_format)
+
+    if args.output_embeddings_file:
+        adata.obsm.to_df()[['X_umap1', 'X_umap2']].to_csv(args.output_embeddings_file, index=None)
 
     if args.output_plot:
         sc.set_figure_params(format=args.output_plot_format)
@@ -52,6 +57,10 @@ if __name__ == '__main__':
     argparser = ScanpyArgParser('Run UMAP on data with neighborhood graph computed')
     argparser.add_input_object()
     argparser.add_output_object()
+    argparser.add_argument('--output-embeddings-file',
+                           default=None,
+                           help='File name in which to store a csv-format UMAP embeddings table '
+                                'with coordinates by cell.')
     argparser.add_argument('--min-dist',
                            type=float,
                            default=0.5,
