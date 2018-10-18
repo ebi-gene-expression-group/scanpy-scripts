@@ -82,8 +82,7 @@ export umap_embeddings_file="$output_dir/umap_embeddings.csv"
 export umap_image_file="$output_dir/umap.png"
 export tsne_object="$output_dir/tsne.h5ad"
 export tsne_image_file="$output_dir/tsne.png"
-#export tsne_seurat_object="$output_dir/tsne_seurat.rds"
-#export tsne_embeddings_file="$output_dir/tsne_embeddings.csv"
+export tsne_embeddings_file="$output_dir/tsne_embeddings.csv"
 #export marker_text_file="$output_dir/markers.csv"
 
 ## Test parameters- would form config file in real workflow. DO NOT use these
@@ -156,7 +155,7 @@ export TSNE_perplexity=30
 export TSNE_early_exaggeration=12
 export TSNE_learning_rate=1000
 export TSNE_random_seed=0
-export TSNE_color=ENSG00000101439
+export TSNE_color=louvain
 export TSNE_projection=2d
 export TSNE_frameon='--frameoff'
 
