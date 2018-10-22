@@ -45,7 +45,7 @@ if __name__ == '__main__':
                            default=None,
                            help='Use the indicated representation. '
                                 'If None, the representation is chosen automatically: '
-                                'for .n_vars < 50, .X is used, otherwise ‘X_pca’ is used.')
+                                'for .n_vars < 50, .X is used, otherwise "X_pca" is used.')
     argparser.add_argument('--knn',
                            dest='knn',
                            action='store_true',
