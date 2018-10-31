@@ -12,6 +12,8 @@ def main(args):
 
     adata = read_input_object(args.input_object_file, args.input_format)
 
+    if args.restrict_to is not None:
+        args.restrict_to = (args.restrict_to[0], args.restrict_to[1:])
     sc.tl.louvain(adata,
                   flavor=args.flavor,
                   resolution=args.resolution,
@@ -48,7 +50,6 @@ if __name__ == '__main__':
                            help='For the default flavor "vtraag", you can provide a resolution '
                                 '(higher resolution means finding more and smaller clusters). '
                                 'Default: 1.0')
-    # FIXME
     argparser.add_argument('--restrict-to',
                            type=comma_separated_list('restrict-to', str),
                            default=None,
