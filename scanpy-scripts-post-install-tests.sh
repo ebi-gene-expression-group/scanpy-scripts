@@ -122,7 +122,7 @@ export SD_scale_max='10'
 export PCA_npcs=50
 export PCA_svd_solver=arpack
 export PCA_random_seed=0
-export PCA_color=ENSG00000101439
+export PCA_color=CST3
 export PCA_projection=2d
 export PCA_frameon='--frameoff'
 
