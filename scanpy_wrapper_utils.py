@@ -16,8 +16,7 @@ import scanpy.api as sc
 
 
 def comma_separated_list(arg_name, data_type):
-    """Generate functions that parse command arguments in the form of
-    comma separated string.
+    """Generate functions that parse command arguments in the form of comma separated string.
 
     * Parameters
         + arg_name : str
@@ -42,7 +41,6 @@ def comma_separated_list(arg_name, data_type):
                 sys.exit(1)
             values.append(value)
         return values
-
     return parse_comma_separated_list
 
 
@@ -121,6 +119,56 @@ class ScanpyArgParser():
         self._events.append([self._check_filename_extension,
                              ['output_plot'],
                              {'extensions': ['pdf', 'png', 'svg']}])
+
+
+    def add_scatter_plot_options(self):
+        """Add options for scatter plots, e.g. PCA/UMAP/tSNE"""
+        self._parser.add_argument('--color-by',
+                                  type=comma_separated_list('color-by', str),
+                                  default=[],
+                                  help='String or list of strings. Default: []')
+        self._parser.add_argument('--use-raw',
+                                  action='store_true',
+                                  default=False,
+                                  help='Use raw attribute of adata if present. Default: False')
+        self._parser.add_argument('--edges',
+                                  action='store_true',
+                                  default=False,
+                                  help='Show edges. Default: False.')
+        self._parser.add_argument('--arrows',
+                                  action='store_true',
+                                  default=False,
+                                  help='Show arrwos (requires having run rna_velocity() before). '
+                                  'Default: False.')
+        self._parser.add_argument('--no-sort-order',
+                                  dest='sort_order',
+                                  action='store_false',
+                                  default=True,
+                                  help='For continuous annotations used as color parameter, by default '
+                                  'plot data points with higher values on top of others. Disable '
+                                  'this behavior if set.')
+        self._parser.add_argument('--groups',
+                                  type=str,
+                                  default=None,
+                                  help='Restrict to a few categories in observation annotation.')
+        self._parser.add_argument('--projection',
+                                  choices=['2d', '3d'],
+                                  default='2d',
+                                  help='Projection of plot. Default: 2d')
+        self._parser.add_argument('--components',
+                                  type=str,
+                                  default='1,2',
+                                  help='Components to plot. To plot all available components use "all". '
+                                  'Default: "1,2"')
+        self._parser.add_argument('--palette',
+                                  default=None,
+                                  help='Colors to use for plotting categorical annotation groups. '
+                                  'Can be a valid matplotlib.pyplot.colormap name. Default: None')
+        self._parser.add_argument('--frameoff',
+                                  dest='frameon',
+                                  action='store_false',
+                                  default=True,
+                                  help='Do not draw a frame around the scatter plot. Draw by default.')
 
 
     def add_subset_parameters(self, params=None):
