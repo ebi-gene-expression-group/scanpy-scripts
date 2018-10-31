@@ -27,7 +27,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    argparser = ScanpyArgParser('Keep variable genes')
+    argparser = ScanpyArgParser('Scale data to equal variance')
     argparser.add_input_object()
     argparser.add_output_object()
     argparser.add_argument('-g', '--do-log',

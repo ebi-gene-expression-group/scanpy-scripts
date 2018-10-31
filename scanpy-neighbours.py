@@ -41,7 +41,6 @@ if __name__ == '__main__':
                            default=None,
                            help='Number of principal components to use. Default: None')
     argparser.add_argument('-r', '--use-rep',
-                           action='store_true',
                            default=None,
                            help='Use the indicated representation. '
                                 'If None, the representation is chosen automatically: '

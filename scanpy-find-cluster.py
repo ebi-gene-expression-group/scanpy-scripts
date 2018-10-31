@@ -48,6 +48,7 @@ if __name__ == '__main__':
                            help='For the default flavor "vtraag", you can provide a resolution '
                                 '(higher resolution means finding more and smaller clusters). '
                                 'Default: 1.0')
+    # FIXME
     argparser.add_argument('--restrict-to',
                            type=comma_separated_list('restrict-to', str),
                            default=None,
