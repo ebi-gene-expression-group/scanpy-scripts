@@ -22,7 +22,7 @@
     fi
 
     run rm -f $input_object && \
-	./scanpy-read-10x.py -d $data_dir \
+	./scanpy-read-10x.py -d $data_dir/ \
 			     -o $input_object
 
     [ "$status" -eq 0 ]
