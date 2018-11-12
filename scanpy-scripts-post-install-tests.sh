@@ -25,13 +25,14 @@ fi
 
 test_data_url='https://s3-us-west-2.amazonaws.com/10x.files/samples/cell/pbmc3k/pbmc3k_filtered_gene_bc_matrices.tar.gz'
 test_working_dir=$script_dir/post_install_tests
-export test_data_archive=$test_working_dir/$(basename "$test_data_url")
+test_data_name=$(basename "$test_data_url")
+export test_data_archive=$test_working_dir/$test_data_name
 
 # Clean up if specified
 
 if [[ $action == 'clean' ]]; then
     echo "Cleaning up $test_working_dir ..."
-    rm -rf $test_working_dir
+    rm -rf "$test_working_dir"
     exit 0
 elif [[ $action != 'test' ]]; then
     echo "Invalid action '$action' supplied"
@@ -43,16 +44,16 @@ fi
 output_dir=$test_working_dir/outputs
 export data_dir=$test_working_dir/data
 
-mkdir -p $test_working_dir
-mkdir -p $output_dir
-mkdir -p $data_dir
+mkdir -p "$test_working_dir"
+mkdir -p "$output_dir"
+mkdir -p "$data_dir"
 
 ################################################################################
 # Fetch test data
 ################################################################################
 
 if [[ ! -e $test_data_archive ]]; then
-    wget $test_data_url -P $test_working_dir
+    wget $test_data_url -P "$test_working_dir"
 
 fi
 
@@ -121,7 +122,7 @@ export SD_scale_max='10'
 export PCA_npcs=50
 export PCA_svd_solver=arpack
 export PCA_random_seed=0
-export PCA_color=ENSG00000101439
+export PCA_color=CST3
 export PCA_projection=2d
 export PCA_frameon='--frameoff'
 
@@ -185,4 +186,4 @@ tests_file="${script_name%.*}".bats
 
 # Execute the bats tests
 
-./$tests_file
+./"$tests_file"

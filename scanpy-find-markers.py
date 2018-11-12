@@ -56,6 +56,7 @@ def export_marker_table(adata, filename):
     groups = np.tile(np.arange(n_group), n_genes)
     names = recarray_to_array(result['names'])
     scores = recarray_to_array(result['scores'])
+    # FIXME wilcoxon test doesn't produce logfoldchanges?
     logfc = recarray_to_array(result['logfoldchanges'])
     pvals = recarray_to_array(result['pvals'])
     pvals_adj = recarray_to_array(result['pvals_adj'])
@@ -84,7 +85,7 @@ if __name__ == '__main__':
                            type=comma_separated_list('groups', str),
                            default='all',
                            help='Subset of groups, e.g. "g1,g2,g3", to which comparison shall be '
-                                'restricted. If not passed, a raning will be generated for all '
+                                'restricted. If not passed, a ranking will be generated for all '
                                 'groups.')
     argparser.add_argument('--reference',
                            default='rest',
