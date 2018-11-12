@@ -4,7 +4,7 @@ script_dir=$(readlink -f "$(dirname "${BASH_SOURCE[0]}" )")
 script_name=$(basename "${BASH_SOURCE[0]}")
 
 function usage {
-    echo "usage: scanpy-scripts-post-install-tests.sh [action] [use_existing_outputs]"
+    echo "usage: ./$script_name [action] [use_existing_outputs]"
     echo "  - action: what action to take 'test' or 'clean'"
     echo "  - use_existing_outputs: 'true' or 'false'"
     exit 1
@@ -54,7 +54,6 @@ mkdir -p "$data_dir"
 
 if [[ ! -e $test_data_archive ]]; then
     wget $test_data_url -P "$test_working_dir"
-
 fi
 
 ################################################################################
@@ -186,4 +185,4 @@ tests_file="${script_name%.*}".bats
 
 # Execute the bats tests
 
-./"$tests_file"
+"./$tests_file"

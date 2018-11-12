@@ -1,33 +1,16 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
 import logging
 import scanpy.api as sc
-from scanpy_wrapper_utils import ScanpyArgParser, comma_separated_list
-from scanpy_wrapper_utils import read_input_object, write_output_object
+
+from scanpy_cli.wrapper_utils import (
+    ScanpyArgParser, comma_separated_list,
+    read_input_object, write_output_object,
+)
 
 
-def main(args):
-    logging.debug(args)
-
-    adata = read_input_object(args.input_object_file, args.input_format)
-
-    if args.do_log:
-        sc.pp.log1p(adata)
-
-    if args.var_to_regress:
-        sc.pp.regress_out(adata, args.var_to_regress)
-
-    sc.pp.scale(adata, zero_center=args.zero_center, max_value=args.scale_max)
-
-    write_output_object(adata, args.output_object_file, args.output_format)
-
-    logging.info('Done')
-    return 0
-
-
-if __name__ == '__main__':
-    argparser = ScanpyArgParser('Scale data to equal variance')
+def main(argv=None):
+    argparser = ScanpyArgParser(argv, 'Scale data to equal variance')
     argparser.add_input_object()
     argparser.add_output_object()
     argparser.add_argument('-g', '--do-log',
@@ -55,6 +38,25 @@ if __name__ == '__main__':
                            default=None,
                            help='Truncate to this value after scaling. '
                                 'Do not truncate if None. Default: None')
-    args = argparser.get_args()
+    args = argparser.args
 
-    main(args)
+    logging.debug(args)
+
+    adata = read_input_object(args.input_object_file, args.input_format)
+
+    if args.do_log:
+        sc.pp.log1p(adata)
+
+    if args.var_to_regress:
+        sc.pp.regress_out(adata, args.var_to_regress)
+
+    sc.pp.scale(adata, zero_center=args.zero_center, max_value=args.scale_max)
+
+    write_output_object(adata, args.output_object_file, args.output_format)
+
+    logging.info('Done')
+    return 0
+
+
+if __name__ == '__main__':
+    main()

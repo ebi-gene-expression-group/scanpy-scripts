@@ -1,64 +1,19 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
 import logging
 import matplotlib
 matplotlib.use('Agg')
 import numpy as np
-from scanpy_wrapper_utils import ScanpyArgParser, comma_separated_list
-from scanpy_wrapper_utils import read_input_object, write_output_object, save_output_plot
+import scanpy.api as sc
+
+from scanpy_cli.wrapper_utils import (
+    ScanpyArgParser,
+    read_input_object, write_output_object, save_output_plot,
+)
 
 
-def main(args):
-    logging.debug(args)
-    import scanpy.api as sc
-
-    adata = read_input_object(args.input_object_file, args.input_format)
-
-    sc.tl.pca(adata,
-              n_comps=args.n_pcs,
-              zero_center=args.zero_center,
-              svd_solver=args.svd_solver,
-              random_state=args.random_seed,
-              chunked=args.chunked,
-              chunk_size=args.chunk_size)
-
-    write_output_object(adata, args.output_object_file, args.output_format)
-
-    if args.output_embeddings_file:
-        np.savetxt(args.output_embeddings_file, adata.obsm['X_pca'], delimiter=',', fmt='%.4e')
-
-    if args.output_loadings_file:
-        np.savetxt(args.output_loadings_file, adata.varm['PCs'], delimiter=',', fmt='%.4e')
-
-    if args.output_stdev_file:
-        np.savetxt(args.output_stdev_file, np.sqrt(adata.uns['pca']['variance']), fmt='%.4e')
-
-    if args.output_var_ratio_file:
-        np.savetxt(args.output_var_ratio_file, adata.uns['pca']['variance_ratio'], fmt='%.4e')
-
-    if args.output_plot:
-        sc.set_figure_params(format=args.output_plot_format)
-        sc.settings.verbosity = 0
-        sc.pl.pca(adata, show=False, save=True,
-                  color=args.color_by,
-                  use_raw=args.use_raw,
-                  edges=args.edges,
-                  arrows=args.arrows,
-                  sort_order=args.sort_order,
-                  groups=args.groups,
-                  projection=args.projection,
-                  components=args.components,
-                  palette=args.palette,
-                  frameon=args.frameon)
-        save_output_plot('pca', args.output_plot)
-
-    logging.info('Done')
-    return 0
-
-
-if __name__ == '__main__':
-    argparser = ScanpyArgParser('Run PCA on normalised data')
+def main(argv=None):
+    argparser = ScanpyArgParser(argv, 'Run PCA on normalised data')
     argparser.add_input_object()
     argparser.add_output_object()
     argparser.add_argument('--output-embeddings-file',
@@ -115,6 +70,53 @@ if __name__ == '__main__':
                                 'Required if --chunked is set')
     argparser.add_output_plot()
     argparser.add_scatter_plot_options()
-    args = argparser.get_args()
+    args = argparser.args
 
-    main(args)
+    logging.debug(args)
+
+    adata = read_input_object(args.input_object_file, args.input_format)
+
+    sc.tl.pca(adata,
+              n_comps=args.n_pcs,
+              zero_center=args.zero_center,
+              svd_solver=args.svd_solver,
+              random_state=args.random_seed,
+              chunked=args.chunked,
+              chunk_size=args.chunk_size)
+
+    write_output_object(adata, args.output_object_file, args.output_format)
+
+    if args.output_embeddings_file:
+        np.savetxt(args.output_embeddings_file, adata.obsm['X_pca'], delimiter=',', fmt='%.4e')
+
+    if args.output_loadings_file:
+        np.savetxt(args.output_loadings_file, adata.varm['PCs'], delimiter=',', fmt='%.4e')
+
+    if args.output_stdev_file:
+        np.savetxt(args.output_stdev_file, np.sqrt(adata.uns['pca']['variance']), fmt='%.4e')
+
+    if args.output_var_ratio_file:
+        np.savetxt(args.output_var_ratio_file, adata.uns['pca']['variance_ratio'], fmt='%.4e')
+
+    if args.output_plot:
+        sc.set_figure_params(format=args.output_plot_format)
+        sc.settings.verbosity = 0
+        sc.pl.pca(adata, show=False, save=True,
+                  color=args.color_by,
+                  use_raw=args.use_raw,
+                  edges=args.edges,
+                  arrows=args.arrows,
+                  sort_order=args.sort_order,
+                  groups=args.groups,
+                  projection=args.projection,
+                  components=args.components,
+                  palette=args.palette,
+                  frameon=args.frameon)
+        save_output_plot('pca', args.output_plot)
+
+    logging.info('Done')
+    return 0
+
+
+if __name__ == '__main__':
+    main()
