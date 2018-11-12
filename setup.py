@@ -1,12 +1,15 @@
-from setuptools import setup
+from setuptools import setup, find_namespace_packages
 from pathlib import Path
 
 HERE = Path(__file__).parent
 
-script_files = (HERE / 'scanpy_scripts').glob('scanpy_*.py')
+script_names = [
+    path.with_suffix("").name
+    for path in (HERE / 'scanpy_scripts').glob('scanpy_*.py')
+]
 scripts = [
-    f'{file.with_suffix("").name.replace("_", "-")}=scanpy_scripts.{file.name}:main'
-    for file in script_files
+    f'{name.replace("_", "-")}=scanpy_scripts.{name}:main'
+    for name in script_names
 ]
 
 setup(
@@ -16,7 +19,7 @@ setup(
     author='nh3',
     #author_email='',
     url='https://github.com/ebi-gene-expression-group/scanpy-scripts',
-    packages=['scanpy_scripts'],
+    packages=find_namespace_packages(),
     scripts=[
         'scanpy-scripts-tests.sh',
         'scanpy-scripts-tests.bats',
@@ -28,5 +31,6 @@ setup(
         'matplotlib',
         'pandas',
         'scanpy',
+        'louvain'
     ],
 )

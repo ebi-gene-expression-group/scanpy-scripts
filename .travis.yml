@@ -1,43 +1,18 @@
-before_install:
-  - |
-    if test -e $HOME/miniconda/bin; then
-        echo "miniconda already installed."
-    else
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-
-      rm -rf $HOME/miniconda
-      bash miniconda.sh -b -p $HOME/miniconda
-      export PATH="$HOME/miniconda/bin:$PATH"
-      hash -r
-      conda config --set always_yes yes --set changeps1 no
-      conda update -q conda
-
-      conda info -a
-
-      conda config --add channels defaults
-      conda config --add channels conda-forge
-      conda config --add channels bioconda
-
-      conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION scanpy=1.3.2
-    fi
+language: python
+python:
+  - "3.6"
+  - "3.7"
 
 install:
-    - export PATH="$HOME/miniconda/bin:$PATH"
-    - source activate test-environment
-    - python3 setup.py install
-
-
-before_script:
-    - export PATH=`pwd`:$PATH
+  - pip install -U setuptools>=40.1
+  - pip install .
 
 script: ./scanpy-scripts-tests.sh
 
 cache:
+  pip: true
   directories:
-      - $HOME/miniconda
-      - post_install_tests
+    - post_install_tests
 
 before_cache:
-    - if ! [[ $TRAVIS_TAG ]]; then rm -rf $HOME/miniconda/conda-bld; fi
-    - rm -rf post_install_tests/outputs
-    - rm -rf $HOME/miniconda/locks $HOME/miniconda/pkgs $HOME/miniconda/var $HOME/miniconda/conda-meta/history
+  - rm -rf post_install_tests/outputs
