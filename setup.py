@@ -3,25 +3,25 @@ from pathlib import Path
 
 HERE = Path(__file__).parent
 
-script_files = (HERE / 'scanpy_cli').glob('scanpy_*.py')
+script_files = (HERE / 'scanpy_scripts').glob('scanpy_*.py')
 scripts = [
-    f'{file.with_suffix("").name.replace("_", "-")}=scanpy_cli.{file.name}:main'
+    f'{file.with_suffix("").name.replace("_", "-")}=scanpy_scripts.{file.name}:main'
     for file in script_files
 ]
 
 setup(
-    name='scanpy-cli',
+    name='scanpy-scripts',
     version='1.0',
     description='Scripts for using scanpy from the command line',
     author='nh3',
     #author_email='',
     url='https://github.com/ebi-gene-expression-group/scanpy-scripts',
-    packages=['scanpy_cli'],
+    packages=['scanpy_scripts'],
     scripts=[
-        'scanpy-cli-tests.sh',
-        'scanpy-cli-tests.bats',
+        'scanpy-scripts-tests.sh',
+        'scanpy-scripts-tests.bats',
     ],
-    entry_points=dict( 
+    entry_points=dict(
         console_scripts=scripts,
     ),
     install_requires=[

@@ -4,7 +4,7 @@ import logging
 import signal
 import scanpy.api as sc
 
-from scanpy_cli.wrapper_utils import (
+from scanpy_scripts.wrapper_utils import (
     ScanpyArgParser,
     write_output_object,
 )

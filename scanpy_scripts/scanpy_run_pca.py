@@ -6,7 +6,7 @@ matplotlib.use('Agg')
 import numpy as np
 import scanpy.api as sc
 
-from scanpy_cli.wrapper_utils import (
+from scanpy_scripts.wrapper_utils import (
     ScanpyArgParser,
     read_input_object, write_output_object, save_output_plot,
 )
