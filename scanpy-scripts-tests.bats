@@ -22,7 +22,7 @@
     fi
 
     run rm -f $input_object && \
-        scanpy read-10x -d $data_dir/ -o $input_object
+        scanpy-read-10x -d $data_dir/ -o $input_object
 
     [ "$status" -eq 0 ]
     [ -f  "$input_object" ]
@@ -37,7 +37,7 @@
     fi
 
     run rm -f $filtered_cells_object && \
-        scanpy filter-cells -i $input_object \
+        scanpy-filter-cells -i $input_object \
             -o $filtered_cells_object \
             -p $FC_parameters \
             -l $FC_min_genes \
@@ -55,7 +55,7 @@
     fi
 
     run rm -f $filtered_genes_object && \
-        scanpy filter-genes -i $filtered_cells_object \
+        scanpy-filter-genes -i $filtered_cells_object \
             -o $filtered_genes_object \
             -p $FT_parameters \
             -l $FT_min_cells
@@ -72,7 +72,7 @@
     fi
 
     run rm -f $normalised_object && \
-        scanpy normalise-data -i $filtered_genes_object \
+        scanpy-normalise-data -i $filtered_genes_object \
             -o $normalised_object \
             -s $ND_scale_factor
 
@@ -88,7 +88,7 @@
     fi
 
     run rm -f $variable_genes_object $variable_image_file && \
-        scanpy find-variable-genes -i $normalised_object \
+        scanpy-find-variable-genes -i $normalised_object \
             -o $variable_genes_object \
             --flavor $FVG_flavor \
             -b $FVG_nbins \
@@ -110,7 +110,7 @@
     fi
 
     run rm -f $scaled_object && \
-        scanpy scale-data -i $variable_genes_object \
+        scanpy-scale-data -i $variable_genes_object \
             -x $SD_scale_max \
             -o $scaled_object \
             -V $SD_vars_to_regress \
@@ -128,7 +128,7 @@
     fi
 
     run rm -f $pca_object $pca_image_file && \
-        scanpy run-pca -i $scaled_object \
+        scanpy-run-pca -i $scaled_object \
             -o $pca_object \
             --output-embeddings-file $pca_embeddings_file \
             --output-loadings-file $pca_loadings_file \
@@ -156,7 +156,7 @@
     fi
 
     run rm -f $graph_object $graph_image_file && \
-        scanpy neighbours -i $pca_object \
+        scanpy-neighbours -i $pca_object \
             -o $graph_object \
             -N $CG_nneighbor \
             -n $CG_npcs \
@@ -176,7 +176,7 @@
     fi
 
     run rm -f $cluster_object $cluster_text_file && \
-        scanpy find-cluster -i $graph_object \
+        scanpy-find-cluster -i $graph_object \
             -o $cluster_object \
             --output-text-file $cluster_text_file \
             --flavor $FC_flavor \
@@ -197,7 +197,7 @@
     fi
 
     run rm -f $umap_object $umap_image_file $umap_embeddings_file && \
-        scanpy run-umap -i $cluster_object -o $umap_object \
+        scanpy-run-umap -i $cluster_object -o $umap_object \
             --output-embeddings-file $umap_embeddings_file \
             -s $UMAP_random_seed \
             -n $UMAP_ncomp \
@@ -223,7 +223,7 @@
     fi
 
     run rm -f $tsne_object $tsne_image_file $tsne_embeddings_file && \
-        scanpy run-tsne -i $cluster_object -o $tsne_object \
+        scanpy-run-tsne -i $cluster_object -o $tsne_object \
             --output-embeddings-file $tsne_embeddings_file \
             -s $TSNE_random_seed \
             --perplexity $TSNE_perplexity \
@@ -246,7 +246,7 @@
     fi
 
     run rm -f $marker_object $marker_image_file $marker_text_file && \
-        scanpy find-markers -i $cluster_object -o $marker_object \
+        scanpy-find-markers -i $cluster_object -o $marker_object \
             --output-text-file $marker_text_file \
             --groupby $FM_groupby \
             --groups $FM_groups \
