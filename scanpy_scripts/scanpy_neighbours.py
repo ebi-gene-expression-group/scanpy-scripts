@@ -1,34 +1,15 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
 import logging
-from scanpy_wrapper_utils import ScanpyArgParser
-from scanpy_wrapper_utils import read_input_object, write_output_object
+
+from scanpy_scripts.wrapper_utils import (
+    ScanpyArgParser,
+    read_input_object, write_output_object,
+)
 
 
-def main(args):
-    logging.debug(args)
-    import scanpy.api as sc
-
-    adata = read_input_object(args.input_object_file, args.input_format)
-
-    sc.pp.neighbors(adata,
-                    n_neighbors=args.n_neighbors,
-                    n_pcs=args.n_pcs,
-                    use_rep=args.use_rep,
-                    knn=args.knn,
-                    random_state=args.random_seed,
-                    method=args.method,
-                    metric=args.metric)
-
-    write_output_object(adata, args.output_object_file, args.output_format)
-
-    logging.info('Done')
-    return 0
-
-
-if __name__ == '__main__':
-    argparser = ScanpyArgParser('Compute neighborhood graph on PCA analysed data')
+def main(argv=None):
+    argparser = ScanpyArgParser(argv, 'Compute neighborhood graph on PCA analysed data')
     argparser.add_input_object()
     argparser.add_output_object()
     argparser.add_argument('-N', '--n-neighbors',
@@ -75,6 +56,27 @@ if __name__ == '__main__':
                                 '"rogerstanimoto", "russellrao", "seuclidean", "sokalmichener", '
                                 '"sokalsneath", "sqeuclidean", "yule", "wminkowski", '
                                 '"precomputed". Default "euclidean".')
-    args = argparser.get_args()
+    args = argparser.args
 
-    main(args)
+    logging.debug(args)
+    import scanpy.api as sc
+
+    adata = read_input_object(args.input_object_file, args.input_format)
+
+    sc.pp.neighbors(adata,
+                    n_neighbors=args.n_neighbors,
+                    n_pcs=args.n_pcs,
+                    use_rep=args.use_rep,
+                    knn=args.knn,
+                    random_state=args.random_seed,
+                    method=args.method,
+                    metric=args.metric)
+
+    write_output_object(adata, args.output_object_file, args.output_format)
+
+    logging.info('Done')
+    return 0
+
+
+if __name__ == '__main__':
+    main()

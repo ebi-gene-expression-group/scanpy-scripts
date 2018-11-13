@@ -1,12 +1,22 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
 import logging
 import scanpy.api as sc
-from scanpy_wrapper_utils import ScanpyArgParser, read_input_object, write_output_object
+
+from scanpy_scripts.wrapper_utils import (
+    ScanpyArgParser,
+    read_input_object, write_output_object,
+)
 
 
-def main(args):
+def main(argv=None):
+    argparser = ScanpyArgParser(argv, 'Filter genes by properties and/or simple stats')
+    argparser.add_input_object()
+    argparser.add_output_object()
+    argparser.add_subset_parameters()
+    argparser.add_subset_list()
+    args = argparser.args
+
     logging.debug(args)
 
     adata = read_input_object(args.input_object_file, args.input_format)
@@ -39,11 +49,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    argparser = ScanpyArgParser('Filter genes by properties and/or simple stats')
-    argparser.add_input_object()
-    argparser.add_output_object()
-    argparser.add_subset_parameters()
-    argparser.add_subset_list()
-    args = argparser.get_args()
-
-    main(args)
+    main()

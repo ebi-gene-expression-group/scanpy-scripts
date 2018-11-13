@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-"""scanpy_wrapper_utils
+#!/usr/bin/env python3
+"""wrapper_utils
 
 * Provides
     1. A utilities class, ScanpyArgParser, for command line parsing.
@@ -11,6 +11,8 @@ import os.path
 import shutil
 import logging
 import argparse
+from typing import Optional, List
+
 import pandas as pd
 import scanpy.api as sc
 
@@ -44,10 +46,11 @@ def comma_separated_list(arg_name, data_type):
     return parse_comma_separated_list
 
 
-class ScanpyArgParser():
+class ScanpyArgParser:
     """An command line argument parser for scanpy wrapper scripts using argparse.ArgumentParser
 
     * Parameters
+        + argv : Command line arguments
         + description : str
         A string passed to argparse.ArgumentParser() summarising the usage of the script.
 
@@ -60,18 +63,20 @@ class ScanpyArgParser():
         + add_subset_parameters(params=None)
         + add_subset_list(dtype=str)
     """
-    def __init__(self, description=None):
+    def __init__(self, argv: Optional[List[str]] = None, description: Optional[str] = None):
         self._parser = argparse.ArgumentParser(description=description)
         self._parser.add_argument('--debug', action='store_true',
                                   help='Print debug information.')
         self._events = [[self._set_logging_level, [], {}]]
+        self.argv = argv
         self._args = None
 
 
-    def get_args(self):
+    @property
+    def args(self):
         """Return parsed command arguments"""
         if self._args is None:
-            self._args = self._parser.parse_args()
+            self._args = self._parser.parse_args(self.argv)
 
             for evt in self._events:
                 handler, args, kwargs = evt
