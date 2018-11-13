@@ -30,7 +30,7 @@ setup(
     install_requires=[
         'matplotlib',
         'pandas',
-        'scanpy',
+        'scanpy==1.3.2',
         'louvain'
     ],
 )
