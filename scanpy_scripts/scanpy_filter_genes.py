@@ -22,7 +22,9 @@ def main(argv=None):
     adata = read_input_object(args.input_object_file, args.input_format)
 
     if args.subset_list:
-        adata = adata[:, adata.var_names.isin(args.subset_list)]
+        k = adata.var.index.isin(args.subset_list)
+        assert sum(k) > 0, "Unable to proceed as no gene passes filter."
+        adata = adata[:, k]
 
     inf, neg_inf = float('Inf'), float('-Inf')
     for name, high, low in zip(args.parameter_names, args.high_thresholds, args.low_thresholds):
