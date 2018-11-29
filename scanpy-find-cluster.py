@@ -28,6 +28,7 @@ def main(args):
         adata.obs[[args.key_added]].reset_index(level=0).rename(columns={'index':'cells'}).to_csv(
             args.output_text_file, sep='\t', index=None)
 
+    print(adata)
     logging.info('Done')
     return 0
 

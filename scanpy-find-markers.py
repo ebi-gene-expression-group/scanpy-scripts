@@ -40,6 +40,7 @@ def main(args):
                                                show=False, save=True)
         save_output_plot('stacked_violin', args.output_plot)
 
+    print(adata)
     logging.info('Done')
     return 0
 
