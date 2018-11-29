@@ -13,7 +13,9 @@ def main(args):
 
     if args.subset_list:
         k = adata.var.index.isin(args.subset_list)
-        assert sum(k) > 0, "Unable to proceed as no gene passes filter."
+        if sum(k) == 0:
+            logging.error("Unable to proceed as no gene passes filter.")
+            return 1
         adata = adata[:, k]
 
     inf, neg_inf = float('Inf'), float('-Inf')
