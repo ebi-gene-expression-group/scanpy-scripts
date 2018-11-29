@@ -15,6 +15,9 @@ def main(args):
                             var_names=args.var_names)
 
     write_output_object(adata, args.output_object_file, args.output_format)
+
+    print(adata)
+    logging.info('Done')
     return 0
 
 

@@ -46,6 +46,7 @@ def main(args):
 
         save_output_plot('tsne', args.output_plot)
 
+    print(adata)
     logging.info('Done')
     return 0
 

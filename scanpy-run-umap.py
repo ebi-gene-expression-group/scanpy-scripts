@@ -49,6 +49,7 @@ def main(args):
 
         save_output_plot('umap', args.output_plot)
 
+    print(adata)
     logging.info('Done')
     return 0
 
