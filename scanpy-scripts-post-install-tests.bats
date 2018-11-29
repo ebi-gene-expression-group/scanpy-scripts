@@ -59,7 +59,8 @@
 	./scanpy-filter-genes.py -i $filtered_cells_object \
 				 -o $filtered_genes_object \
 				 -p $FT_parameters \
-				 -l $FT_min_cells
+				 -l $FT_min_cells \
+				 -j $FT_max_cells
 
     [ "$status" -eq 0 ]
     [ -f  "$filtered_genes_object" ]

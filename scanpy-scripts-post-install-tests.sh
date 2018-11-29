@@ -99,6 +99,7 @@ export FC_max_genes=2500
 # Filter genes.
 export FT_parameters='n_cells'
 export FT_min_cells=3
+export FT_max_cells=10000000
 
 # Normalisation.
 export ND_scale_factor=10000
