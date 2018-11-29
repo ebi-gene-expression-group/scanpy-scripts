@@ -1,57 +1,18 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
 import logging
 import matplotlib
 matplotlib.use('Agg')
-from scanpy_wrapper_utils import ScanpyArgParser, comma_separated_list
-from scanpy_wrapper_utils import read_input_object, write_output_object, save_output_plot
+import scanpy.api as sc
+
+from scanpy_scripts.wrapper_utils import (
+    ScanpyArgParser,
+    read_input_object, write_output_object, save_output_plot,
+)
 
 
-def main(args):
-    logging.debug(args)
-    import scanpy.api as sc
-
-    adata = read_input_object(args.input_object_file, args.input_format)
-
-    sc.tl.tsne(adata,
-               n_pcs=args.n_pcs,
-               use_rep=args.use_rep,
-               perplexity=args.perplexity,
-               early_exaggeration=args.early_exaggeration,
-               learning_rate=args.learning_rate,
-               random_state=args.random_seed,
-               use_fast_tsne=args.use_fast_tsne,
-               n_jobs=args.n_jobs)
-
-    write_output_object(adata, args.output_object_file, args.output_format)
-
-    if args.output_embeddings_file:
-        adata.obsm.to_df()[['X_tsne1', 'X_tsne2']].to_csv(args.output_embeddings_file, index=None)
-
-    if args.output_plot:
-        sc.set_figure_params(format=args.output_plot_format)
-        sc.settings.verbosity = 0
-        sc.pl.tsne(adata, show=False, save=True,
-                   color=args.color_by,
-                   use_raw=args.use_raw,
-                   edges=args.edges,
-                   arrows=args.arrows,
-                   sort_order=args.sort_order,
-                   groups=args.groups,
-                   projection=args.projection,
-                   components=args.components,
-                   palette=args.palette,
-                   frameon=args.frameon)
-
-        save_output_plot('tsne', args.output_plot)
-
-    logging.info('Done')
-    return 0
-
-
-if __name__ == '__main__':
-    argparser = ScanpyArgParser('Run t-SNE on data with neighborhood graph computed')
+def main(argv=None):
+    argparser = ScanpyArgParser(argv, 'Run t-SNE on data with neighborhood graph computed')
     argparser.add_input_object()
     argparser.add_output_object()
     argparser.add_argument('--output-embeddings-file',
@@ -110,6 +71,47 @@ if __name__ == '__main__':
                            help='The seed used by the random number generator. Default: 0')
     argparser.add_output_plot()
     argparser.add_scatter_plot_options()
-    args = argparser.get_args()
+    args = argparser.args
 
-    main(args)
+    logging.debug(args)
+
+    adata = read_input_object(args.input_object_file, args.input_format)
+
+    sc.tl.tsne(adata,
+               n_pcs=args.n_pcs,
+               use_rep=args.use_rep,
+               perplexity=args.perplexity,
+               early_exaggeration=args.early_exaggeration,
+               learning_rate=args.learning_rate,
+               random_state=args.random_seed,
+               use_fast_tsne=args.use_fast_tsne,
+               n_jobs=args.n_jobs)
+
+    write_output_object(adata, args.output_object_file, args.output_format)
+
+    if args.output_embeddings_file:
+        adata.obsm.to_df()[['X_tsne1', 'X_tsne2']].to_csv(args.output_embeddings_file, index=None)
+
+    if args.output_plot:
+        sc.set_figure_params(format=args.output_plot_format)
+        sc.settings.verbosity = 0
+        sc.pl.tsne(adata, show=False, save=True,
+                   color=args.color_by,
+                   use_raw=args.use_raw,
+                   edges=args.edges,
+                   arrows=args.arrows,
+                   sort_order=args.sort_order,
+                   groups=args.groups,
+                   projection=args.projection,
+                   components=args.components,
+                   palette=args.palette,
+                   frameon=args.frameon)
+
+        save_output_plot('tsne', args.output_plot)
+
+    logging.info('Done')
+    return 0
+
+
+if __name__ == '__main__':
+    main()
