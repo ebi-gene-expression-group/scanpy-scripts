@@ -467,6 +467,87 @@ def filter_cmd(
     return 0
 
 
+@click.command('norm')
+@click.pass_context
+@add_options(option_input_obj_and_format)
+@add_options(option_output_obj_and_format)
+@click.option(
+    '--overwrite-raw', '-R',
+    is_flag=True,
+    help='Overwrite existing raw data.',
+)
+@click.option(
+    '--normalise-to',
+    type=float,
+    default=10_000,
+    show_default='1e4',
+    help='Normalise per cell nUMI to this number.',
+)
+def norm_cmd(
+        ctx,
+        input_obj,
+        output_obj,
+        input_format='anndata',
+        output_format='anndata',
+        chunk_size=1_000,
+        show_obj=None,
+        overwrite_raw=False,
+        normalise_to=10_000,
+):
+    """Normalise data per cell.
+
+    \b
+    INPUT_OBJ: input file in format specfied by --input-format
+    OUTPUT_OBJ: output file in format specfied by --output-format
+"""
+    adata = read_obj(input_obj, input_format=input_format)
+
+    save_raw = True
+    if getattr(adata, 'raw'):
+        msg = 'Attribute "raw" already exists.'
+        if overwrite_raw:
+            msg += ' Overwritten because of --overwrite-raw'
+        else:
+            msg += ' Skip saving raw counts.'
+            save_raw = False
+        logging.warning(msg)
+    if save_raw:
+        adata.raw = sc.pp.log1p(adata, copy=True)
+
+    sc.pp.normalise_per_cell(adata, counts_per_cell_after=normalise_to)
+
+    write_obj(
+        adata,
+        output_obj,
+        output_format=output_format,
+        chunk_size=chunk_size,
+        show_obj=show_obj,
+    )
+    return 0
+
+
+@click.command('scale')
+@click.pass_context
+@add_options(option_input_obj_and_format)
+@add_options(option_output_obj_and_format)
+def scale_cmd(
+        ctx,
+        input_obj,
+        output_obj,
+        input_format='anndata',
+        output_format='anndata',
+        chunk_size=1_000,
+        show_obj=None,
+):
+    """Normalise data.
+
+    \b
+    INPUT_OBJ: input file in format specfied by --input-format
+    OUTPUT_OBJ: output file in format specfied by --output-format
+"""
+    return 0
+
+
 @click.command('test')
 @click.option(
     '--input', '-i',
@@ -479,6 +560,7 @@ def test(input):
 
 cli.add_command(read_cmd)
 cli.add_command(filter_cmd)
+cli.add_command(norm_cmd)
 cli.add_command(test)
 
 
