@@ -7,6 +7,9 @@ import numpy as np
 import scanpy as sc
 
 
+inf = float('inf')
+
+
 option_input_obj_and_format = [
     click.option(
         '--input-format', '-f',
@@ -82,7 +85,7 @@ def write_obj(adata, output_obj, output_format='anndata', chunk_size=1000, show_
         raise NotImplementedError(
             'Unsupported output format: {}'.format(output_format))
     if show_obj:
-        click.echo(adata, err=(show_obj == 'stderr'))
+        click.echo(repr(adata).replace('\xd7', 'x'), err=(show_obj == 'stderr'))
     return 0
 
 
@@ -191,9 +194,16 @@ def read_cmd(
     return 0
 
 
+def validate_limit(ctx, param, value):
+    if value[0] > value[1]:
+        param.type.fail(
+            'lower limit must not exceed upper limit', param, ctx)
+    return value
+
+
 def validate_parameter_limits(ctx, param, value):
     for v in value:
-        if v[1] >= v[2]:
+        if v[1] > v[2]:
             param.type.fail(
                 'lower limit must not exceed upper limit', param, ctx)
     return value
@@ -477,7 +487,7 @@ def filter_cmd(
     help='Overwrite existing raw data.',
 )
 @click.option(
-    '--normalise-to',
+    '--normalise-to', '-t',
     type=float,
     default=10_000,
     show_default='1e4',
@@ -514,7 +524,8 @@ def norm_cmd(
     if save_raw:
         adata.raw = sc.pp.log1p(adata, copy=True)
 
-    sc.pp.normalise_per_cell(adata, counts_per_cell_after=normalise_to)
+    sc.pp.normalize_per_cell(adata, counts_per_cell_after=normalise_to)
+    sc.pp.log1p(adata)
 
     write_obj(
         adata,
@@ -526,11 +537,59 @@ def norm_cmd(
     return 0
 
 
-@click.command('scale')
+@click.command('hvg')
 @click.pass_context
 @add_options(option_input_obj_and_format)
 @add_options(option_output_obj_and_format)
-def scale_cmd(
+@click.option(
+    '--mean-limits', '-m',
+    type=(float, float),
+    multiple=False,
+    callback=validate_limit,
+    default=[0.0125, 3],
+    show_default=True,
+    help='Cutoffs for the mean of expression'
+    'in the format of "-m min max".',
+)
+@click.option(
+    '--disp-limits', '-d',
+    type=(float, float),
+    multiple=False,
+    callback=validate_limit,
+    default=[0.5, inf],
+    show_default=True,
+    help='Cutoffs for the dispersion of expression'
+    'in the format of "-d min max".',
+)
+@click.option(
+    '--n-bins', '-b',
+    type=click.INT,
+    default=20,
+    show_default=True,
+    help='Number of bins for binning the mean gene expression.',
+)
+@click.option(
+    '--n-top', '-t',
+    type=click.INT,
+    default=20,
+    show_default=True,
+    help='Number of highly-variable genes to keep.',
+)
+@click.option(
+    '--flavor', '-v',
+    type=click.Choice(['seurat', 'cellranger']),
+    default='seurat',
+    show_default=True,
+    help='Choose the flavor for computing normalized dispersion.',
+)
+@click.option(
+    '--subset', '-s',
+    is_flag=True,
+    default=False,
+    help='Inplace subset to highly-variable genes if True, '
+    'otherwise only flag highly-variable genes.',
+)
+def hvg_cmd(
         ctx,
         input_obj,
         output_obj,
@@ -538,13 +597,40 @@ def scale_cmd(
         output_format='anndata',
         chunk_size=1_000,
         show_obj=None,
+        mean_limits=[0.0125, 3],
+        disp_limits=[0.5, None],
+        n_bins=20,
+        n_top=None,
+        flavor='seurat',
+        subset=False,
 ):
-    """Normalise data.
+    """Find highly variable genes.
 
     \b
     INPUT_OBJ: input file in format specfied by --input-format
     OUTPUT_OBJ: output file in format specfied by --output-format
 """
+    adata = read_obj(input_obj, input_format=input_format)
+
+    sc.pp.highly_variable_genes(
+        adata,
+        min_mean=mean_limits[0],
+        max_mean=mean_limits[1],
+        min_disp=disp_limits[0],
+        max_disp=disp_limits[1],
+        n_bins=n_bins,
+        n_top_genes=n_top,
+        flavor=flavor,
+        subset=subset,
+    )
+
+    write_obj(
+        adata,
+        output_obj,
+        output_format=output_format,
+        chunk_size=chunk_size,
+        show_obj=show_obj,
+    )
     return 0
 
 
@@ -561,6 +647,7 @@ def test(input):
 cli.add_command(read_cmd)
 cli.add_command(filter_cmd)
 cli.add_command(norm_cmd)
+cli.add_command(hvg_cmd)
 cli.add_command(test)
 
 
