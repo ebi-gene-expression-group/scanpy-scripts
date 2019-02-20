@@ -341,6 +341,42 @@ def write_output_object(adata, filename, fmt):
         sys.exit(1)
 
 
+def export_mtx(adata, fname_prefix, var=['gene_ids'], obs=[]):
+    """Export AnnData object to mtx formt
+
+    * Parameters
+        + adata : AnnData
+        An AnnData object
+        + fname_prefix : str
+        Prefix of the exported files, full names will be <fname_prefix>_matrix.mtx,
+        <fname_prefix>_genes.tsv, <fname_prefix>_barcodes.tsv
+        + var : list
+        A list of column names to be exported to gene table
+        + obs : list
+        A list of column names to be exported to barcode/cell table
+    """
+    import scipy.sparse as sp
+    mat = sp.coo_matrix(adata.X)
+    n_obs, n_var = mat.shape
+    n_entry = len(mat.data)
+    header = '%%MatrixMarket matrix coordinate real general\n%\n{} {} {}\n'.format(
+        n_var, n_obs, n_entry)
+    df = pd.DataFrame({'col': mat.col + 1, 'row': mat.row + 1, 'data': mat.data})
+    mtx_fname = fname_prefix + '_matrix.mtx'
+    gene_fname = fname_prefix + '_genes.tsv'
+    barcode_fname = fname_prefix + '_barcode.tsv'
+    with open(mtx_fname, 'a') as f:
+        f.write(header)
+        df.to_csv(f, sep=' ', header=False, index=False)
+
+    obs = list(set(obs) & set(adata.obs.columns))
+    var = list(set(var) & set(adata.var.columns))
+    adata.obs[obs].reset_index(level=0).rename(columns={'index': 'barcode'}).to_csv(
+        barcode_fname, sep='\t', header=False, index=False)
+    adata.var[var].reset_index(level=0).rename(columns={'index': 'gene'}).to_csv(
+        gene_fname, sep='\t', header=False, index=False)
+
+
 def save_output_plot(func_name, filename):
     """Save output plot to the specified location
 
