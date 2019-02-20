@@ -341,7 +341,7 @@ def write_output_object(adata, filename, fmt):
         sys.exit(1)
 
 
-def export_mtx(adata, fname_prefix, var=['gene_ids'], obs=[]):
+def export_mtx(adata, fname_prefix, var=[], obs=[]):
     """Export AnnData object to mtx formt
 
     * Parameters
@@ -370,11 +370,13 @@ def export_mtx(adata, fname_prefix, var=['gene_ids'], obs=[]):
         df.to_csv(f, sep=' ', header=False, index=False)
 
     obs = list(set(obs) & set(adata.obs.columns))
+    obs_df = adata.obs[obs].reset_index(level=0)
+    obs_df.to_csv(barcode_fname, sep='\t', header=False, index=False)
     var = list(set(var) & set(adata.var.columns))
-    adata.obs[obs].reset_index(level=0).rename(columns={'index': 'barcode'}).to_csv(
-        barcode_fname, sep='\t', header=False, index=False)
-    adata.var[var].reset_index(level=0).rename(columns={'index': 'gene'}).to_csv(
-        gene_fname, sep='\t', header=False, index=False)
+    var_df = adata.var[var].reset_index(level=0)
+    if len(var) == 0:
+        var_df['gene'] = var_df['index']
+    var_df.to_csv(gene_fname, sep='\t', header=False, index=False)
 
 
 def save_output_plot(func_name, filename):
