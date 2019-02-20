@@ -136,7 +136,7 @@ export CG_method=umap
 
 # Run find cluster
 export FC_flavor=vtraag
-export FC_resolution='1.0'
+export FC_resolution='1.0,1.5'
 export FC_key_added=louvain
 export FC_use_weight='--use-weights'
 export FC_random_seed=0
@@ -150,7 +150,7 @@ export UMAP_random_seed=0
 export UMAP_alpha=1.0
 export UMAP_gamma=1.0
 export UMAP_initpos=spectral
-export UMAP_color=louvain
+export UMAP_color=louvain_r1.0
 export UMAP_projection=2d
 export UMAP_frameon='--frameoff'
 
@@ -159,12 +159,12 @@ export TSNE_perplexity=30
 export TSNE_early_exaggeration=12
 export TSNE_learning_rate=1000
 export TSNE_random_seed=0
-export TSNE_color=louvain
+export TSNE_color=louvain_r1.5
 export TSNE_projection=2d
 export TSNE_frameon='--frameoff'
 
 # Run find marker
-export FM_groupby=louvain
+export FM_groupby=louvain_r1.0
 export FM_groups=all
 export FM_reference=rest
 export FM_n_genes=50
