@@ -341,7 +341,7 @@ def write_output_object(adata, filename, fmt):
         sys.exit(1)
 
 
-def export_mtx(adata, fname_prefix, var=[], obs=[]):
+def export_mtx(adata, fname_prefix, var=[], obs=[], use_raw=False):
     """Export AnnData object to mtx formt
 
     * Parameters
@@ -356,6 +356,8 @@ def export_mtx(adata, fname_prefix, var=[], obs=[]):
         A list of column names to be exported to barcode/cell table
     """
     import scipy.sparse as sp
+    if use_raw:
+        adata = adata.raw
     mat = sp.coo_matrix(adata.X)
     n_obs, n_var = mat.shape
     n_entry = len(mat.data)
