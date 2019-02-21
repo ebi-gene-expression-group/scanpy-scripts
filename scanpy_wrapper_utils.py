@@ -341,20 +341,23 @@ def write_output_object(adata, filename, fmt):
         sys.exit(1)
 
 
-def export_mtx(adata, fname_prefix, var=None, obs=None, use_raw=False):
+def export_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False):
     """Export AnnData object to mtx formt
 
     * Parameters
         + adata : AnnData
         An AnnData object
         + fname_prefix : str
-        Prefix of the exported files, full names will be <fname_prefix>_matrix.mtx,
-        <fname_prefix>_genes.tsv, <fname_prefix>_barcodes.tsv
+        Prefix of the exported files. If not empty and not ending with '/' or '_',
+        a '_' will be appended. Full names will be <fname_prefix>matrix.mtx,
+        <fname_prefix>genes.tsv, <fname_prefix>barcodes.tsv
         + var : list
         A list of column names to be exported to gene table
         + obs : list
         A list of column names to be exported to barcode/cell table
     """
+    if fname_prefix and not (fname_prefix.endswith('/') or fname_prefix.endswith('_')):
+        fname_prefix = fname_prefix + '_'
     if var is None:
         var = []
     if obs is None:
@@ -374,9 +377,9 @@ def export_mtx(adata, fname_prefix, var=None, obs=None, use_raw=False):
     header = '%%MatrixMarket matrix coordinate real general\n%\n{} {} {}\n'.format(
         n_var, n_obs, n_entry)
     df = pd.DataFrame({'col': mat.col + 1, 'row': mat.row + 1, 'data': mat.data})
-    mtx_fname = fname_prefix + '_matrix.mtx'
-    gene_fname = fname_prefix + '_genes.tsv'
-    barcode_fname = fname_prefix + '_barcodes.tsv'
+    mtx_fname = fname_prefix + 'matrix.mtx'
+    gene_fname = fname_prefix + 'genes.tsv'
+    barcode_fname = fname_prefix + 'barcodes.tsv'
     with open(mtx_fname, 'a') as f:
         f.write(header)
         df.to_csv(f, sep=' ', header=False, index=False)
