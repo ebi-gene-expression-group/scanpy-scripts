@@ -73,13 +73,15 @@
         skip "$normalised_object exists and use_existing_outputs is set to 'true'"
     fi
 
-    run rm -f $normalised_object && \
+    run rm -f $normalised_object $normalised_mtx $normalised_genes $normalised_cells && \
 	./scanpy-normalise-data.py -i $filtered_genes_object \
 				   -o $normalised_object \
+                                   -x $ND_export_mtx \
 				   -s $ND_scale_factor
 
     [ "$status" -eq 0 ]
-    [ -f  "$normalised_object" ]
+    [ -f "$normalised_object" ] && \
+        [ -f "$normalised_mtx" ] && [ -f "$normalised_genes" ] && [ -f "$normalised_cells" ]
 }
 
 # Run scanpy-find-variable-genes.R
