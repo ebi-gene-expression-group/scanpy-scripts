@@ -9,6 +9,7 @@ from scanpy_wrapper_utils import ScanpyArgParser
 from scanpy_wrapper_utils import read_input_object
 from scanpy_wrapper_utils import write_output_object
 from scanpy_wrapper_utils import save_output_plot
+from scanpy_wrapper_utils import export_mtx
 
 
 def main(args):
@@ -49,6 +50,9 @@ def main(args):
                                   n_top_genes=args.n_top_genes,
                                   log=(args.flavor == 'seurat'))
 
+    if args.export_mtx is not None:
+        export_mtx(adata, fname_prefix=args.export_mtx)
+    
     write_output_object(adata, args.output_object_file, args.output_format)
 
     print(adata)
@@ -77,6 +81,11 @@ if __name__ == '__main__':
                            default=None,
                            help='Number of highly variable genes to keep, '
                                 'ignoring --subset-parameters when set. Default: None')
+    argparser.add_argument('-x', '--export-mtx',
+                           type=str,
+                           default=None,
+                           help='Export normalised data in mtx format with the supplied '
+                                'string being the prefix of the output files.')
     args = argparser.get_args()
 
     main(args)

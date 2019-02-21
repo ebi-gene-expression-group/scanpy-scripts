@@ -4,7 +4,7 @@ from __future__ import print_function
 import logging
 import scanpy.api as sc
 from scanpy_wrapper_utils import ScanpyArgParser, comma_separated_list
-from scanpy_wrapper_utils import read_input_object, write_output_object
+from scanpy_wrapper_utils import read_input_object, write_output_object, export_mtx
 
 
 def main(args):
@@ -19,6 +19,9 @@ def main(args):
         sc.pp.regress_out(adata, args.var_to_regress)
 
     sc.pp.scale(adata, zero_center=args.zero_center, max_value=args.scale_max)
+    
+    if args.export_mtx is not None:
+        export_mtx(adata, fname_prefix=args.export_mtx)
 
     write_output_object(adata, args.output_object_file, args.output_format)
 
@@ -56,6 +59,11 @@ if __name__ == '__main__':
                            default=None,
                            help='Truncate to this value after scaling. '
                                 'Do not truncate if None. Default: None')
+    argparser.add_argument('-e', '--export-mtx',
+                           type=str,
+                           default=None,
+                           help='Export normalised data in mtx format with the supplied '
+                                'string being the prefix of the output files.')
     args = argparser.get_args()
 
     main(args)
