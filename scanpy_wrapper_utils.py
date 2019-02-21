@@ -366,7 +366,7 @@ def export_mtx(adata, fname_prefix, var=[], obs=[], use_raw=False):
     df = pd.DataFrame({'col': mat.col + 1, 'row': mat.row + 1, 'data': mat.data})
     mtx_fname = fname_prefix + '_matrix.mtx'
     gene_fname = fname_prefix + '_genes.tsv'
-    barcode_fname = fname_prefix + '_barcode.tsv'
+    barcode_fname = fname_prefix + '_barcodes.tsv'
     with open(mtx_fname, 'a') as f:
         f.write(header)
         df.to_csv(f, sep=' ', header=False, index=False)
