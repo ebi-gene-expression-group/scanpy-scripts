@@ -50,8 +50,8 @@ def main(args):
                                   n_top_genes=args.n_top_genes,
                                   log=(args.flavor == 'seurat'))
 
-    if args.export_mtx:
-        export_mtx(adata, args.export_mtx)
+    if args.export_mtx is not None:
+        export_mtx(adata, fname_prefix=args.export_mtx)
     
     write_output_object(adata, args.output_object_file, args.output_format)
 

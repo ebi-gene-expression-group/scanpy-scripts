@@ -34,8 +34,8 @@ def main(args):
 
     write_output_object(adata, args.output_object_file, args.output_format)
     
-    if args.export_mtx:
-        export_mtx(adata, args.export_mtx)
+    if args.export_mtx is not None:
+        export_mtx(adata, fname_prefix=args.export_mtx)
 
     print(adata)
     logging.info('Done')

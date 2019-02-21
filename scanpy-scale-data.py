@@ -20,8 +20,8 @@ def main(args):
 
     sc.pp.scale(adata, zero_center=args.zero_center, max_value=args.scale_max)
     
-    if args.export_mtx:
-        export_mtx(adata, args.export_mtx)
+    if args.export_mtx is not None:
+        export_mtx(adata, fname_prefix=args.export_mtx)
 
     write_output_object(adata, args.output_object_file, args.output_format)
 
