@@ -9,7 +9,7 @@ from scanpy_wrapper_utils import ScanpyArgParser
 from scanpy_wrapper_utils import read_input_object
 from scanpy_wrapper_utils import write_output_object
 from scanpy_wrapper_utils import save_output_plot
-from scanpy_wrapper_utils import output_mtx
+from scanpy_wrapper_utils import export_mtx
 
 
 def main(args):

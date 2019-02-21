@@ -3,7 +3,7 @@
 from __future__ import print_function
 import logging
 import scanpy.api as sc
-from scanpy_wrapper_utils import ScanpyArgParser, read_input_object, write_output_object, output_mtx
+from scanpy_wrapper_utils import ScanpyArgParser, read_input_object, write_output_object, export_mtx
 
 
 def main(args):
