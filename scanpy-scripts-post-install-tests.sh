@@ -66,6 +66,9 @@ export input_object="$output_dir/input.h5ad"
 export filtered_cells_object="$output_dir/filtered_cells.h5ad"
 export filtered_genes_object="$output_dir/filtered_genes.h5ad"
 export normalised_object="$output_dir/normalised.h5ad"
+export normalised_mtx="$output_dir/normalised_matrix.mtx"
+export normalised_genes="$output_dir/normalised_genes.tsv"
+export normalised_cells="$output_dir/normalised_barcodes.tsv"
 export variable_genes_object="$output_dir/variable_genes.h5ad"
 export variable_image_file="$output_dir/variable_genes.png"
 export scaled_object="$output_dir/scaled.h5ad"
@@ -104,6 +107,7 @@ export FT_max_cells=10000000
 # Normalisation.
 export ND_scale_factor=10000
 export ND_save_raw=True
+export ND_export_mtx="$output_dir/normalised"
 
 # Find variable genes.
 export FVG_flavor=seurat

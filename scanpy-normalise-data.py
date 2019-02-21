@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 import logging
-from scanpy_wrapper_utils import ScanpyArgParser, read_input_object, write_output_object
+from scanpy_wrapper_utils import ScanpyArgParser, read_input_object, write_output_object, export_mtx
 
 
 def main(args):
@@ -17,6 +17,9 @@ def main(args):
     sc.pp.normalize_per_cell(adata, counts_per_cell_after=args.scale_factor)
 
     write_output_object(adata, args.output_object_file, args.output_format)
+
+    if args.export_mtx is not None:
+        export_mtx(adata, fname_prefix=args.export_mtx)
 
     print(adata)
     logging.info('Done')
@@ -35,6 +38,11 @@ if __name__ == '__main__':
                            action='store_true',
                            default=False,
                            help='Save raw quantification in log scale before normalisation.')
+    argparser.add_argument('-x', '--export-mtx',
+                           type=str,
+                           default=None,
+                           help='Export normalised data in mtx format with the supplied '
+                                'string being the prefix of the output files.')
     args = argparser.get_args()
 
     main(args)
