@@ -341,7 +341,7 @@ def write_output_object(adata, filename, fmt):
         sys.exit(1)
 
 
-def export_mtx(adata, fname_prefix, var=[], obs=[], use_raw=False):
+def export_mtx(adata, fname_prefix, var=None, obs=None, use_raw=False):
     """Export AnnData object to mtx formt
 
     * Parameters
@@ -355,9 +355,19 @@ def export_mtx(adata, fname_prefix, var=[], obs=[], use_raw=False):
         + obs : list
         A list of column names to be exported to barcode/cell table
     """
-    import scipy.sparse as sp
+    if var is None:
+        var = []
+    if obs is None:
+        obs = []
     if use_raw:
         adata = adata.raw
+    try:
+        obs = list(set(obs) & set(adata.obs.columns))
+        var = list(set(var) & set(adata.var.columns))
+    except TypeError:
+        logging.error('obs and var requires iterable')
+        sys.exit(1)
+    import scipy.sparse as sp
     mat = sp.coo_matrix(adata.X)
     n_obs, n_var = mat.shape
     n_entry = len(mat.data)
@@ -371,10 +381,8 @@ def export_mtx(adata, fname_prefix, var=[], obs=[], use_raw=False):
         f.write(header)
         df.to_csv(f, sep=' ', header=False, index=False)
 
-    obs = list(set(obs) & set(adata.obs.columns))
     obs_df = adata.obs[obs].reset_index(level=0)
     obs_df.to_csv(barcode_fname, sep='\t', header=False, index=False)
-    var = list(set(var) & set(adata.var.columns))
     var_df = adata.var[var].reset_index(level=0)
     if len(var) == 0:
         var_df['gene'] = var_df['index']
