@@ -3,7 +3,7 @@
 from __future__ import print_function
 import logging
 import scanpy.api as sc
-from scanpy_wrapper_utils import ScanpyArgParser, read_input_object, write_output_object
+from scanpy_wrapper_utils import ScanpyArgParser, read_input_object, write_output_object, output_mtx
 
 
 def main(args):
@@ -33,6 +33,9 @@ def main(args):
             adata = adata[(adata.obs[name] < high) & (adata.obs[name] > low), :]
 
     write_output_object(adata, args.output_object_file, args.output_format)
+    
+    if args.export_mtx:
+        export_mtx(adata, args.export_mtx)
 
     print(adata)
     logging.info('Done')
@@ -45,6 +48,11 @@ if __name__ == "__main__":
     argparser.add_output_object()
     argparser.add_subset_parameters()
     argparser.add_subset_list()
+    argparser.add_argument('-x', '--export-mtx',
+                           type=str,
+                           default=None,
+                           help='Export normalised data in mtx format with the supplied '
+                                'string being the prefix of the output files.')
     args = argparser.get_args()
 
     main(args)
