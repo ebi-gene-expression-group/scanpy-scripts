@@ -123,7 +123,8 @@ def _h5_write_recursive_dictionary(
         if dataset_root:
             if not isinstance(data, np.ndarray):
                 data = np.array(data)
-            if isinstance(data[0], str):
+            # Convert to bytes if unicode string
+            if data.dtype.kind == 'U':
                 data = data.astype(np.character)
             if path in dataset_root:
                 del dataset_root[path]
@@ -192,7 +193,8 @@ def read_exchangeable_loom(filename):
                 # Type conversion according to dtype
                 if dtype == 'array':
                     data = np.array(data)
-                    if isinstance(data.flat[0], bytes):
+                    # Convert to unicode string if bytes
+                    if data.dtype.kind == 'S':
                         data = data.astype(str)
                 elif dtype == 'graph':
                     data = sp.csr_matrix(_h5_read_coo_matrix(data))
