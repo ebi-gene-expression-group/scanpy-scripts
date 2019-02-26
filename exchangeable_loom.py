@@ -236,7 +236,6 @@ def write_exchangeable_loom(adata, filename):
         Path of the output exchangeable Loom file
     """
     adata.write_loom(filename)
-    n_obs, n_var = adata.X.shape
     manifest = {'loom': [], 'anndata': [], 'sce': [], 'dtype': []}
     with h5py.File(filename, mode='r+') as lm:
         # Write modified LOOM_SPEC_VERSION
@@ -301,7 +300,7 @@ def write_exchangeable_loom(adata, filename):
                 )
             # Derive paths
             for entry in uns_entries:
-                loom_path, sep, dtype = entry.partition('::')
+                loom_path, _, dtype = entry.partition('::')
                 if loom_path.startswith('/col_graphs/'):
                     path = loom_path[12:]
                     sce_path = '@colGraphs${}'.format(path.replace('__', '.'))
