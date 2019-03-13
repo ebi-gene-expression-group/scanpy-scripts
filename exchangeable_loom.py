@@ -155,7 +155,7 @@ def _is_exchangeable_loom(filename):
 def _read_manifest(h5file):
     return pd.DataFrame(
         np.array(h5file['global']['manifest']).astype(str),
-        columns=['loom_path', 'anndata_path', 'sce_path', 'dtype'],
+        columns=['loom_path', 'dtype', 'anndata_path', 'sce_path'],
     )
 
 
@@ -236,10 +236,19 @@ def write_exchangeable_loom(adata, filename):
         Path of the output exchangeable Loom file
     """
     adata.write_loom(filename)
-    manifest = {'loom': [], 'anndata': [], 'sce': [], 'dtype': []}
+    manifest = {'loom': [], 'dtype': [], 'anndata': [], 'sce': []}
     with h5py.File(filename, mode='r+') as lm:
         # Write modified LOOM_SPEC_VERSION
         lm.attrs['LOOM_SPEC_VERSION'] = exchangeable_loom_version.encode()
+
+        # Write creation/modification info
+        if 'created_from' not in lm.attrs:
+            lm.attrs['created_from'] = 'anndata'
+        lm.attrs['last_modified_by'] = 'scanpy'
+
+        # Record which columns are used as colnames/rownames
+        lm['col_attrs'].attrs['CellID'] = 'obs_names'
+        lm['row_attrs'].attrs['Gene'] = 'var_names'
 
         # Create necessary groups
         lm.create_group('/global')
@@ -253,10 +262,10 @@ def write_exchangeable_loom(adata, filename):
             loom_path = '/global/reducedDims__{}'.format(arr_name)
             sce_path = '@reducedDims@listData${}'.format(arr_name)
             # Record mapping
-            manifest['anndata'].append(anndata_path)
             manifest['loom'].append(loom_path)
-            manifest['sce'].append(sce_path)
             manifest['dtype'].append('array')
+            manifest['anndata'].append(anndata_path)
+            manifest['sce'].append(sce_path)
             # Write content to loom
             lm.create_dataset(loom_path, data=arr)
 
@@ -267,10 +276,10 @@ def write_exchangeable_loom(adata, filename):
             anndata_path = '/varm/{}'.format(k)
             loom_path = '/global/varm__{}'.format(k)
             # Record mapping
-            manifest['anndata'].append(anndata_path)
             manifest['loom'].append(loom_path)
-            manifest['sce'].append('')
             manifest['dtype'].append('array')
+            manifest['anndata'].append(anndata_path)
+            manifest['sce'].append('')
             # Write content to loom
             lm.create_dataset(loom_path, data=arr)
 
@@ -303,7 +312,7 @@ def write_exchangeable_loom(adata, filename):
                 loom_path, _, dtype = entry.partition('::')
                 if loom_path.startswith('/col_graphs/'):
                     path = loom_path[12:]
-                    sce_path = '@colGraphs${}'.format(path.replace('__', '.'))
+                    sce_path = '@colGraphs${}'.format(path)
                 else:
                     if loom_path.startswith('/.attrs['):
                         path = loom_path[8:-1]
@@ -311,13 +320,13 @@ def write_exchangeable_loom(adata, filename):
                         path = loom_path[8:]
                     else:
                         logging.warning('unexpected path: {}'.format(loom_path))
-                    sce_path = '@metadata${}'.format(path.replace('__', '.'))
+                    sce_path = '@metadata${}'.format(path.replace('__', '$'))
                 anndata_path = '/uns/{}'.format(path.replace('__', '/'))
                 # Record mapping
-                manifest['anndata'].append(anndata_path)
                 manifest['loom'].append(loom_path)
-                manifest['sce'].append(sce_path)
                 manifest['dtype'].append(dtype)
+                manifest['anndata'].append(anndata_path)
+                manifest['sce'].append(sce_path)
 
         # Write mapping
         lm['/global'].create_dataset(
