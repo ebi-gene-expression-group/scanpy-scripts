@@ -37,6 +37,13 @@ import scipy.sparse as sp
 exchangeable_loom_version = '3.0.0alpha'
 
 
+def _h5_read_attrs(node, name):
+    data = node.attrs[name]
+    if isinstance(data, np.ndarray) and len(data) == 1:
+        data = data[0]
+    return data
+
+
 def _h5_read_coo_matrix(node):
     shape = tuple(map(int, node.attrs['shape'].decode().split(',')))
     return sp.coo_matrix((node['w'], (node['a'], node['b'])), shape=shape)
@@ -146,7 +153,7 @@ def _h5_write_recursive_dictionary(
 def _is_exchangeable_loom(filename):
     with h5py.File(filename, mode='r') as lm:
         try:
-            version = lm.attrs['LOOM_SPEC_VERSION'].decode()
+            version = _h5_read_attrs(lm, 'LOOM_SPEC_VERSION').decode()
         except Exception:
             version = None
         return version == exchangeable_loom_version
@@ -187,7 +194,7 @@ def read_exchangeable_loom(filename):
                 # Get data from loom_path
                 if loom_path.startswith('/.attrs'):
                     lm_path = loom_path[8:-1]
-                    data = lm.attrs[lm_path]
+                    data = _h5_read_attrs(lm, lm_path)
                 else:
                     data = lm[loom_path]
                 # Type conversion according to dtype
@@ -199,6 +206,8 @@ def read_exchangeable_loom(filename):
                 elif dtype == 'graph':
                     data = sp.csr_matrix(_h5_read_coo_matrix(data))
                 elif dtype == 'scalar':
+                    if isinstance(data, (h5py.Dataset, np.ndarray)):
+                        data = data[0]
                     if isinstance(data, bytes):
                         data = data.decode()
 
