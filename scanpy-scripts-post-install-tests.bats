@@ -249,25 +249,25 @@
         skip "$pca_loom exists and use_existing_outputs is set to 'true'"
     fi
 
-    run rm -f $pca_loom $pca_image_file && \
+    run rm -f $pca_loom $pca_image_file2 && \
 	./scanpy-run-pca.py -i $scaled_loom \
 			    -o $pca_loom \
-			    --output-embeddings-file $pca_embeddings_file \
-			    --output-loadings-file $pca_loadings_file \
-			    --output-stdev-file $pca_stdev_file \
-			    --output-var-ratio-file $pca_var_ratio_file \
+			    --output-embeddings-file $pca_embeddings_file2 \
+			    --output-loadings-file $pca_loadings_file2 \
+			    --output-stdev-file $pca_stdev_file2 \
+			    --output-var-ratio-file $pca_var_ratio_file2 \
 			    -n $PCA_npcs \
 			    --svd-solver $PCA_svd_solver \
 			    -s $PCA_random_seed \
-			    -P $pca_image_file \
+			    -P $pca_image_file2 \
 			    --color $PCA_color \
 			    --projection $PCA_projection \
 			    $PCA_frameon
 
     [ "$status" -eq 0 ]
-    [ -f  "$pca_loom" ] && [ -f "$pca_image_file" ] && \
-	[ -f "$pca_embeddings_file" ] && [ -f "$pca_loadings_file" ] && \
-	[ -f "$pca_stdev_file" ] && [ -f "$pca_var_ratio_file" ]
+    [ -f  "$pca_loom" ] && [ -f "$pca_image_file2" ] && \
+	[ -f "$pca_embeddings_file2" ] && [ -f "$pca_loadings_file2" ] && \
+	[ -f "$pca_stdev_file2" ] && [ -f "$pca_var_ratio_file2" ]
 }
 
 # Run compute graph
@@ -296,7 +296,7 @@
     fi
 
     run rm -f $graph_loom $graph_image_file && \
-	./scanpy-neighbours.py -i $pca_loom \
+	./scanpy-neighbours.py -i $pca_h5ad \
 			       -o $graph_loom \
 			       -N $CG_nneighbor \
 			       -n $CG_npcs \
@@ -379,7 +379,7 @@
         skip "$umap_loom exists and use_existing_outputs is set to 'true'"
     fi
 
-    run rm -f $umap_loom $umap_image_file $umap_embeddings_file && \
+    run rm -f $umap_loom $umap_image_file2 $umap_embeddings_file && \
 	./scanpy-run-umap.py -i $cluster_loom -o $umap_loom \
 			     --output-embeddings-file $umap_embeddings_file \
 			     -s $UMAP_random_seed \
@@ -389,13 +389,13 @@
 			     --alpha $UMAP_alpha \
 			     --gamma $UMAP_gamma \
 			     --init-pos $UMAP_initpos \
-			     -P $umap_image_file \
+			     -P $umap_image_file2 \
 			     --color $UMAP_color \
 			     --projection $UMAP_projection \
 			     $UMAP_frameon
 
     [ "$status" -eq 0 ]
-    [ -f  "$umap_loom" ] && [ -f "$umap_image_file" ] && [ -f "$umap_embeddings_file" ]
+    [ -f  "$umap_loom" ] && [ -f "$umap_image_file2" ] && [ -f "$umap_embeddings_file" ] && [[ -z $(diff -q "$umap_image_file" "umap_image_file2") ]]
 }
 
 # Run TSNE
@@ -426,20 +426,20 @@
         skip "$tsne_loom exists and use_existing_outputs is set to 'true'"
     fi
 
-    run rm -f $tsne_loom $tsne_image_file $tsne_embeddings_file && \
+    run rm -f $tsne_loom $tsne_image_file2 $tsne_embeddings_file && \
 	./scanpy-run-tsne.py -i $cluster_loom -o $tsne_loom \
 			     --output-embeddings-file $tsne_embeddings_file \
 			     -s $TSNE_random_seed \
 			     --perplexity $TSNE_perplexity \
 			     --early-exaggeration $TSNE_early_exaggeration \
 			     --learning-rate $TSNE_learning_rate \
-			     -P $tsne_image_file \
+			     -P $tsne_image_file2 \
 			     --color $TSNE_color \
 			     --projection $TSNE_projection \
 			     $TSNE_frameon
 
     [ "$status" -eq 0 ]
-    [ -f  "$tsne_loom" ] && [ -f "$tsne_image_file" ] && [ -f "$tsne_embeddings_file" ]
+    [ -f  "$tsne_loom" ] && [ -f "$tsne_image_file2" ] && [ -f "$tsne_embeddings_file" ] && [[ -z $(diff -q "$tsne_image_file" "tsne_image_file2") ]]
 }
 
 # Run find markers
@@ -471,7 +471,7 @@
         skip "$marker2_h5ad exists and use_existing_outputs is set to 'true'"
     fi
 
-    run rm -f $marker_loom $marker_image_file $marker_text_file2 && \
+    run rm -f $marker_loom $marker_image_file2 $marker_text_file2 && \
 	./scanpy-find-markers.py -i $cluster_loom -o $marker2_h5ad \
 				 --output-text-file $marker_text_file2 \
 				 --groupby $FM_groupby \
@@ -479,13 +479,13 @@
 				 --reference $FM_reference \
 				 --n-genes $FM_n_genes \
 				 --method $FM_method \
-				 -P $marker_image_file \
+				 -P $marker_image_file2 \
 				 --show-n-genes $FM_show_n_genes \
 				 --debug \
 				 --key $FM_key
 
     [ "$status" -eq 0 ]
-    [ -f  "$marker_h5ad" ] && [ -f "$marker_image_file" ] && [ -f "$marker_text_file2" ] && [[ -z $(diff -q "$marker_text_file" "$marker_text_file2") ]]
+    [ -f  "$marker_h5ad" ] && [ -f "$marker_image_file2" ] && [ -f "$marker_text_file2" ] && [[ -z $(diff -q "$marker_text_file" "$marker_text_file2") ]]
 }
 
 # Local Variables:
