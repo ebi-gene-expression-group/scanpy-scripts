@@ -15,7 +15,7 @@ from scanpy_wrapper_utils import export_mtx
 def main(args):
     logging.debug(args)
 
-    adata = read_input_object(args.input_object_file, args.input_format)
+    adata = read_input_object(args.input_object_file, args.input_format, sparse=True)
 
     min_mean, max_mean, min_disp, max_disp = None, None, None, None
     for name, high, low in zip(args.parameter_names, args.high_thresholds, args.low_thresholds):

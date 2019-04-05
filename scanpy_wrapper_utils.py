@@ -13,6 +13,7 @@ import logging
 import argparse
 import pandas as pd
 import scanpy.api as sc
+from exchangeable_loom import read_exchangeable_loom, write_exchangeable_loom
 
 
 def comma_separated_list(arg_name, data_type):
@@ -67,7 +68,6 @@ class ScanpyArgParser():
         self._events = [[self._set_logging_level, [], {}]]
         self._args = None
 
-
     def get_args(self):
         """Return parsed command arguments"""
         if self._args is None:
@@ -79,11 +79,9 @@ class ScanpyArgParser():
 
         return self._args
 
-
     def add_argument(self, *args, **kwargs):
         """Calls argparse.ArgumentParser.add_argument"""
         self._parser.add_argument(*args, **kwargs)
-
 
     def add_input_object(self):
         """Add options -i/--input-object-file and -f/--input-format"""
@@ -97,7 +95,6 @@ class ScanpyArgParser():
         self._events.append([self._detect_io_format,
                              ['input_format', 'input_object_file'], {}])
 
-
     def add_output_object(self):
         """Add options -o/--output-object-file and -F/--output-format"""
         self._parser.add_argument('-o', '--output-object-file',
@@ -110,7 +107,6 @@ class ScanpyArgParser():
         self._events.append([self._detect_io_format,
                              ['output_format', 'output_object_file'], {}])
 
-
     def add_output_plot(self):
         """Add options -P/--output-plot"""
         self._parser.add_argument('-P', '--output-plot',
@@ -119,7 +115,6 @@ class ScanpyArgParser():
         self._events.append([self._check_filename_extension,
                              ['output_plot'],
                              {'extensions': ['pdf', 'png', 'svg']}])
-
 
     def add_scatter_plot_options(self):
         """Add options for scatter plots, e.g. PCA/UMAP/tSNE"""
@@ -170,7 +165,6 @@ class ScanpyArgParser():
                                   default=True,
                                   help='Do not draw a frame around the scatter plot. Draw by default.')
 
-
     def add_subset_parameters(self, params=None):
         """Add options -p/--parameter-names, -l/--low-thresholds and -j/--high-thresholds
 
@@ -194,7 +188,7 @@ class ScanpyArgParser():
                                   help='High cutoffs for the parameters (default is Inf).')
         self._events.append([self._check_parameter_range,
                              ['parameter_names', 'low_thresholds', 'high_thresholds'],
-                             {'params':params}])
+                             {'params': params}])
 
     def add_subset_list(self, dtype=str):
         """Add option -s/--subset-list
@@ -209,8 +203,7 @@ class ScanpyArgParser():
                                   'Alternatively, text file with one entry per line.')
         self._events.append([self._list_or_read_file,
                              ['subset_list'],
-                             {'dtype':dtype}])
-
+                             {'dtype': dtype}])
 
     def _set_logging_level(self):
         log_level = logging.DEBUG if self._args.debug else logging.WARN
@@ -218,7 +211,6 @@ class ScanpyArgParser():
             level=log_level,
             format='%(asctime)s; %(levelname)s; %(filename)s; %(funcName)s(): %(message)s',
             datefmt='%y-%m-%d %H:%M:%S')
-
 
     def _detect_io_format(self, fmt_key, fname_key):
         fmt = getattr(self._args, fmt_key)
@@ -235,7 +227,6 @@ class ScanpyArgParser():
             logging.error(msg)
             sys.exit(1)
 
-
     def _check_filename_extension(self, fname_key, extensions):
         fname_opt = fname_key.replace('_', '-')
         fname = getattr(self._args, fname_key)
@@ -248,7 +239,6 @@ class ScanpyArgParser():
             logging.error(msg)
             sys.exit(1)
         setattr(self._args, fname_key + '_format', ext[1:])
-
 
     def _check_parameter_range(self, name_key, low_key, high_key, params=None):
         name_opt, low_opt, high_opt = [k.replace('_', '-') for k in (name_key, low_key, high_key)]
@@ -277,7 +267,6 @@ class ScanpyArgParser():
             logging.error(msg)
             sys.exit(1)
 
-
     def _list_or_read_file(self, key, dtype=str):
         opt = key.replace('_', '-')
         str_list_parser = comma_separated_list(opt, dtype)
@@ -299,7 +288,7 @@ class ScanpyArgParser():
             setattr(self._args, key, entries)
 
 
-def read_input_object(filename, fmt):
+def read_input_object(filename, fmt, sparse=False):
     """Read an AnnData object from an input file
 
     * Parameters
@@ -315,11 +304,12 @@ def read_input_object(filename, fmt):
     if fmt == 'anndata':
         adata = sc.read(filename)
     elif fmt == 'loom':
-        adata = sc.read_loom(filename)
+        adata = read_exchangeable_loom(filename, sparse=sparse)
     else:
         logging.error('should not reach here')
         sys.exit(1)
     return adata
+
 
 def write_output_object(adata, filename, fmt):
     """Write an AnnData object to an output ile
@@ -335,7 +325,7 @@ def write_output_object(adata, filename, fmt):
     if fmt == "anndata":
         adata.write(filename)
     elif fmt == "loom":
-        adata.write_loom(filename)
+        write_exchangeable_loom(adata, filename)
     else:
         logging.error('should not reach here')
         sys.exit(1)

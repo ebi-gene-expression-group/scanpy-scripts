@@ -4,7 +4,7 @@ from __future__ import print_function
 import logging
 import matplotlib
 matplotlib.use('Agg')
-from scanpy_wrapper_utils import ScanpyArgParser, comma_separated_list
+from scanpy_wrapper_utils import ScanpyArgParser
 from scanpy_wrapper_utils import read_input_object, write_output_object, save_output_plot
 
 
@@ -12,7 +12,7 @@ def main(args):
     logging.debug(args)
     import scanpy.api as sc
 
-    adata = read_input_object(args.input_object_file, args.input_format)
+    adata = read_input_object(args.input_object_file, args.input_format, sparse=False)
 
     sc.tl.tsne(adata,
                n_pcs=args.n_pcs,

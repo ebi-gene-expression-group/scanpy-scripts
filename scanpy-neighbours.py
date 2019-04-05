@@ -10,7 +10,7 @@ def main(args):
     logging.debug(args)
     import scanpy.api as sc
 
-    adata = read_input_object(args.input_object_file, args.input_format)
+    adata = read_input_object(args.input_object_file, args.input_format, sparse=False)
 
     sc.pp.neighbors(adata,
                     n_neighbors=args.n_neighbors,

@@ -9,7 +9,7 @@ from scanpy_wrapper_utils import ScanpyArgParser, read_input_object, write_outpu
 def main(args):
     logging.debug(args)
 
-    adata = read_input_object(args.input_object_file, args.input_format)
+    adata = read_input_object(args.input_object_file, args.input_format, sparse=True)
 
     if args.subset_list:
         k = adata.var.index.isin(args.subset_list)

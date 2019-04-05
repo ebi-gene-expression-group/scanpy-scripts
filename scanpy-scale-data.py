@@ -10,7 +10,7 @@ from scanpy_wrapper_utils import read_input_object, write_output_object, export_
 def main(args):
     logging.debug(args)
 
-    adata = read_input_object(args.input_object_file, args.input_format)
+    adata = read_input_object(args.input_object_file, args.input_format, sparse=True)
 
     if args.do_log:
         sc.pp.log1p(adata)
