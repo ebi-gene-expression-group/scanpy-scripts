@@ -9,7 +9,7 @@ def main(args):
     logging.debug(args)
     import scanpy.api as sc
 
-    adata = read_input_object(args.input_object_file, args.input_format)
+    adata = read_input_object(args.input_object_file, args.input_format, sparse=True)
 
     if args.save_raw:
         adata.raw = sc.pp.log1p(adata, copy=True)

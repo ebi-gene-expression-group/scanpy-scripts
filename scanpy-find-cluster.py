@@ -10,7 +10,7 @@ def main(args):
     logging.debug(args)
     import scanpy.api as sc
 
-    adata = read_input_object(args.input_object_file, args.input_format)
+    adata = read_input_object(args.input_object_file, args.input_format, sparse=False)
 
     if args.restrict_to is not None:
         args.restrict_to = (args.restrict_to[0], args.restrict_to[1:])

@@ -288,7 +288,7 @@ class ScanpyArgParser():
             setattr(self._args, key, entries)
 
 
-def read_input_object(filename, fmt):
+def read_input_object(filename, fmt, sparse=False):
     """Read an AnnData object from an input file
 
     * Parameters
@@ -304,7 +304,7 @@ def read_input_object(filename, fmt):
     if fmt == 'anndata':
         adata = sc.read(filename)
     elif fmt == 'loom':
-        adata = read_exchangeable_loom(filename)
+        adata = read_exchangeable_loom(filename, sparse=sparse)
     else:
         logging.error('should not reach here')
         sys.exit(1)

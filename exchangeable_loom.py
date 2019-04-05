@@ -166,7 +166,7 @@ def _read_manifest(h5file):
     )
 
 
-def read_exchangeable_loom(filename):
+def read_exchangeable_loom(filename, sparse=False):
     """Read exchangeable Loom
 
     * Parameters
@@ -178,7 +178,7 @@ def read_exchangeable_loom(filename):
         An AnnData object
     """
     # Use anndata to read matrix, obs and var
-    adata = anndata.read_loom(filename)
+    adata = anndata.read_loom(filename, sparse=sparse)
 
     if not _is_exchangeable_loom(filename):
         return adata

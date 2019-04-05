@@ -14,7 +14,7 @@ from scanpy_wrapper_utils import read_input_object, write_output_object, save_ou
 def main(args):
     logging.debug(args)
 
-    adata = read_input_object(args.input_object_file, args.input_format)
+    adata = read_input_object(args.input_object_file, args.input_format, sparse=False)
 
     if len(args.groups) == 1:
         args.groups = args.groups[0]
