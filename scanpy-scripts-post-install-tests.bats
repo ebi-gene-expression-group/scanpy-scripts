@@ -345,7 +345,7 @@
 				 $FC_use_weight
 
     [ "$status" -eq 0 ]
-    [ -f  "$cluster_loom" ] && [ -f "$cluster_text_file2" ] && [ -z `diff -q "$cluster_text_file" "$cluster_text_file2"` ]
+    [ -f  "$cluster_loom" ] && [ -f "$cluster_text_file2" ] && [[ -z $(diff -q "$cluster_text_file" "$cluster_text_file2") ]]
 }
 
 # Run UMAP
@@ -485,7 +485,7 @@
 				 --key $FM_key
 
     [ "$status" -eq 0 ]
-    [ -f  "$marker_h5ad" ] && [ -f "$marker_image_file" ] && [ -f "$marker_text_file2" ] && [ -z `diff -q "$marker_text_file" "$marker_text_file2"` ]
+    [ -f  "$marker_h5ad" ] && [ -f "$marker_image_file" ] && [ -f "$marker_text_file2" ] && [[ -z $(diff -q "$marker_text_file" "$marker_text_file2") ]]
 }
 
 # Local Variables:
