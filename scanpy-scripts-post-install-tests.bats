@@ -334,10 +334,10 @@
         skip "$cluster_loom exists and use_existing_outputs is set to 'true'"
     fi
 
-    run rm -f $cluster_loom $cluster_text_file && \
+    run rm -f $cluster_loom $cluster_text_file2 && \
 	./scanpy-find-cluster.py -i $graph_loom \
 				 -o $cluster_loom \
-				 --output-text-file $cluster_text_file \
+				 --output-text-file $cluster_text_file2 \
 				 --flavor $FC_flavor \
 				 --resolution $FC_resolution \
 				 --key-added $FC_key_added \
@@ -345,7 +345,7 @@
 				 $FC_use_weight
 
     [ "$status" -eq 0 ]
-    [ -f  "$cluster_loom" ] && [ -f "$cluster_text_file" ]
+    [ -f  "$cluster_loom" ] && [ -f "$cluster_text_file2" ] && [ -z `diff -q "$cluster_text_file" "$cluster_text_file2"` ]
 }
 
 # Run UMAP
@@ -467,13 +467,13 @@
 }
 
 @test "Run find markers (loom)" {
-    if [ "$use_existing_outputs" = 'true' ] && [ -f "$marker_h5ad" ]; then
-        skip "$marker_h5ad exists and use_existing_outputs is set to 'true'"
+    if [ "$use_existing_outputs" = 'true' ] && [ -f "$marker2_h5ad" ]; then
+        skip "$marker2_h5ad exists and use_existing_outputs is set to 'true'"
     fi
 
-    run rm -f $marker_loom $marker_image_file $marker_text_file && \
-	./scanpy-find-markers.py -i $cluster_loom -o $marker_h5ad \
-				 --output-text-file $marker_text_file \
+    run rm -f $marker_loom $marker_image_file $marker_text_file2 && \
+	./scanpy-find-markers.py -i $cluster_loom -o $marker2_h5ad \
+				 --output-text-file $marker_text_file2 \
 				 --groupby $FM_groupby \
 				 --groups $FM_groups \
 				 --reference $FM_reference \
@@ -485,7 +485,7 @@
 				 --key $FM_key
 
     [ "$status" -eq 0 ]
-    [ -f  "$marker_h5ad" ] && [ -f "$marker_image_file" ] && [ -f "$marker_text_file" ]
+    [ -f  "$marker_h5ad" ] && [ -f "$marker_image_file" ] && [ -f "$marker_text_file2" ] && [ -z `diff -q "$marker_text_file" "$marker_text_file2"` ]
 }
 
 # Local Variables:
