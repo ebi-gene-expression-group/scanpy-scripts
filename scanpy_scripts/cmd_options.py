@@ -73,7 +73,7 @@ COMMON_OPTIONS = {
     ),
 
     'random_state': click.option(
-        '--random-state', '-R',
+        '--random-state', '-S',
         type=click.INT,
         default=0,
         show_default=True,
@@ -81,7 +81,7 @@ COMMON_OPTIONS = {
     ),
 
     'zero_center': click.option(
-        '--no-zero-center', '-Z', 'zero_center',
+        '--no-zero-center', 'zero_center',
         is_flag=True,
         flag_value=False,
         default=True,
@@ -103,7 +103,7 @@ READ_CMD_OPTIONS = [
         callback=mutually_exclusive_with('--input-10x-h5'),
         help='Path of input folder containing 10x data in mtx format.',
     ),
-    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['output'],
     click.option(
         '--genome', '-g',
         callback=required_by('--input-10x-h5'),
@@ -144,6 +144,9 @@ FILTER_CMD_OPTIONS = [
     *COMMON_OPTIONS['output'],
     click.option(
         '--gene-name', '-g',
+        type=click.STRING,
+        default='index',
+        show_default=True,
         help='Name of the variable that contains gene names, '
         'used for flagging mitochondria genes.',
     ),
@@ -195,7 +198,7 @@ NORM_CMD_OPTIONS = [
         '--normalize-to', '-t', 'counts_per_cell_after',
         type=float,
         default=10_000,
-        show_default='1e4',
+        show_default=True,
         help='Normalize per cell nUMI to this number.',
     ),
 ]
@@ -217,7 +220,7 @@ HVG_CMD_OPTIONS = [
         type=(click.FLOAT, click.FLOAT),
         callback=valid_limit,
         default=(0.5, float('inf')),
-        show_default='(0.5, inf)',
+        show_default=True,
         help='Cutoffs for the dispersion of expression'
         'in the format of "-d min max".',
     ),
@@ -253,11 +256,10 @@ HVG_CMD_OPTIONS = [
         '--by-batch', '-B',
         type=(click.STRING, click.INT),
         multiple=False,
-        default=None,
+        default=(None, None),
         show_default=True,
-        metavar='(NAME, NUM)',
-        help='Find highly variable genes within each batch defined by <NAME> '
-        'then pool and keep those found in at least <NUM> batches.',
+        help='Find highly variable genes within each batch defined by <TEXT> '
+        'then pool and keep those found in at least <INTEGER> batches.',
     ),
 ]
 
@@ -314,7 +316,7 @@ PCA_CMD_OPTIONS = [
     COMMON_OPTIONS['zero_center'],
     COMMON_OPTIONS['random_state'],
     click.option(
-        '--use-all', '-a', 'use_higly_variable',
+        '--use-all', '-a', 'use_highly_variable',
         is_flag=True,
         flag_value=False,
         default=True,
@@ -344,7 +346,7 @@ NEIGHBOR_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['output'],
     click.option(
-        '--n-neighbors',
+        '--n-neighbors', '-k',
         type=CommaSeparatedText(click.INT, simplify=True),
         default=15,
         show_default=True,
@@ -357,7 +359,7 @@ NEIGHBOR_CMD_OPTIONS = [
         'the distance of the --n-neighbors neighbor.',
     ),
     click.option(
-        '--n-pcs',
+        '--n-pcs', '-n',
         type=click.INT,
         default=None,
         show_default=True,
@@ -365,7 +367,7 @@ NEIGHBOR_CMD_OPTIONS = [
         'None.',
     ),
     click.option(
-        '--use-rep',
+        '--use-rep', '-u',
         type=click.STRING,
         default=None,
         show_default=True,
