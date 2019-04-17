@@ -34,8 +34,9 @@ def make_subcmd(cmd_name, options, func, cmd_desc, arg_desc):
         """{cmd_desc}\n\n\b\n{arg_desc}"""
         if input_obj:
             adata = _read_obj(input_obj, input_format=input_format)
-
-        adata = func(adata, **kwargs)
+            func(adata, **kwargs)
+        else:
+            func(**kwargs)
 
         _write_obj(
             adata,
