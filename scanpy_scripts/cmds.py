@@ -17,7 +17,7 @@ from .cmd_options import (
 )
 from .lib._read import read_10x
 from .lib._filter import filter_anndata
-from .lib._norm import normalise
+from .lib._norm import normalize
 from .lib._hvg import hvg
 from .lib._neighbors import neighbors
 
@@ -48,7 +48,7 @@ FILTER_CMD = make_subcmd(
 NORM_CMD = make_subcmd(
     'norm',
     NORM_CMD_OPTIONS,
-    normalise,
+    normalize,
     cmd_desc='Normalise data per cell.',
     arg_desc=_IO_DESC,
 )

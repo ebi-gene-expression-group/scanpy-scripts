@@ -209,10 +209,10 @@ def _get_filter_conditions(adata, attributes, param, category, subset):
 def _repr_obj(obj, padding='  ', level=0):
     if isinstance(obj, dict):
         obj_str = '\n'.join(['\n'.join([
-            padding * level + k + ':', repr_obj(v, level=level+1)
+            padding * level + k + ':', _repr_obj(v, level=level+1)
         ]) for k, v in obj.items()])
     elif isinstance(obj, (tuple, list, set)):
-        obj_str = '\n'.join([repr_obj(elm, level=level) for elm in obj])
+        obj_str = '\n'.join([_repr_obj(elm, level=level) for elm in obj])
     else:
         obj_str = padding * level + repr(obj)
     return obj_str
