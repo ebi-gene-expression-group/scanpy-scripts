@@ -75,7 +75,7 @@ def required_by(param_name):
             other_value = ctx.params[internal_name]
         except KeyError:
             return value
-        if other_value is not None and value is None:
+        if other_value and not value:
             param.type.fail('required by "{}".'.format(param_name), param, ctx,)
         return value
     return required
