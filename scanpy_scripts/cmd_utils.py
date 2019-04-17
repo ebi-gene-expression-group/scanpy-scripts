@@ -36,7 +36,7 @@ def make_subcmd(cmd_name, options, func, cmd_desc, arg_desc):
             adata = _read_obj(input_obj, input_format=input_format)
             func(adata, **kwargs)
         else:
-            func(**kwargs)
+            adata = func(**kwargs)
 
         _write_obj(
             adata,
