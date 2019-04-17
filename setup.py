@@ -18,7 +18,7 @@ setup(
         'scanpy-scripts-tests.bats',
     ],
     entry_points=dict(
-        console_scripts='scanpy=scanpy_scripts.cli:cli',
+        console_scripts='scanpy-cli=scanpy_scripts.cli:cli',
     ),
     install_requires=[
         'matplotlib',
