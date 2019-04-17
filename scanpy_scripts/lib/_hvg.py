@@ -17,7 +17,7 @@ def hvg(
     Wrapper function for sc.highly_variable_genes(), mainly to support searching
     by batch and pooling.
     """
-    if by_batch:
+    if by_batch and isinstance(by_batch, (list, tuple)) and by_batch[0]:
         batch_name = by_batch[0]
         min_n = by_batch[1]
         k_hvg = np.zeros(adata.shape[1], dtype=int)
