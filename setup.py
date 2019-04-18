@@ -18,7 +18,16 @@ setup(
         'scanpy-scripts-tests.bats',
     ],
     entry_points=dict(
-        console_scripts='scanpy-cli=scanpy_scripts.cli:cli',
+        console_scripts=[
+            'scanpy-cli=scanpy_scripts.cli:cli',
+            'scanpy-read=scanpy_scripts.cmds:READ_CMD',
+            'scanpy-filter=scanpy_scripts.cmds:FILTER_CMD',
+            'scanpy-norm=scanpy_scripts.cmds:NORM_CMD',
+            'scanpy-scale=scanpy_scripts.cmds:SCALE_CMD',
+            'scanpy-regress=scanpy_scripts.cmds:REGRESS_CMD',
+            'scanpy-pca=scanpy_scripts.cmds:PCA_CMD',
+            'scanpy-neighbor=scanpy_scripts.cmds:NEIGHBOR_CMD',
+        ]
     ),
     install_requires=[
         'matplotlib',
