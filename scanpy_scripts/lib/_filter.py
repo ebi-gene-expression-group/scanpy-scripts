@@ -105,21 +105,21 @@ def _get_attributes(adata):
     }
 
     for attr, dtype in adata.obs.dtypes.to_dict().items():
-        typ = _normalise_dtype(dtype)
-        if typ is str:
+        typ = dtype.kind
+        if typ == 'O':
             attributes['cell']['categorical'].append(attr)
-        elif typ is int or typ is float:
+        elif typ in ('i', 'f'):
             attributes['cell']['numerical'].append(attr)
-        elif typ is bool:
+        elif typ == 'b':
             attributes['cell']['bool'].append(attr)
 
     for attr, dtype in adata.var.dtypes.to_dict().items():
-        typ = _normalise_dtype(dtype)
-        if typ is str:
+        typ = dtype.kind
+        if typ == 'O':
             attributes['gene']['categorical'].append(attr)
-        elif typ is int or typ is float:
+        elif typ in ('i', 'f'):
             attributes['gene']['numerical'].append(attr)
-        elif typ is bool:
+        elif typ == 'b':
             attributes['gene']['bool'].append(attr)
 
     attributes['cell']['numerical'].extend([
@@ -139,11 +139,6 @@ def _get_attributes(adata):
     ])
     logging.debug(attributes)
     return attributes
-
-
-def _normalise_dtype(typ):
-    remove_digits = str.maketrans('', '', '0123456789')
-    return eval(str(typ).translate(remove_digits).replace('object', 'str'))
 
 
 def _get_filter_conditions(adata, attributes, param, category, subset):
