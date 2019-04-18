@@ -5,6 +5,7 @@ scanpy
 import logging
 import click
 import scanpy as sc
+from .click_utils import NaturalOrderGroup
 from .cmds import (
     READ_CMD,
     FILTER_CMD,
@@ -17,7 +18,7 @@ from .cmds import (
 )
 
 
-@click.group()
+@click.group(cls=NaturalOrderGroup)
 @click.option(
     '--debug',
     is_flag=True,

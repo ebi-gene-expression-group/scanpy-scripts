@@ -5,6 +5,24 @@ Provide helper functions for command line parsing with click
 import click
 
 
+class NaturalOrderGroup(click.Group):
+    """Command group trying to list subcommands in the order they were added.
+
+    Make sure you initialize the `self.commands` with OrderedDict instance.
+
+    With decorator, use::
+
+        @click.group(cls=NaturalOrderGroup)
+    """
+    def list_commands(self, ctx):
+        """List command names as they are in commands dict.
+
+        If the dict is OrderedDict, it will preserve the order commands
+        were added.
+        """
+        return self.commands.keys()
+
+
 class CommaSeparatedText(click.ParamType):
     """
     Comma separated text
