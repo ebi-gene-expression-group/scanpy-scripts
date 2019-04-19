@@ -17,9 +17,9 @@ def neighbors(adata, n_neighbors=15, key_added=None, **kwargs):
     else:
         for i, n_nb in enumerate(n_neighbors):
             if key_added is None:
-                key = 'neighbors_{}'.format(n_nb)
+                key = 'neighbors_k{}'.format(n_nb)
             elif not isinstance(key_added, (list, tuple)):
-                key = '{}_{}'.format(key_added, n_nb)
+                key = '{}_k{}'.format(key_added, n_nb)
             elif len(key_added) == len(n_neighbors):
                 key = key_added[i]
             else:
@@ -27,7 +27,7 @@ def neighbors(adata, n_neighbors=15, key_added=None, **kwargs):
                                  'iterable of the same length as `n_neighbors`.')
             neighbors(
                 adata,
-                neighbors=n_nb,
+                n_neighbors=n_nb,
                 key_added=key,
                 **kwargs,
             )
