@@ -23,7 +23,7 @@ setup() {
     scale_obj="${output_dir}/scale.h5ad"
     pca_opt="-n 50 -V arpack --show-obj stdout"
     pca_obj="${output_dir}/pca.h5ad"
-    neighbor_opt="-k 10 -n 25 -m umap --show-obj stdout"
+    neighbor_opt="-k 5,10,20 -n 25 -m umap --show-obj stdout"
     neighbor_obj="${output_dir}/neighbor.h5ad"
 }
 
