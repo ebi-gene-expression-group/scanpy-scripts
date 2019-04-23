@@ -525,7 +525,7 @@ TSNE_CMD_OPTIONS = [
         flag_value=False,
         default=True,
         show_default=True,
-        help='',
+        help='Use the MulticoreTSNE package by D. Ulyanov if it is installed.',
     ),
     COMMON_OPTIONS['n_jobs'],
 ]

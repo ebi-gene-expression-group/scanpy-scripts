@@ -25,6 +25,10 @@ setup() {
     pca_obj="${output_dir}/pca.h5ad"
     neighbor_opt="-k 5,10,20 -n 25 -m umap --show-obj stdout"
     neighbor_obj="${output_dir}/neighbor.h5ad"
+    tsne_opt="-n 25 --use-rep X_pca --learning-rate 200"
+    tsne_obj="${output_dir}/tsne.h5ad"
+    umap_opt="--min-dist 0.75 --alpha 1 --gamma 1"
+    umap_obj="${output_dir}/umap.h5ad"
 }
 
 @test "Downlaod and extract .mtx matrix" {
@@ -142,6 +146,32 @@ setup() {
     [ -f  "$neighbor_obj" ]
 }
 
+# Run TSNE
+
+@test "Run TSNE analysis" {
+    if [ "$resume" = 'true' ] && [ -f "$tsne_obj" ]; then
+        skip "$tsne_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $tsne_obj && $scanpy tsne $tsne_opt $pca_obj $tsne_obj
+
+    [ "$status" -eq 0 ]
+    [ -f  "$tsne_obj" ]
+}
+
+# Run UMAP
+
+@test "Run UMAP analysis" {
+    if [ "$resume" = 'true' ] && [ -f "$umap_obj" ]; then
+        skip "$umap_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $umap_obj && $scanpy umap $umap_opt $neighbor_obj $umap_obj
+
+    [ "$status" -eq 0 ]
+    [ -f  "$umap_obj" ]
+}
+
 # # Find clusters
 
 # @test "Run find cluster" {
@@ -161,55 +191,6 @@ setup() {
 
 #     [ "$status" -eq 0 ]
 #     [ -f  "$cluster_object" ] && [ -f "$cluster_text_file" ]
-# }
-
-# # Run UMAP
-
-# @test "Run UMAP analysis" {
-#     if [ "$resume" = 'true' ] && [ -f "$umap_object" ]; then
-#         skip "$umap_object exists and resume is set to 'true'"
-#     fi
-
-#     run rm -f $umap_object $umap_image_file $umap_embeddings_file && \
-#         scanpy-run-umap -i $cluster_object -o $umap_object \
-#             --output-embeddings-file $umap_embeddings_file \
-#             -s $UMAP_random_seed \
-#             -n $UMAP_ncomp \
-#             --min-dist $UMAP_min_dist \
-#             --spread $UMAP_spread \
-#             --alpha $UMAP_alpha \
-#             --gamma $UMAP_gamma \
-#             --init-pos $UMAP_initpos \
-#             -P $umap_image_file \
-#             --color $UMAP_color \
-#             --projection $UMAP_projection \
-#             $UMAP_frameon
-
-#     [ "$status" -eq 0 ]
-#     [ -f  "$umap_object" ] && [ -f "$umap_image_file" ] && [ -f "$umap_embeddings_file" ]
-# }
-
-# # Run TSNE
-
-# @test "Run TSNE analysis" {
-#     if [ "$resume" = 'true' ] && [ -f "$tsne_object" ]; then
-#         skip "$tsne_object exists and resume is set to 'true'"
-#     fi
-
-#     run rm -f $tsne_object $tsne_image_file $tsne_embeddings_file && \
-#         scanpy-run-tsne -i $cluster_object -o $tsne_object \
-#             --output-embeddings-file $tsne_embeddings_file \
-#             -s $TSNE_random_seed \
-#             --perplexity $TSNE_perplexity \
-#             --early-exaggeration $TSNE_early_exaggeration \
-#             --learning-rate $TSNE_learning_rate \
-#             -P $tsne_image_file \
-#             --color $TSNE_color \
-#             --projection $TSNE_projection \
-#             $TSNE_frameon
-
-#     [ "$status" -eq 0 ]
-#     [ -f  "$tsne_object" ] && [ -f "$tsne_image_file" ] && [ -f "$tsne_embeddings_file" ]
 # }
 
 # # Find markers
