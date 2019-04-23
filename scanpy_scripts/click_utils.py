@@ -8,8 +8,6 @@ import click
 class NaturalOrderGroup(click.Group):
     """Command group trying to list subcommands in the order they were added.
 
-    Make sure you initialize the `self.commands` with OrderedDict instance.
-
     With decorator, use::
 
         @click.group(cls=NaturalOrderGroup)
