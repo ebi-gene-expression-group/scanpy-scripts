@@ -27,7 +27,7 @@ setup() {
     neighbor_obj="${output_dir}/neighbor.h5ad"
     tsne_opt="-n 25 --use-rep X_pca --learning-rate 200"
     tsne_obj="${output_dir}/tsne.h5ad"
-    umap_opt="--min-dist 0.75 --alpha 1 --gamma 1"
+    umap_opt="--use-graph neighbors_k10 --min-dist 0.75 --alpha 1 --gamma 1"
     umap_obj="${output_dir}/umap.h5ad"
 }
 
