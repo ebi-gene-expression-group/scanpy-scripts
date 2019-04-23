@@ -15,6 +15,8 @@ from .cmds import (
     REGRESS_CMD,
     PCA_CMD,
     NEIGHBOR_CMD,
+    UMAP_CMD,
+    TSNE_CMD,
 )
 
 
@@ -59,3 +61,5 @@ cli.add_command(SCALE_CMD)
 cli.add_command(REGRESS_CMD)
 cli.add_command(PCA_CMD)
 cli.add_command(NEIGHBOR_CMD)
+cli.add_command(UMAP_CMD)
+cli.add_command(TSNE_CMD)

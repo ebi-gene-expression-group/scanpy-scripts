@@ -88,6 +88,34 @@ COMMON_OPTIONS = {
         help='When set, omit zero-centering variables to allow efficient '
         'handling of sparse input.',
     ),
+
+    'n_pcs': click.option(
+        '--n-pcs', '-n',
+        type=click.INT,
+        default=None,
+        show_default=True,
+        help='Use this many PCs. Use `.X` if --n-pcs is 0 when --use-rep is '
+        'None.',
+    ),
+
+    'use_rep': click.option(
+        '--use-rep', '-u',
+        type=click.STRING,
+        default=None,
+        show_default=True,
+        help='Use the indicated representation. If None, the representation is '
+        'chosen automatically: for `.n_vars` < 50, `.X` is used, otherwise '
+        '`X_pca` is used. If `X_pca` is not present, it\'s computed with '
+        'default parameters.'
+    ),
+
+    'n_jobs': click.option(
+        '--n-jobs', '-J',
+        type=click.INT,
+        default=None,
+        show_default=True,
+        help='Number of jobs',
+    ),
 }
 
 READ_CMD_OPTIONS = [
@@ -358,24 +386,8 @@ NEIGHBOR_CMD_OPTIONS = [
         'neighbors to be searched, othwise a Gaussian kernel width is set to '
         'the distance of the --n-neighbors neighbor.',
     ),
-    click.option(
-        '--n-pcs', '-n',
-        type=click.INT,
-        default=None,
-        show_default=True,
-        help='Use this many PCs. Use `.X` if --n-pcs is 0 when --use-rep is '
-        'None.',
-    ),
-    click.option(
-        '--use-rep', '-u',
-        type=click.STRING,
-        default=None,
-        show_default=True,
-        help='Use the indicated representation. If None, the representation is '
-        'chosen automatically: for `.n_vars` < 50, `.X` is used, otherwise '
-        '`X_pca` is used. If `X_pca` is not present, it\'s computed with '
-        'default parameters.'
-    ),
+    COMMON_OPTIONS['n_pcs'],
+    COMMON_OPTIONS['use_rep'],
     click.option(
         '--no-knn', 'knn',
         is_flag=True,
@@ -464,4 +476,56 @@ UMAP_CMD_OPTIONS = [
         show_default=True,
         help='How to initialize the low dimensional embedding.',
     ),
+]
+
+TSNE_CMD_OPTIONS = [
+    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['output'],
+    COMMON_OPTIONS['n_pcs'],
+    COMMON_OPTIONS['use_rep'],
+    click.option(
+        '--perplexity',
+        type=click.FLOAT,
+        default=30,
+        show_default=True,
+        help='The perplexity is related to the number of nearest neighbors '
+        'that is used in other manifold learning algorithms. Larger datasets '
+        'usually require a larger perplexity. Consider selecting a value '
+        'between 5 and 50. The choice is not extremely critical since t-SNE '
+        'is quite insensitive to this parameter.',
+    ),
+    click.option(
+        '--early-exaggeration',
+        type=click.FLOAT,
+        default=12,
+        show_default=True,
+        help='Controls how tight natural clusters in the original space are in '
+        'the embedded space and how much space will be between them. For '
+        'larger values, the space between natural clusters will be larger in '
+        'the embedded space. Again, the choice of this parameter is not very '
+        'critical. If the cost function increases during initial optimization, '
+        'the early exaggeration factor or the learning rate might be too high.',
+    ),
+    click.option(
+        '--learning-rate',
+        type=click.FLOAT,
+        default=1000,
+        show_default=True,
+        help='Note that the R-package "Rtsne" uses a default of 200. The '
+        'learning rate can be a critical parameter. It should be between 100 '
+        'and 1000. If the cost function increases during initial optimization, '
+        'the early exaggeration factor or the learning rate might be too high. '
+        'If the cost function gets stuck in a bad local minimum increasing the '
+        'learning rate helps sometimes.',
+    ),
+    COMMON_OPTIONS['random_state'],
+    click.option(
+        '--no-fast-tsne', 'use_fast_tsne',
+        is_flag=True,
+        flag_value=False,
+        default=True,
+        show_default=True,
+        help='',
+    ),
+    COMMON_OPTIONS['n_jobs'],
 ]

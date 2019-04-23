@@ -14,12 +14,16 @@ from .cmd_options import (
     REGRESS_CMD_OPTIONS,
     PCA_CMD_OPTIONS,
     NEIGHBOR_CMD_OPTIONS,
+    UMAP_CMD_OPTIONS,
+    TSNE_CMD_OPTIONS,
 )
 from .lib._read import read_10x
 from .lib._filter import filter_anndata
 from .lib._norm import normalize
 from .lib._hvg import hvg
 from .lib._neighbors import neighbors
+from .lib._umap import umap
+from .lib._tsne import tsne
 
 
 _I_DESC = '<input_obj>:   input file in format specfied by --input-format'
@@ -94,5 +98,21 @@ NEIGHBOR_CMD = make_subcmd(
     NEIGHBOR_CMD_OPTIONS,
     neighbors,
     cmd_desc='Compute a neighbourhood graph of observations.',
+    arg_desc=_IO_DESC,
+)
+
+UMAP_CMD = make_subcmd(
+    'umap',
+    UMAP_CMD_OPTIONS,
+    umap,
+    cmd_desc='Embed the neighborhood graph using UMAP.',
+    arg_desc=_IO_DESC,
+)
+
+TSNE_CMD = make_subcmd(
+    'tsne',
+    TSNE_CMD_OPTIONS,
+    tsne,
+    cmd_desc='Embed the cells using t-SNE.',
     arg_desc=_IO_DESC,
 )
