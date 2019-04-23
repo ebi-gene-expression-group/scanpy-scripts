@@ -416,6 +416,13 @@ UMAP_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['output'],
     click.option(
+        '--use-graph',
+        type=click.STRING,
+        default='neighbors',
+        show_default=True,
+        help='Slot name under `.uns` that contains the KNN graph.',
+    ),
+    click.option(
         '--min-dist',
         type=click.FLOAT,
         default=0.5,
