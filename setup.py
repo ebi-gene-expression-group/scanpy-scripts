@@ -14,19 +14,24 @@ setup(
     url='https://github.com/ebi-gene-expression-group/scanpy-scripts',
     packages=find_packages(),
     scripts=[
-        'scanpy-scripts-tests.sh',
         'scanpy-scripts-tests.bats',
     ],
     entry_points=dict(
         console_scripts=[
             'scanpy-cli=scanpy_scripts.cli:cli',
-            'scanpy-read=scanpy_scripts.cmds:READ_CMD',
-            'scanpy-filter=scanpy_scripts.cmds:FILTER_CMD',
-            'scanpy-norm=scanpy_scripts.cmds:NORM_CMD',
-            'scanpy-scale=scanpy_scripts.cmds:SCALE_CMD',
+            'scanpy-read-10x=scanpy_scripts.cmds:READ_CMD',
+            'scanpy-filter-cells=scanpy_scripts.cmds:FILTER_CMD',
+            'scanpy-filter-genes=scanpy_scripts.cmds:FILTER_CMD',
+            'scanpy-normalise-data=scanpy_scripts.cmds:NORM_CMD',
+            'scanpy-find-variable-genes=scanpy_scripts.cmds:HVG_CMD',
+            'scanpy-scale-data=scanpy_scripts.cmds:SCALE_CMD',
             'scanpy-regress=scanpy_scripts.cmds:REGRESS_CMD',
-            'scanpy-pca=scanpy_scripts.cmds:PCA_CMD',
-            'scanpy-neighbor=scanpy_scripts.cmds:NEIGHBOR_CMD',
+            'scanpy-run-pca=scanpy_scripts.cmds:PCA_CMD',
+            'scanpy-neighbors=scanpy_scripts.cmds:NEIGHBOR_CMD',
+            'scanpy-run-tsne=scanpy_scripts.cmds:TSNE_CMD',
+            'scanpy-run-umap=scanpy_scripts.cmds:UMAP_CMD',
+            'scanpy-find-cluster=scanpy_scripts.cli:cluster',
+            'scanpy-find-markers=scanpy_scripts.cmds:DIFFEXP_CMD',
         ]
     ),
     install_requires=[
