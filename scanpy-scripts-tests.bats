@@ -13,7 +13,8 @@ setup() {
     read_obj="${output_dir}/read.h5ad"
     filter_opt="-p n_genes 200 2500 -p cell:n_counts 0 50000 -p n_cells 3 inf -p pct_counts_mito 0 0.2 --show-obj stdout"
     filter_obj="${output_dir}/filter.h5ad"
-    norm_opt="-r yes -t 10000 --show-obj stdout"
+    norm_mtx="${output_dir}/norm"
+    norm_opt="-r yes -t 10000 -X ${norm_mtx} --show-obj stdout"
     norm_obj="${output_dir}/norm.h5ad"
     hvg_opt="-m 0.0125 3 -d 0.5 inf -s --show-obj stdout"
     hvg_obj="${output_dir}/hvg.h5ad"
@@ -85,7 +86,7 @@ setup() {
     run rm -f $norm_obj && $scanpy norm $norm_opt $filter_obj $norm_obj
 
     [ "$status" -eq 0 ]
-    [ -f  "$norm_obj" ]
+    [ -f  "$norm_obj" ] && [ -f "${norm_mtx}_matrix.mtx" ]
 }
 
 # Find variable genes
