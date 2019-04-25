@@ -38,8 +38,45 @@ class CommaSeparatedText(click.ParamType):
                 converted = converted[0]
             return converted
         except ValueError:
-            self.fail('{} is not a valid comma separated list of {}'.format(
-                value, self.dtype_name), param, ctx)
+            self.fail(
+                '{} is not a valid comma separated list of {}'.format(
+                    value, self.dtype_name),
+                param,
+                ctx
+            )
+
+
+class Dictionary(click.ParamType):
+    """
+    Text to be parsed as a python dict definition
+    """
+    def __init__(self):
+        self.name = 'TEXT:VAL[,TEXT:VAL...]'
+
+    def convert(self, value, param, ctx):
+        try:
+            converted = dict()
+            for token in value.split(','):
+                if ':' not in token:
+                    raise ValueError
+                key, _, value = token.partition(':')
+                if not key:
+                    raise ValueError
+                if value == 'None':
+                    value = None
+                else:
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        pass
+                converted[key] = value
+            return converted
+        except ValueError:
+            self.fail(
+                '{} is not a valid python dict definition'.format(value),
+                param,
+                ctx
+            )
 
 
 def _get_type_name(obj):

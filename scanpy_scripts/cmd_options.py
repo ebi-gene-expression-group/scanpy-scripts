@@ -5,6 +5,7 @@ Provide cmd options
 import click
 from .click_utils import (
     CommaSeparatedText,
+    Dictionary,
     valid_limit,
     valid_parameter_limits,
     mutually_exclusive_with,
@@ -56,6 +57,52 @@ COMMON_OPTIONS = {
         ),
     ],
 
+    'use_pc': [
+        click.option(
+            '--n-pcs', '-n',
+            type=click.INT,
+            default=None,
+            show_default=True,
+            help='Use this many PCs. Use `.X` if --n-pcs is 0 when --use-rep is '
+            'None.',
+        ),
+
+        click.option(
+            '--use-rep', '-u',
+            type=click.STRING,
+            default=None,
+            show_default=True,
+            help='Use the indicated representation. If None, the representation is '
+            'chosen automatically: for `.n_vars` < 50, `.X` is used, otherwise '
+            '`X_pca` is used. If `X_pca` is not present, it\'s computed with '
+            'default parameters.'
+        ),
+    ],
+
+    'knn_graph': [
+        click.option(
+            '--use-graph',
+            type=click.STRING,
+            default='neighbors',
+            show_default=True,
+            help='Slot name under `.uns` that contains the KNN graph of which '
+            'sparse adjacency matrix is used for clustering.',
+        ),
+        click.option(
+            '--directed/--undirected', 'directed',
+            default=True,
+            show_default=True,
+            help='Interpret the adjacency matrix as directed graph.',
+        ),
+        click.option(
+            '--use-weights',
+            is_flag=True,
+            default=False,
+            show_default=True,
+            help='Use weights from KNN graph.',
+        ),
+    ],
+
     'copy': click.option(
         '--copy',
         is_flag=True,
@@ -80,6 +127,13 @@ COMMON_OPTIONS = {
         help='Seed for random number generator.',
     ),
 
+    'use_raw': click.option(
+        '--use-raw/--no-raw', 'use_raw',
+        default=True,
+        show_default=True,
+        help='Use expression values in `.raw` if present.',
+    ),
+
     'zero_center': click.option(
         '--no-zero-center', 'zero_center',
         is_flag=True,
@@ -89,32 +143,21 @@ COMMON_OPTIONS = {
         'handling of sparse input.',
     ),
 
-    'n_pcs': click.option(
-        '--n-pcs', '-n',
-        type=click.INT,
-        default=None,
-        show_default=True,
-        help='Use this many PCs. Use `.X` if --n-pcs is 0 when --use-rep is '
-        'None.',
-    ),
-
-    'use_rep': click.option(
-        '--use-rep', '-u',
-        type=click.STRING,
-        default=None,
-        show_default=True,
-        help='Use the indicated representation. If None, the representation is '
-        'chosen automatically: for `.n_vars` < 50, `.X` is used, otherwise '
-        '`X_pca` is used. If `X_pca` is not present, it\'s computed with '
-        'default parameters.'
-    ),
-
     'n_jobs': click.option(
         '--n-jobs', '-J',
         type=click.INT,
         default=None,
         show_default=True,
-        help='Number of jobs',
+        help='Number of jobs for parallel computation.',
+    ),
+
+    'restrict_to': click.option(
+        '--restrict-to',
+        type=(click.STRING, CommaSeparatedText(click.STRING)),
+        default=(None, None),
+        show_default=True,
+        help='Restrict the clustering to the categories within the key for '
+        'sample annotation, in the form of "obs_key list_of_categories".',
     ),
 }
 
@@ -195,7 +238,7 @@ FILTER_CMD_OPTIONS = [
     ),
     click.option(
         '--category', '-c',
-        type=(str, CommaSeparatedText()),
+        type=(click.STRING, CommaSeparatedText()),
         multiple=True,
         help='Categorical attributes used to filter the data, '
         'in the format of "-c <name> <values>", '
@@ -204,7 +247,7 @@ FILTER_CMD_OPTIONS = [
     ),
     click.option(
         '--subset', '-s',
-        type=(str, click.File()),
+        type=(click.STRING, click.File()),
         multiple=True,
         help='Similar to --category in the format of "-s <name> <file>", '
         'but the <file> to be a one-column table that provides the values. '
@@ -283,7 +326,6 @@ HVG_CMD_OPTIONS = [
     click.option(
         '--by-batch', '-B',
         type=(click.STRING, click.INT),
-        multiple=False,
         default=(None, None),
         show_default=True,
         help='Find highly variable genes within each batch defined by <TEXT> '
@@ -308,6 +350,7 @@ SCALE_CMD_OPTIONS = [
 REGRESS_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['output'],
+    COMMON_OPTIONS['n_jobs'],
     click.option(
         '--keys', '-k',
         type=CommaSeparatedText(simplify=True),
@@ -315,18 +358,13 @@ REGRESS_CMD_OPTIONS = [
         show_default=True,
         help='Key(s) for observation annotation on which to regress.',
     ),
-    click.option(
-        '--n-jobs', '-j',
-        type=click.INT,
-        default=None,
-        show_default=True,
-        help='Number of jobs for parallel computation.',
-    ),
 ]
 
 PCA_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['output'],
+    COMMON_OPTIONS['zero_center'],
+    COMMON_OPTIONS['random_state'],
     click.option(
         '--n-comps', '-n',
         type=click.INT,
@@ -341,8 +379,6 @@ PCA_CMD_OPTIONS = [
         show_default=True,
         help='SVD solver to use.'
     ),
-    COMMON_OPTIONS['zero_center'],
-    COMMON_OPTIONS['random_state'],
     click.option(
         '--use-all', '-a', 'use_highly_variable',
         is_flag=True,
@@ -373,6 +409,9 @@ PCA_CMD_OPTIONS = [
 NEIGHBOR_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['output'],
+    *COMMON_OPTIONS['use_pc'],
+    COMMON_OPTIONS['key_added'],
+    COMMON_OPTIONS['random_state'],
     click.option(
         '--n-neighbors', '-k',
         type=CommaSeparatedText(click.INT, simplify=True),
@@ -386,8 +425,6 @@ NEIGHBOR_CMD_OPTIONS = [
         'neighbors to be searched, othwise a Gaussian kernel width is set to '
         'the distance of the --n-neighbors neighbor.',
     ),
-    COMMON_OPTIONS['n_pcs'],
-    COMMON_OPTIONS['use_rep'],
     click.option(
         '--no-knn', 'knn',
         is_flag=True,
@@ -407,21 +444,14 @@ NEIGHBOR_CMD_OPTIONS = [
         help='Use umap or gauss with adaptive width for computing '
         'connectivities.'
     ),
-    COMMON_OPTIONS['key_added'],
-    COMMON_OPTIONS['random_state'],
-    COMMON_OPTIONS['copy'],
 ]
 
 UMAP_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['output'],
-    click.option(
-        '--use-graph',
-        type=click.STRING,
-        default='neighbors',
-        show_default=True,
-        help='Slot name under `.uns` that contains the KNN graph.',
-    ),
+    COMMON_OPTIONS['knn_graph'][0], # --use-graph
+    COMMON_OPTIONS['random_state'],
+    COMMON_OPTIONS['key_added'],
     click.option(
         '--min-dist',
         type=click.FLOAT,
@@ -488,8 +518,10 @@ UMAP_CMD_OPTIONS = [
 TSNE_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['output'],
-    COMMON_OPTIONS['n_pcs'],
-    COMMON_OPTIONS['use_rep'],
+    *COMMON_OPTIONS['use_pc'],
+    COMMON_OPTIONS['random_state'],
+    COMMON_OPTIONS['key_added'],
+    COMMON_OPTIONS['n_jobs'],
     click.option(
         '--perplexity',
         type=click.FLOAT,
@@ -525,7 +557,6 @@ TSNE_CMD_OPTIONS = [
         'If the cost function gets stuck in a bad local minimum increasing the '
         'learning rate helps sometimes.',
     ),
-    COMMON_OPTIONS['random_state'],
     click.option(
         '--no-fast-tsne', 'use_fast_tsne',
         is_flag=True,
@@ -534,5 +565,131 @@ TSNE_CMD_OPTIONS = [
         show_default=True,
         help='Use the MulticoreTSNE package by D. Ulyanov if it is installed.',
     ),
-    COMMON_OPTIONS['n_jobs'],
+]
+
+LOUVAIN_CMD_OPTIONS = [
+    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['output'],
+    *COMMON_OPTIONS['knn_graph'],
+    COMMON_OPTIONS['restrict_to'],
+    COMMON_OPTIONS['random_state'],
+    COMMON_OPTIONS['key_added'],
+    click.option(
+        '--flavor',
+        type=click.Choice(['vtraag', 'igraph']),
+        default='vtraag',
+        show_default=True,
+        help='Choose between two packages for computing the clustering. '
+        '"vtraag" is much powerful, and the default.',
+    ),
+    click.option(
+        '--resolution', '-r',
+        type=CommaSeparatedText(click.FLOAT, simplify=True),
+        default=1,
+        show_default=True,
+        help='For the default flavor "vtraag", you can provide a resolution. '
+        'Higher resolution means finding more and smaller clusters.',
+    ),
+]
+
+LEIDEN_CMD_OPTIONS = [
+    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['output'],
+    *COMMON_OPTIONS['knn_graph'],
+    COMMON_OPTIONS['restrict_to'],
+    COMMON_OPTIONS['random_state'],
+    COMMON_OPTIONS['key_added'],
+    click.option(
+        '--resolution', '-r',
+        type=CommaSeparatedText(click.FLOAT, simplify=True),
+        default=1,
+        show_default=True,
+        help='A parameter value controlling the coarseness of the clustering. '
+        'Higher values lead to more clusters. Set to "None" if overriding '
+        '--partition_type to one that doesn\'t accept `resolution_parameter`.',
+    ),
+    click.option(
+        '--n-iterations',
+        type=click.INT,
+        default=-1,
+        show_default=True,
+        help='How many iterations of the Leiden clustering algorithm to '
+        'perform. -1 has the algorithm run until it reaches its optimal '
+        'clustering.',
+    ),
+]
+
+DIFFEXP_CMD_OPTIONS = [
+    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['output'],
+    COMMON_OPTIONS['use_raw'],
+    click.option(
+        '--groupby', '-g',
+        type=click.STRING,
+        required=True,
+        help='The key of the observations grouping to consider.',
+    ),
+    click.option(
+        '--groups',
+        type=CommaSeparatedText(simplify=True),
+        default='all',
+        show_default=True,
+        help='Subset of groups to which comparison shall be restricted.',
+    ),
+    click.option(
+        '--reference',
+        type=click.STRING,
+        default='rest',
+        show_default=True,
+        help='If "rest", compare each group to the union of the rest of the '
+        'groups. If a group identifier, compare with respect to this group.',
+    ),
+    click.option(
+        '--n-genes', '-n',
+        type=click.INT,
+        default=None,
+        show_default=True,
+        help='The number of genes that appear in the retured tables. By '
+        'default return all available genes depending on the value of '
+        '--use-raw.'
+    ),
+    click.option(
+        '--method',
+        type=click.Choice(
+            ['logreg', 't-test', 'wilcoxon', 't-test_overestim_var']),
+        default='t-test_overestim_var',
+        show_default=True,
+        help='Method of performing differential expression analysis.',
+    ),
+    click.option(
+        '--corr-method',
+        type=click.Choice(['benjamini-hochberg', 'bonferroni']),
+        default='benjamini-hochberg',
+        show_default=True,
+        help='P-value correction method. Used only for "t-test", '
+        '"t-test_overestim_var" and "wilcoxon".',
+    ),
+    click.option(
+        '--rankby-abs',
+        is_flag=True,
+        default=False,
+        show_default=True,
+        help='Rank genes by the absolute value of the score, not by the score. '
+        'The returned scores are never the absolute values.',
+    ),
+    click.option(
+        '--logreg-param',
+        type=Dictionary(),
+        default=None,
+        show_default=True,
+        help='Parameters passed to `sklearn.linear_model.LogisticRegression`.',
+    ),
+    click.option(
+        '--save',
+        type=click.Path(dir_okay=False, writable=True),
+        default=None,
+        show_default=True,
+        help='Tab-separated table to store results of differential expression '
+        'analysis.',
+    ),
 ]

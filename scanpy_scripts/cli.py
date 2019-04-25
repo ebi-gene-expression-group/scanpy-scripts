@@ -17,6 +17,9 @@ from .cmds import (
     NEIGHBOR_CMD,
     UMAP_CMD,
     TSNE_CMD,
+    LOUVAIN_CMD,
+    LEIDEN_CMD,
+    DIFFEXP_CMD,
 )
 
 
@@ -61,5 +64,23 @@ cli.add_command(SCALE_CMD)
 cli.add_command(REGRESS_CMD)
 cli.add_command(PCA_CMD)
 cli.add_command(NEIGHBOR_CMD)
-cli.add_command(UMAP_CMD)
-cli.add_command(TSNE_CMD)
+
+
+@cli.group(cls=NaturalOrderGroup)
+def embed():
+    """Embed cells into two-dimensional space."""
+
+
+embed.add_command(UMAP_CMD)
+embed.add_command(TSNE_CMD)
+
+
+@cli.group(cls=NaturalOrderGroup)
+def cluster():
+    """Cluster cells into sub-populations."""
+
+
+cluster.add_command(LOUVAIN_CMD)
+cluster.add_command(LEIDEN_CMD)
+
+cli.add_command(DIFFEXP_CMD)

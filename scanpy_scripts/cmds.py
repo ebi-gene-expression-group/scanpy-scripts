@@ -16,6 +16,9 @@ from .cmd_options import (
     NEIGHBOR_CMD_OPTIONS,
     UMAP_CMD_OPTIONS,
     TSNE_CMD_OPTIONS,
+    LOUVAIN_CMD_OPTIONS,
+    LEIDEN_CMD_OPTIONS,
+    DIFFEXP_CMD_OPTIONS,
 )
 from .lib._read import read_10x
 from .lib._filter import filter_anndata
@@ -24,6 +27,9 @@ from .lib._hvg import hvg
 from .lib._neighbors import neighbors
 from .lib._umap import umap
 from .lib._tsne import tsne
+from .lib._louvain import louvain
+from .lib._leiden import leiden
+from .lib._diffexp import diffexp
 
 
 _I_DESC = '<input_obj>:   input file in format specfied by --input-format'
@@ -114,5 +120,29 @@ TSNE_CMD = make_subcmd(
     TSNE_CMD_OPTIONS,
     tsne,
     cmd_desc='Embed the cells using t-SNE.',
+    arg_desc=_IO_DESC,
+)
+
+LOUVAIN_CMD = make_subcmd(
+    'louvain',
+    LOUVAIN_CMD_OPTIONS,
+    louvain,
+    cmd_desc='Find clusters by Louvain algorithm.',
+    arg_desc=_IO_DESC,
+)
+
+LEIDEN_CMD = make_subcmd(
+    'leiden',
+    LEIDEN_CMD_OPTIONS,
+    leiden,
+    cmd_desc='Find clusters by Leiden algorithm.',
+    arg_desc=_IO_DESC,
+)
+
+DIFFEXP_CMD = make_subcmd(
+    'diffexp',
+    DIFFEXP_CMD_OPTIONS,
+    diffexp,
+    cmd_desc='Find markers for each clusters.',
     arg_desc=_IO_DESC,
 )
