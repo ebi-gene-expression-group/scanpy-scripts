@@ -6,7 +6,7 @@ install:
   - pip install -U setuptools>=40.1
   - pip install .
 
-script: ./scanpy-scripts-tests.sh
+script: ./scanpy-scripts-tests.bats
 
 cache:
   pip: true
