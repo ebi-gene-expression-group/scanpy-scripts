@@ -50,7 +50,7 @@ COMMON_OPTIONS = {
         ),
         click.option(
             '--export-mtx', '-X',
-            type=click.Path(dir_okay=False, writable=True),
+            type=click.Path(dir_okay=True, writable=True),
             default=None,
             show_default=True,
             help='When specified, using it as prefix for exporting mtx files. '
