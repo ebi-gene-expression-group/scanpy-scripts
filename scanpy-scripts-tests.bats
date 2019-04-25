@@ -186,7 +186,6 @@ setup() {
         skip "$louvain_obj exists and resume is set to 'true'"
     fi
 
-    echo $scanpy cluster louvain $louvain_opt $umap_obj $louvain_obj
     run rm -f $louvain_obj && $scanpy cluster louvain $louvain_opt $umap_obj $louvain_obj
 
     [ "$status" -eq 0 ]
@@ -200,7 +199,6 @@ setup() {
         skip "$leiden_obj exists and resume is set to 'true'"
     fi
 
-    echo $scanpy cluster leiden $leiden_opt $umap_obj $leiden_obj
     run rm -f $leiden_obj && $scanpy cluster leiden $leiden_opt $umap_obj $leiden_obj
 
     [ "$status" -eq 0 ]
