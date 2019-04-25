@@ -29,6 +29,13 @@ setup() {
     tsne_obj="${output_dir}/tsne.h5ad"
     umap_opt="--use-graph neighbors_k10 --min-dist 0.75 --alpha 1 --gamma 1"
     umap_obj="${output_dir}/umap.h5ad"
+    louvain_opt="-r 1 --use-graph neighbors_k10 --key-added louvain_k10_r1_0"
+    louvain_obj="${output_dir}/louvain.h5ad"
+    leiden_opt="-r 0.7 --use-graph neighbors_k10 --key-added leiden_k10_r0_7"
+    leiden_obj="${output_dir}/leiden.h5ad"
+    diffexp_tsv="${output_dir}/diffexp.tsv"
+    diffexp_opt="-g leiden_k10_r0_7 --reference rest --save ${diffexp_tsv}"
+    diffexp_obj="${output_dir}/diffexp.h5ad"
 }
 
 @test "Downlaod and extract .mtx matrix" {
@@ -153,7 +160,7 @@ setup() {
         skip "$tsne_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $tsne_obj && $scanpy tsne $tsne_opt $pca_obj $tsne_obj
+    run rm -f $tsne_obj && $scanpy embed tsne $tsne_opt $pca_obj $tsne_obj
 
     [ "$status" -eq 0 ]
     [ -f  "$tsne_obj" ]
@@ -166,56 +173,52 @@ setup() {
         skip "$umap_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $umap_obj && $scanpy umap $umap_opt $neighbor_obj $umap_obj
+    run rm -f $umap_obj && $scanpy embed umap $umap_opt $neighbor_obj $umap_obj
 
     [ "$status" -eq 0 ]
     [ -f  "$umap_obj" ]
 }
 
-# # Find clusters
+# Find clusters Louvain
 
-# @test "Run find cluster" {
-#     if [ "$resume" = 'true' ] && [ -f "$cluster_object" ]; then
-#         skip "$cluster_object exists and resume is set to 'true'"
-#     fi
+@test "Run find cluster (louvain)" {
+    if [ "$resume" = 'true' ] && [ -f "$louvain_obj" ]; then
+        skip "$louvain_obj exists and resume is set to 'true'"
+    fi
 
-#     run rm -f $cluster_object $cluster_text_file && \
-#         scanpy-find-cluster -i $graph_object \
-#             -o $cluster_object \
-#             --output-text-file $cluster_text_file \
-#             --flavor $FC_flavor \
-#             --resolution $FC_resolution \
-#             --key-added $FC_key_added \
-#             -s $FC_random_seed \
-#             $FC_use_weight
+    echo $scanpy cluster louvain $louvain_opt $umap_obj $louvain_obj
+    run rm -f $louvain_obj && $scanpy cluster louvain $louvain_opt $umap_obj $louvain_obj
 
-#     [ "$status" -eq 0 ]
-#     [ -f  "$cluster_object" ] && [ -f "$cluster_text_file" ]
-# }
+    [ "$status" -eq 0 ]
+    [ -f  "$louvain_obj" ]
+}
 
-# # Find markers
+# Find clusters Leiden
 
-# @test "Run find markers" {
-#     if [ "$resume" = 'true' ] && [ -f "$marker_object" ]; then
-#         skip "$marker_object exists and resume is set to 'true'"
-#     fi
+@test "Run find cluster (leiden)" {
+    if [ "$resume" = 'true' ] && [ -f "$leiden_obj" ]; then
+        skip "$leiden_obj exists and resume is set to 'true'"
+    fi
 
-#     run rm -f $marker_object $marker_image_file $marker_text_file && \
-#         scanpy-find-markers -i $cluster_object -o $marker_object \
-#             --output-text-file $marker_text_file \
-#             --groupby $FM_groupby \
-#             --groups $FM_groups \
-#             --reference $FM_reference \
-#             --n-genes $FM_n_genes \
-#             --method $FM_method \
-#             -P $marker_image_file \
-#             --show-n-genes $FM_show_n_genes \
-#             --debug \
-#             --key $FM_key
+    echo $scanpy cluster leiden $leiden_opt $umap_obj $leiden_obj
+    run rm -f $leiden_obj && $scanpy cluster leiden $leiden_opt $umap_obj $leiden_obj
 
-#     [ "$status" -eq 0 ]
-#     [ -f  "$marker_object" ] && [ -f "$marker_image_file" ] && [ -f "$marker_text_file" ]
-# }
+    [ "$status" -eq 0 ]
+    [ -f  "$leiden_obj" ]
+}
+
+# Find markers
+
+@test "Run find markers" {
+    if [ "$resume" = 'true' ] && [ -f "$diffexp_obj" ]; then
+        skip "$diffexp_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $diffexp_obj $diffexp_tsv && $scanpy diffexp $diffexp_opt $leiden_obj $diffexp_obj
+
+    [ "$status" -eq 0 ]
+    [ -f  "$diffexp_obj" ] && [ -f "$diffexp_tsv" ]
+}
 
 # Local Variables:
 # mode: sh
