@@ -9,7 +9,7 @@ def leiden(adata, resolution, use_graph=None, key_added=None, **kwargs):
     """
     Wrapper function for sc.tl.leiden, for supporting multiple resolutions.
     """
-    if kwargs['restrict_to'] and not kwargs['restrict_to'][0]:
+    if kwargs.get('restrict_to', None) and not kwargs['restrict_to'][0]:
         kwargs['restrict_to'] = None
     adj_mat = None
     if use_graph:
