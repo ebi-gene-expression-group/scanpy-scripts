@@ -78,6 +78,7 @@ def _write_obj(
         adata,
         output_obj,
         output_format='anndata',
+        chunk_size=None,
         export_mtx=None,
         show_obj=None,
         **kwargs
@@ -87,7 +88,7 @@ def _write_obj(
     elif output_format == 'loom':
         adata.write_loom(output_obj, **kwargs)
     elif output_format == 'zarr':
-        adata.write_zarr(output_obj, **kwargs)
+        adata.write_zarr(output_obj, chunk_size=chunk_size, **kwargs)
     else:
         raise NotImplementedError(
             'Unsupported output format: {}'.format(output_format))
