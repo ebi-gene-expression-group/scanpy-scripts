@@ -28,6 +28,7 @@ def make_subcmd(cmd_name, options, func, cmd_desc, arg_desc):
             input_format=None,
             output_format=None,
             zarr_chunk_size=None,
+            export_mtx=None,
             show_obj=None,
             **kwargs
     ):
@@ -43,6 +44,7 @@ def make_subcmd(cmd_name, options, func, cmd_desc, arg_desc):
             output_obj,
             output_format=output_format,
             chunk_size=zarr_chunk_size,
+            export_mtx=export_mtx,
             show_obj=show_obj,
         )
         return 0
@@ -72,18 +74,25 @@ def _read_obj(input_obj, input_format='anndata'):
     return adata
 
 
-def _write_obj(adata, output_obj, output_format='anndata', show_obj=None, **kwargs):
+def _write_obj(
+        adata,
+        output_obj,
+        output_format='anndata',
+        export_mtx=None,
+        show_obj=None,
+        **kwargs
+):
     if output_format == 'anndata':
         adata.write(output_obj, compression='gzip')
     elif output_format == 'loom':
         adata.write_loom(output_obj, **kwargs)
     elif output_format == 'zarr':
         adata.write_zarr(output_obj, **kwargs)
-    elif output_format == 'mtx':
-        write_mtx(adata, output_obj, **kwargs)
     else:
         raise NotImplementedError(
             'Unsupported output format: {}'.format(output_format))
+    if export_mtx:
+        write_mtx(adata, fname_prefix=export_mtx, **kwargs)
     if show_obj:
         click.echo(adata, err=show_obj == 'stderr')
     return 0

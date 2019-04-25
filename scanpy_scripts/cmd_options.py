@@ -49,6 +49,15 @@ COMMON_OPTIONS = {
             help='Chunk size for writing output in zarr format.',
         ),
         click.option(
+            '--export-mtx', '-X',
+            type=click.Path(dir_okay=False, writable=True),
+            default=None,
+            show_default=True,
+            help='When specified, using it as prefix for exporting mtx files. '
+            'If not empty and not ending with "/" or "_", a "_" will be '
+            'appended.',
+        ),
+        click.option(
             '--show-obj',
             type=click.Choice(['stdout', 'stderr']),
             default=None,
