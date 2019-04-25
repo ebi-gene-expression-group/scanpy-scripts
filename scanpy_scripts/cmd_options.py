@@ -596,7 +596,7 @@ LEIDEN_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['output'],
     *COMMON_OPTIONS['knn_graph'],
-    COMMON_OPTIONS['restrict_to'],
+    # COMMON_OPTIONS['restrict_to'],
     COMMON_OPTIONS['random_state'],
     COMMON_OPTIONS['key_added'],
     click.option(
