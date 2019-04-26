@@ -14,7 +14,7 @@ scripts = [
 
 setup(
     name='scanpy-scripts',
-    version='1.0',
+    version='0.1.0',
     description='Scripts for using scanpy from the command line',
     author='nh3',
     #author_email='',
