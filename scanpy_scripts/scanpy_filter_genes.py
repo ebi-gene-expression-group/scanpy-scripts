@@ -1,12 +1,22 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
 import logging
 import scanpy.api as sc
-from scanpy_wrapper_utils import ScanpyArgParser, read_input_object, write_output_object, export_mtx
+
+from scanpy_scripts.wrapper_utils import (
+    ScanpyArgParser,
+    read_input_object, write_output_object,
+)
 
 
-def main(args):
+def main(argv=None):
+    argparser = ScanpyArgParser(argv, 'Filter genes by properties and/or simple stats')
+    argparser.add_input_object()
+    argparser.add_output_object()
+    argparser.add_subset_parameters()
+    argparser.add_subset_list()
+    args = argparser.args
+
     logging.debug(args)
 
     adata = read_input_object(args.input_object_file, args.input_format)
@@ -36,27 +46,11 @@ def main(args):
         else:
             adata = adata[(adata.var[name] < high) & (adata.var[name] > low), :]
 
-    if args.export_mtx is not None:
-        export_mtx(adata, fname_prefix=args.export_mtx)
-    
     write_output_object(adata, args.output_object_file, args.output_format)
 
-    print(adata)
     logging.info('Done')
     return 0
 
 
 if __name__ == '__main__':
-    argparser = ScanpyArgParser('Filter genes by properties and/or simple stats')
-    argparser.add_input_object()
-    argparser.add_output_object()
-    argparser.add_subset_parameters()
-    argparser.add_subset_list()
-    argparser.add_argument('-x', '--export-mtx',
-                           type=str,
-                           default=None,
-                           help='Export normalised data in mtx format with the supplied '
-                                'string being the prefix of the output files.')
-    args = argparser.get_args()
-
-    main(args)
+    main()
