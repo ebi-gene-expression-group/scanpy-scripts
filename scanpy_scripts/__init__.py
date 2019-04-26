@@ -8,6 +8,7 @@ __author__ = ', '.join([
     'Ni Huang',
     'Pablo Moreno',
     'Jonathan Manning',
+    'Philipp Angerer',
 ])
 
 from . import lib
