@@ -4,6 +4,6 @@
 /*.egg-info/
 /post_install_tests/
 *cache*/
-/*.pyc
+*.pyc
 /.*history
 /.*swp
