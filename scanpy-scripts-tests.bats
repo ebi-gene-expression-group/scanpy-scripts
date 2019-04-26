@@ -37,9 +37,17 @@ setup() {
     diffexp_tsv="${output_dir}/diffexp.tsv"
     diffexp_opt="-g leiden_k10_r0_7 --reference rest --save ${diffexp_tsv}"
     diffexp_obj="${output_dir}/diffexp.h5ad"
+
+    if [ ! -d "$data_dir" ]; then
+        mkdir -p $data_dir
+    fi
+
+    if [ ! -d "$output_dir" ]; then
+        mkdir -p $output_dir
+    fi
 }
 
-@test "Downlaod and extract .mtx matrix" {
+@test "Download and extract .mtx matrix" {
     if [ -f "$raw_matrix" ]; then
         skip "$raw_matrix exists"
     fi
