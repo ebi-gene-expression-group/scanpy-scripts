@@ -85,7 +85,7 @@ def plot_qc(adata):
 
 
 def simple_default_pipeline(
-        h5ad_fn,
+        adata,
         qc_only=False,
         min_genes=200,
         min_cells=3,
@@ -95,7 +95,6 @@ def simple_default_pipeline(
         n_neighbors=15,
         n_pcs=40,
 ):
-    adata = read_obj(h5ad_fn)
     if qc_only:
         adata.var['mito'] = adata.var_names.str.startswith('MT-')
         qc_tbls = sc.pp.calculate_qc_metrics(
