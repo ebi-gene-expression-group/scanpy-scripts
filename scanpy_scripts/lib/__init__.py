@@ -92,6 +92,7 @@ def simple_default_pipeline(
         max_counts=25000,
         max_mito=20,
         batch=None,
+        hvg_flavor='cell_ranger',
         n_neighbors=15,
         n_pcs=40,
 ):
@@ -116,7 +117,10 @@ def simple_default_pipeline(
         adata.raw = adata
         if batch and batch in adata.obs.columns:
             sc.pp.combat(adata, key=batch)
-        hvg(adata, flavor='cell_ranger')
+        if hvg_flavor == 'cell_ranger':
+            hvg(adata, flavor='cell_ranger', n_top_genes=2000)
+        else:
+            hvg(adata, flavor='seurat')
         sc.pl.highly_variable_genes(adata)
         sc.pp.pca(adata, n_comps=50, use_highly_variable=True, svd_solver='arpack')
         neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs)
