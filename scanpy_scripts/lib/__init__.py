@@ -97,7 +97,7 @@ def simple_default_pipeline(
 ):
     adata = read_obj(h5ad_fn)
     if qc_only:
-        adata.var['mito'] = adata.var_name.str.startswith('MT-')
+        adata.var['mito'] = adata.var_names.str.startswith('MT-')
         qc_tbls = sc.pp.calculate_qc_metrics(
             adata, qc_vars=['mito'], percent_top=None)
         adata.obs['n_counts'] = qc_tbls[0]['total_counts'].values
