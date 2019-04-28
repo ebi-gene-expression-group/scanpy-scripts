@@ -6,12 +6,20 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
+import scanpy as sc
 
 from ._read import read_10x
 from ._filter import filter_anndata
 from ._norm import normalize
 from ._hvg import hvg
 from ._neighbors import neighbors
+from ._umap import umap
+from ._tsne import tsne
+from ._louvain import louvain
+from ._leiden import leiden
+from ._diffexp import diffexp
+from ..cmd_utils import _read_obj as read_obj
+from ..cmd_utils import _write_obj as write_obj
 
 
 def expression_colormap():
@@ -62,3 +70,58 @@ def pseudo_bulk(adata, groupby, FUN=np.mean):
         k_grp = group_attr == grp
         summarised[i] = FUN(adata.X[k_grp, :], axis=0, keepdims=True)
     return summarised
+
+
+def plot_qc(adata):
+    qc_metrics = ('n_counts', 'n_genes', 'percent_mito')
+    for qmt in qc_metrics:
+        if qmt not in adata.obs.columns:
+            raise ValueError('{} not found.'.format(qmt))
+    sc.pl.violin(adata, keys=qc_metrics, groupby='Sample', rotation=45)
+    sc.pl.violin(adata, keys=qc_metrics, multi_panel=True, rotation=45)
+    sc.pl.scatter(adata, x='n_counts', y='n_genes', color='percent_mito', alpha=0.5)
+    sc.pl.scatter(adata, x='n_counts', y='n_genes', color='Sample', alpha=0.5)
+    sc.pl.scatter(adata, x='n_counts', y='percent_mito', color='Sample', alpha=0.5)
+
+
+def simple_default_pipeline(
+        h5ad_fn,
+        qc_only=False,
+        min_genes=200,
+        min_cells=3,
+        max_counts=25000,
+        max_mito=20,
+        batch=None,
+        n_neighbors=15,
+        n_pcs=40,
+):
+    adata = read_obj(h5ad_fn)
+    if qc_only:
+        adata.var['mito'] = adata.var_name.str.startswith('MT-')
+        qc_tbls = sc.pp.calculate_qc_metrics(
+            adata, qc_vars=['mito'], percent_top=None)
+        adata.obs['n_counts'] = qc_tbls[0]['total_counts'].values
+        adata.obs['n_genes'] = qc_tbls[0]['n_genes_by_counts'].values
+        adata.obs['percent_mito'] = qc_tbls[0]['pct_counts_mito'].values
+        adata.var['n_cells'] = qc_tbls[1]['n_cells_by_counts'].values
+        plot_qc(adata)
+    else:
+        sc.pp.filter_cells(adata, min_genes=min_genes)
+        sc.pp.filter_genes(adata, min_cells=min_cells)
+        k = ((adata.obs['n_counts'] <= max_counts) &
+             adata.obs['percent_mito'] <= max_mito))
+        adata = adata[k, :]
+        adata.layers['counts'] = adata.X.copy()
+        sc.pp.normalize_total(adata, target_sum=1e4, fraction=0.9)
+        sc.pp.log1p(adata)
+        adata.raw = adata
+        if batch and batch in adata.obs.columns:
+            sc.pp.combat(adata, key=batch)
+        hvg(adata, flavor='cell_ranger')
+        sc.pl.highly_variable_genes(adata)
+        sc.pp.pca(adata, n_comps=50, use_highly_variable=True, svd_solver='arpack')
+        neighbors(adata, n_neighbors=(10,15))
+        umap(adata, use_graph='neighbors_k15', key_added='k15')
+        sc.tl.draw_graph(adata)
+        leiden(adata, resolution=(0.1, 0.4, 0.7))
+    return adata
