@@ -95,6 +95,7 @@ def simple_default_pipeline(
         hvg_flavor='cell_ranger',
         n_neighbors=15,
         n_pcs=40,
+        graph_layout='fr',
 ):
     if qc_only:
         adata.var['mito'] = adata.var_names.str.startswith('MT-')
@@ -125,6 +126,6 @@ def simple_default_pipeline(
         sc.pp.pca(adata, n_comps=50, use_highly_variable=True, svd_solver='arpack')
         neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs)
         umap(adata)
-        sc.tl.draw_graph(adata)
+        sc.tl.draw_graph(adata, layout=graph_layout)
         leiden(adata, resolution=(0.1, 0.4, 0.7))
     return adata
