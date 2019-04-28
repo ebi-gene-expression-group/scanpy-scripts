@@ -109,7 +109,7 @@ def simple_default_pipeline(
         sc.pp.filter_cells(adata, min_genes=min_genes)
         sc.pp.filter_genes(adata, min_cells=min_cells)
         k = ((adata.obs['n_counts'] <= max_counts) &
-             adata.obs['percent_mito'] <= max_mito))
+             (adata.obs['percent_mito'] <= max_mito))
         adata = adata[k, :]
         adata.layers['counts'] = adata.X.copy()
         sc.pp.normalize_total(adata, target_sum=1e4, fraction=0.9)
@@ -120,8 +120,8 @@ def simple_default_pipeline(
         hvg(adata, flavor='cell_ranger')
         sc.pl.highly_variable_genes(adata)
         sc.pp.pca(adata, n_comps=50, use_highly_variable=True, svd_solver='arpack')
-        neighbors(adata, n_neighbors=(10,15))
-        umap(adata, use_graph='neighbors_k15', key_added='k15')
+        neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs)
+        umap(adata)
         sc.tl.draw_graph(adata)
         leiden(adata, resolution=(0.1, 0.4, 0.7))
     return adata
