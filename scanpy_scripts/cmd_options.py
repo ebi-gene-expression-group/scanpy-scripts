@@ -468,8 +468,16 @@ UMAP_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['output'],
     COMMON_OPTIONS['knn_graph'][0], # --use-graph
+    COMMON_OPTIONS['init_pos'],
     COMMON_OPTIONS['random_state'],
     COMMON_OPTIONS['key_added'],
+    click.option(
+        '--init-pos',
+        type=click.STRING,
+        default='spectral',
+        show_default=True,
+        help='How to initialize the low dimensional embedding.',
+    ),
     click.option(
         '--min-dist',
         type=click.FLOAT,
@@ -523,13 +531,6 @@ UMAP_CMD_OPTIONS = [
         show_default=True,
         help='The number of negative edge samples to use per positive edge '
         'sample in optimizing the low dimensional embedding.',
-    ),
-    click.option(
-        '--init-pos',
-        type=click.STRING,
-        default='spectral',
-        show_default=True,
-        help='How to initialize the low dimensional embedding.',
     ),
 ]
 
@@ -585,6 +586,34 @@ TSNE_CMD_OPTIONS = [
     ),
 ]
 
+FDG_CMD_OPTIONS = [
+    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['output'],
+    COMMON_OPTIONS['knn_graph'][0], # --use-graph
+    COMMON_OPTIONS['init_pos'],
+    COMMON_OPTIONS['random_state'],
+    COMMON_OPTIONS['key_added'],
+    click.option(
+        '--layout',
+        type=click.Choice([]),
+        default='fa',
+        show_default=True,
+        help='Name of any valid igraph layout, including "fa" (ForceAtlas2), '
+        '"fr" (Fruchterman Reingold), "grid_fr" (Grid Fruchterman Reingold, '
+        'faster than "fr"), "kk" (Kamadi Kawai, slower than "fr"), "lgl" '
+        '(Large Graph Layout, very fast), "drl" (Distributed Recursive Layout, '
+        'pretty fast) and "rt" (Reingold Tilford tree layout).',
+    ),
+    click.option(
+        '--init-pos',
+        type=click.STRING,
+        default=None,
+        show_default=True,
+        help='How to initialize the low dimensional embedding. Can be "paga", '
+        'or any valid key of `.obsm`.',
+    ),
+]
+
 LOUVAIN_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['output'],
@@ -614,7 +643,7 @@ LEIDEN_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['output'],
     *COMMON_OPTIONS['knn_graph'],
-    # COMMON_OPTIONS['restrict_to'],
+    COMMON_OPTIONS['restrict_to'],
     COMMON_OPTIONS['random_state'],
     COMMON_OPTIONS['key_added'],
     click.option(

@@ -16,6 +16,7 @@ from .cmd_options import (
     NEIGHBOR_CMD_OPTIONS,
     UMAP_CMD_OPTIONS,
     TSNE_CMD_OPTIONS,
+    FDG_CMD_OPTIONS,
     LOUVAIN_CMD_OPTIONS,
     LEIDEN_CMD_OPTIONS,
     DIFFEXP_CMD_OPTIONS,
@@ -27,6 +28,7 @@ from .lib._hvg import hvg
 from .lib._neighbors import neighbors
 from .lib._umap import umap
 from .lib._tsne import tsne
+from .lib._fdg import fdg
 from .lib._louvain import louvain
 from .lib._leiden import leiden
 from .lib._diffexp import diffexp
@@ -120,6 +122,14 @@ TSNE_CMD = make_subcmd(
     TSNE_CMD_OPTIONS,
     tsne,
     cmd_desc='Embed the cells using t-SNE.',
+    arg_desc=_IO_DESC,
+)
+
+FDG_CMD = make_subcmd(
+    'fdg',
+    FDG_CMD_OPTIONS,
+    fdg,
+    cmd_desc='Embed the neighborhood graph using force-directed graph.',
     arg_desc=_IO_DESC,
 )
 

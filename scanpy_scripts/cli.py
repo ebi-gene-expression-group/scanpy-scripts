@@ -17,6 +17,7 @@ from .cmds import (
     NEIGHBOR_CMD,
     UMAP_CMD,
     TSNE_CMD,
+    FDG_CMD,
     LOUVAIN_CMD,
     LEIDEN_CMD,
     DIFFEXP_CMD,
@@ -73,6 +74,7 @@ def embed():
 
 embed.add_command(UMAP_CMD)
 embed.add_command(TSNE_CMD)
+embed.add_command(FDG_CMD)
 
 
 @cli.group(cls=NaturalOrderGroup)
