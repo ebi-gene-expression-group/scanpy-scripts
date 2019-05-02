@@ -30,12 +30,12 @@ setup() {
     tsne_obj="${output_dir}/tsne.h5ad"
     umap_opt="--use-graph neighbors_k10 --min-dist 0.75 --alpha 1 --gamma 1"
     umap_obj="${output_dir}/umap.h5ad"
-    louvain_opt="-r 1 --use-graph neighbors_k10 --key-added louvain_k10_r1_0"
+    louvain_opt="-r 1 --use-graph neighbors_k10 --key-added k10_r1_0"
     louvain_obj="${output_dir}/louvain.h5ad"
-    leiden_opt="-r 0.7 --use-graph neighbors_k10 --key-added leiden_k10_r0_7"
+    leiden_opt="-r 0.7 --use-graph neighbors_k10 --key-added k10_r0_7"
     leiden_obj="${output_dir}/leiden.h5ad"
     diffexp_tsv="${output_dir}/diffexp.tsv"
-    diffexp_opt="-g leiden_k10_r0_7 --reference rest --save ${diffexp_tsv}"
+    diffexp_opt="-g leiden_k10_r0_7 --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5,use_raw:true --save ${diffexp_tsv}"
     diffexp_obj="${output_dir}/diffexp.h5ad"
 
     if [ ! -d "$data_dir" ]; then

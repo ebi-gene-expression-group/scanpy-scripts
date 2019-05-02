@@ -50,8 +50,9 @@ class Dictionary(click.ParamType):
     """
     Text to be parsed as a python dict definition
     """
-    def __init__(self):
+    def __init__(self, keys=None):
         self.name = 'TEXT:VAL[,TEXT:VAL...]'
+        self.keys = keys
 
     def convert(self, value, param, ctx):
         try:
@@ -62,8 +63,14 @@ class Dictionary(click.ParamType):
                 key, _, value = token.partition(':')
                 if not key:
                     raise ValueError
+                if isinstance(self.keys, (list, tuple)) and key not in self.keys:
+                    self.fail(f'{key} is not a valid key ({self.keys})')
                 if value == 'None':
                     value = None
+                elif value.lower() == 'true':
+                    value = True
+                elif value.lower() == 'false':
+                    value = False
                 else:
                     try:
                         value = float(value)
@@ -73,7 +80,7 @@ class Dictionary(click.ParamType):
             return converted
         except ValueError:
             self.fail(
-                '{} is not a valid python dict definition'.format(value),
+                f'{value} is not a valid python dict definition',
                 param,
                 ctx
             )

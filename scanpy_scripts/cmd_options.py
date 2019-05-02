@@ -275,11 +275,20 @@ NORM_CMD_OPTIONS = [
         help='Save raw data existing raw data.',
     ),
     click.option(
-        '--normalize-to', '-t', 'counts_per_cell_after',
+        '--normalize-to', '-t', 'target_sum',
         type=float,
         default=10_000,
         show_default=True,
         help='Normalize per cell nUMI to this number.',
+    ),
+    click.option(
+        '--fraction',
+        type=float,
+        default=0.9,
+        show_default=True,
+        help='Only use genes that make up less than this fraction of the total '
+        'count in every cell. So only these genes will sum up to the number '
+        'specified by --normalize-to.',
     ),
 ]
 
@@ -685,6 +694,20 @@ DIFFEXP_CMD_OPTIONS = [
         show_default=True,
         help='Rank genes by the absolute value of the score, not by the score. '
         'The returned scores are never the absolute values.',
+    ),
+    click.option(
+        '--filter-params',
+        type=Dictionary(keys=[
+            'min_in_group_fraction',
+            'max_out_group_fraction',
+            'min_fold_change',
+            'use_raw',
+        ]),
+        default=None,
+        show_default=True,
+        help='Parameters for filtering DE results, valid parameters are: '
+        '"min_in_group_fraction" (float), "max_out_group_fraction" (float), '
+        '"min_fold_change" (float), and "use_raw" (bool).',
     ),
     click.option(
         '--logreg-param',

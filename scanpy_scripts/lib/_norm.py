@@ -12,7 +12,7 @@ def normalize(adata, save_raw='yes', **kwargs):
     """
     if save_raw == 'counts':
         adata.raw = adata
-    sc.pp.normalize_per_cell(adata, **kwargs)
+    sc.pp.normalize_total(adata, **kwargs)
     sc.pp.log1p(adata)
     if save_raw == 'yes':
         adata.raw = adata
