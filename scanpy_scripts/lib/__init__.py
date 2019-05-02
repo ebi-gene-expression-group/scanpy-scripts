@@ -14,10 +14,11 @@ from ._norm import normalize
 from ._hvg import hvg
 from ._neighbors import neighbors
 from ._umap import umap
+from ._fdg import fdg
 from ._tsne import tsne
 from ._louvain import louvain
 from ._leiden import leiden
-from ._diffexp import diffexp
+from ._diffexp import diffexp, diffexp_paired, extract_de_table
 from ..cmd_utils import _read_obj as read_obj
 from ..cmd_utils import _write_obj as write_obj
 
@@ -36,8 +37,8 @@ def cross_table(adata, x, y, normalise=None, highlight=False):
     """
     x_attr = adata.obs[x]
     y_attr = adata.obs[y]
-    assert not _is_numeric(x_attr.values), "Can not operate on numeric variable {}".format(x)
-    assert not _is_numeric(y_attr.values), "Can not operate on numeric variable {}".format(y)
+    assert not _is_numeric(x_attr.values), f'Can not operate on numerical {x}'
+    assert not _is_numeric(y_attr.values), f'Can not operate on numerical {y}'
     crs_tbl = pd.crosstab(x, y)
     if normalise == 'x':
         x_sizes = x_attr.groupby(x_attr).size().values
@@ -50,49 +51,149 @@ def cross_table(adata, x, y, normalise=None, highlight=False):
     return crs_tbl
 
 
-def run_harmony():
-    # import subprocess as sbp
-    pass
-
-
 def _is_numeric(x):
     return x.dtype.kind in ('i', 'f')
 
 
-def pseudo_bulk(adata, groupby, FUN=np.mean):
+def run_harmony(adata, batch, theta=2.0, key='X_pca', tmp_dir='.harmony', script='harmonise.R'):
+    if not isinstance(batch, (tuple, list)):
+        batch = [batch]
+    if not isinstance(theta, (tuple, list)):
+        theta = [theta]
+    for b in batch:
+        if b not in adata.obs.columns:
+            raise KeyError(f'{b} is not a valid obs annotation.')
+    if key not in adata.obsm.keys():
+        raise KeyError(f'{key} is not a valid embedding.')
+    meta = adata.obs[batch]
+    embed = adata.obsm[key]
+
+    import os
+    os.makedirs(tmp_dir, exist_ok=True)
+    meta_fn = os.path.join(tmp_dir, 'meta.tsv')
+    embed_fn = os.path.join(tmp_dir, 'embed.tsv')
+    meta.to_csv(meta_fn, sep='\t', index=True, header=True)
+    pd.DataFrame(embed, index=adata.obs_names).to_csv(
+            embed_fn, sep='\t', index=True, header=True)
+    grouping = ','.join(batch)
+    thetas = ','.join(list(map(str, theta)))
+    hm_embed_fn = os.path.join(tmp_dir, 'hm_embed.tsv')
+
+    import subprocess as sbp
+    cmd = f'Rscript harmonise.R {embed_fn} {meta_fn} {grouping} {thetas} {hm_embed_fn}'
+    sbp.call(cmd.split())
+    hm_embed = pd.read_csv(hm_embed_fn, header=0, index_col=0, sep='\t')
+    adata.obsm[key + '_hm'] = hm_embed.values
+    os.remove(meta_fn)
+    os.remove(embed_fn)
+    os.remove(hm_embed_fn)
+
+
+def split_by_group(adata, groupby):
+    if groupby not in adata.obs.columns:
+        raise KeyError(f'{groupby} is not a valid obs annotation.')
+    groups = adata.obs[groupby].unique().to_list()
+    adata_dict = {}
+    for grp in groups:
+        adata_dict[grp] = adata[adata.obs[groupby] == grp, :]
+    return adata_dict
+
+
+def subsample(adata, fraction, groupby=None, min_n=0, **kwargs):
+    if groupby:
+        if groupby not in adata.obs.columns:
+            raise KeyError(f'{groupby} is not a valid obs annotation.')
+        groups = adata.obs[groupby].unique()
+        n_obs_per_group = {}
+        for grp in groups:
+            k = adata.obs[groupby] == grp
+            grp_size = sum(k)
+            n_obs_per_group[grp] = int(max(np.ceil(grp_size * fraction),
+                                           min(min_n, grp_size)))
+        sampled_groups = [sc.pp.subsample(adata[adata.obs[groupby] == grp, :],
+                                          n_obs=n_obs_per_group[grp],
+                                          copy=True,
+                                          **kwargs) for grp in groups]
+        subsampled =  sampled_groups[0].concatenate(sampled_groups[1:])
+        subsampled.var = adata.var.copy()
+    else:
+        subsampled = sc.pp.subsample(adata, fraction, **kwargs, copy=True)
+    return subsampled
+
+
+def pseudo_bulk(adata, groupby, use_rep='X', highly_variable=False, FUN=np.mean):
     """Make pseudo bulk data from grouped sc data
     """
     group_attr = adata.obs[groupby].astype(str).values
     groups = np.unique(group_attr)
     n_level = len(groups)
-    summarised = np.zeros((n_level, adata.X.shape[1]))
+    if highly_variable:
+        if isinstance(highly_variable, (list, tuple)):
+            k_hv = adata.var_names.isin(highly_variable)
+        else:
+            k_hv = adata.var['highly_variable'].values
+    if use_rep == 'X':
+        x = adata.X
+        features = adata.var_names.values
+        if highly_variable:
+            x = x[:, k_hv]
+            features = features[k_hv]
+    elif use_rep in adata.layers.keys():
+        x = adata.layers[use_rep]
+        features = adata.var_names.values
+        if highly_variable:
+            x = x[:, k_hv]
+            features = features[k_hv]
+    elif use_rep in adata.obsm.keys():
+        x = adata.obsm[use_rep]
+        features = np.arange(x.shape[1])
+    else:
+        raise KeyError(f'{use_rep} not found.')
+    summarised = np.zeros((n_level, x.shape[1]))
     for i, grp in enumerate(groups):
         k_grp = group_attr == grp
-        summarised[i] = FUN(adata.X[k_grp, :], axis=0, keepdims=True)
-    return summarised
+        summarised[i] = FUN(x[k_grp, :], axis=0, keepdims=True)
+    return pd.DataFrame(summarised.T, columns=groups, index=features)
+
+def plot_df_heatmap(df, cmap='viridis', title=None, figsize=(7, 7), rotation=90, save=None, **kwargs):
+    fig, ax = plt.subplots(figsize=figsize)
+    im = ax.imshow(df, cmap=cmap, aspect='auto', **kwargs)
+    if rotation > 0 and rotation < 90:
+        horizontalalignment = 'right'
+    plt.xticks(range(len(df.columns)), df.columns, rotation=rotation, horizontalalignment=horizontalalignment);
+    plt.yticks(range(len(df.index)), df.index);
+    if title:
+        fig.suptitle(title)
+    fig.colorbar(im)
+    if save:
+        plt.savefig(fname=save, bbox_inches='tight', pad_inches=0.1)
 
 
-def plot_qc(adata):
+def plot_qc(adata, groupby=None):
     qc_metrics = ('n_counts', 'n_genes', 'percent_mito')
     for qmt in qc_metrics:
         if qmt not in adata.obs.columns:
-            raise ValueError('{} not found.'.format(qmt))
-    sc.pl.violin(adata, keys=qc_metrics, groupby='Sample', rotation=45)
+            raise ValueError(f'{qmt} not found.')
+    if groupby:
+        sc.pl.violin(adata, keys=qc_metrics, groupby=groupby, rotation=45)
     sc.pl.violin(adata, keys=qc_metrics, multi_panel=True, rotation=45)
     sc.pl.scatter(adata, x='n_counts', y='n_genes', color='percent_mito', alpha=0.5)
-    sc.pl.scatter(adata, x='n_counts', y='n_genes', color='Sample', alpha=0.5)
-    sc.pl.scatter(adata, x='n_counts', y='percent_mito', color='Sample', alpha=0.5)
+    sc.pl.scatter(adata, x='n_counts', y='n_genes', color=groupby, alpha=0.5)
+    sc.pl.scatter(adata, x='n_counts', y='percent_mito', color=groupby, alpha=0.5)
 
 
 def simple_default_pipeline(
         adata,
         qc_only=False,
+        transform_X=True,
+        scale=False,
         min_genes=200,
         min_cells=3,
         max_counts=25000,
         max_mito=20,
         batch=None,
         hvg_flavor='cell_ranger',
+        transform_rdim=True,
         n_neighbors=15,
         n_pcs=40,
         graph_layout='fr',
@@ -105,27 +206,31 @@ def simple_default_pipeline(
         adata.obs['n_genes'] = qc_tbls[0]['n_genes_by_counts'].values
         adata.obs['percent_mito'] = qc_tbls[0]['pct_counts_mito'].values
         adata.var['n_cells'] = qc_tbls[1]['n_cells_by_counts'].values
-        plot_qc(adata)
+        plot_qc(adata, batch)
     else:
-        sc.pp.filter_cells(adata, min_genes=min_genes)
-        sc.pp.filter_genes(adata, min_cells=min_cells)
-        k = ((adata.obs['n_counts'] <= max_counts) &
-             (adata.obs['percent_mito'] <= max_mito))
-        adata = adata[k, :]
-        adata.layers['counts'] = adata.X.copy()
-        sc.pp.normalize_total(adata, target_sum=1e4, fraction=0.9)
-        sc.pp.log1p(adata)
-        adata.raw = adata
-        if batch and batch in adata.obs.columns:
-            sc.pp.combat(adata, key=batch)
-        if hvg_flavor == 'cell_ranger':
-            hvg(adata, flavor='cell_ranger', n_top_genes=2000)
-        else:
-            hvg(adata, flavor='seurat')
-        sc.pl.highly_variable_genes(adata)
-        sc.pp.pca(adata, n_comps=50, use_highly_variable=True, svd_solver='arpack')
-        neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs)
-        umap(adata)
-        sc.tl.draw_graph(adata, layout=graph_layout)
-        leiden(adata, resolution=(0.1, 0.4, 0.7))
+        if transform_X:
+            sc.pp.filter_cells(adata, min_genes=min_genes)
+            sc.pp.filter_genes(adata, min_cells=min_cells)
+            k = ((adata.obs['n_counts'] <= max_counts) &
+                 (adata.obs['percent_mito'] <= max_mito))
+            adata = adata[k, :]
+            adata.layers['counts'] = adata.X.copy()
+            sc.pp.normalize_total(adata, target_sum=1e4, fraction=0.9)
+            sc.pp.log1p(adata)
+            adata.raw = adata
+            if batch and batch in adata.obs.columns:
+                sc.pp.combat(adata, key=batch)
+            if hvg_flavor == 'cell_ranger':
+                hvg(adata, flavor='cell_ranger', n_top_genes=2000)
+            else:
+                hvg(adata, flavor='seurat')
+            sc.pl.highly_variable_genes(adata)
+            if scale:
+                sc.pp.scale(adata, max_value=10)
+        if transform_rdim:
+            sc.pp.pca(adata, n_comps=50, use_highly_variable=True, svd_solver='arpack')
+            neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs)
+            umap(adata)
+            sc.tl.draw_graph(adata, layout=graph_layout)
+            leiden(adata, resolution=(0.1, 0.4, 0.7))
     return adata
