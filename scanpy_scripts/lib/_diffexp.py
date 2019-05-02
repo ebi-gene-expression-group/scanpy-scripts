@@ -49,7 +49,7 @@ def diffexp(
         de_tbl = de_tbl.loc[de_tbl.genes.astype(str) != 'nan', :]
 
     if save:
-        filtered_de_tbl.to_csv(save, sep='\t', header=True, index=False)
+        de_tbl.to_csv(save, sep='\t', header=True, index=False)
 
     return de_tbl
 
