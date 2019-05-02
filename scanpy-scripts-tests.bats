@@ -30,6 +30,8 @@ setup() {
     tsne_obj="${output_dir}/tsne.h5ad"
     umap_opt="--use-graph neighbors_k10 --min-dist 0.75 --alpha 1 --gamma 1"
     umap_obj="${output_dir}/umap.h5ad"
+    fdg_opt="--use-graph neighbors_k10 --layout fa"
+    fdg_obj="${output_dir}/fdg.h5ad"
     louvain_opt="-r 1 --use-graph neighbors_k10 --key-added k10_r1_0"
     louvain_obj="${output_dir}/louvain.h5ad"
     leiden_opt="-r 0.7 --use-graph neighbors_k10 --key-added k10_r0_7"
@@ -186,6 +188,19 @@ setup() {
 
     [ "$status" -eq 0 ]
     [ -f  "$umap_obj" ]
+}
+
+# Run FDG
+
+@test "Run FDG analysis" {
+    if [ "$resume" = 'true' ] && [ -f "$fdg_obj" ]; then
+        skip "$fdg_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $fdg_obj && $scanpy embed fdg $fdg_opt $neighbor_obj $fdg_obj
+
+    [ "$status" -eq 0 ]
+    [ -f  "$fdg_obj" ]
 }
 
 # Find clusters Louvain
