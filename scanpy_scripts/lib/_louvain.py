@@ -14,7 +14,7 @@ def louvain(adata, resolution, use_graph=None, key_added=None, **kwargs):
     adj_mat = None
     if use_graph:
         if use_graph not in adata.uns:
-            raise KeyError('"{use_graph}" is not a valid key of `.uns`.')
+            raise KeyError(f'"{use_graph}" is not a valid key of `.uns`.')
         adj_mat = adata.uns[use_graph]['connectivities']
     if key_added is not None:
         key_added = f'louvain_{key_added}'
