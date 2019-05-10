@@ -3,6 +3,7 @@ scanpy fdg
 """
 
 import scanpy as sc
+from ..cmd_utils import write_embedding
 
 
 def fdg(
@@ -11,6 +12,7 @@ def fdg(
         layout='fa',
         key_added=None,
         random_state=0,
+        save_embedding=None,
         **kwargs
 ):
     """
@@ -35,4 +37,10 @@ def fdg(
         fdg_key = f'X_draw_graph_{layout}_r{random_state}'
     adata.obsm[fdg_key] = adata.obsm[f'X_draw_graph_{layout}']
     del adata.obsm[f'X_draw_graph_{layout}']
+    if save_embedding is not None:
+        if key_added:
+            if save_embedding.endswith('.tsv'):
+                save_embedding = save_embedding[0:-4]
+            save_embedding = f'{save_embedding}_{key_added}.tsv'
+        write_embedding(adata, fdg_key, save_embedding)
     return adata

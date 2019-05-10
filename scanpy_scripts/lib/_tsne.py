@@ -3,9 +3,10 @@ scanpy tsne
 """
 
 import scanpy as sc
+from ..cmd_utils import write_embedding
 
 
-def tsne(adata, key_added=None, random_state=0, **kwargs):
+def tsne(adata, key_added=None, random_state=0, save_embedding=None, **kwargs):
     """
     Wrapper function for sc.tl.tsne, for supporting named slot of tsne embeddings
     """
@@ -15,20 +16,28 @@ def tsne(adata, key_added=None, random_state=0, **kwargs):
             tsne_key = f'X_tsne_{key_added}'
             adata.obsm[tsne_key] = adata.obsm['X_tsne']
             del adata.obsm['X_tsne']
+        if save_embedding is not None:
+            if key_added:
+                if save_embedding.endswith('.tsv'):
+                    save_embedding = save_embedding[0:-4]
+                save_embedding = f'{save_embedding}_{key_added}.tsv'
+            else:
+                tsne_key = 'X_tsne'
+            write_embedding(adata, tsne_key, save_embedding)
     else:
         for i, rseed in enumerate(random_state):
             if key_added is None:
                 tsne_key = f'r{rseed}'
             elif not isinstance(key_added, (list, tuple)):
-                tsne_key = f'{key_dded}_r{rseed}'
+                tsne_key = f'{key_added}_r{rseed}'
             elif len(key_added) == len(random_state):
                 tsne_key = key_added[i]
             else:
-                raise ValueError('`key_added` can only be None, a scalar, or an '
-                                 'iterable of the same length as `random_state`.')
+                raise ValueError('`key_added` can only be None, a scalar, or '
+                                 'an iterable of the same length as '
+                                 '`random_state`.')
             tsne(
                 adata,
-                init_pos=init_pos,
                 key_added=tsne_key,
                 random_state=rseed,
                 **kwargs,

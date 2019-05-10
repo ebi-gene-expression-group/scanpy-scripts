@@ -3,6 +3,7 @@ Provide helper functions for constructing sub-commands
 """
 
 import click
+import pandas as pd
 import scanpy as sc
 
 
@@ -124,7 +125,6 @@ def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False):
     obs = list(set(obs) & set(adata.obs.columns))
     var = list(set(var) & set(adata.var.columns))
 
-    import pandas as pd
     import scipy.sparse as sp
     mat = sp.coo_matrix(adata.X)
     n_obs, n_var = mat.shape
@@ -145,3 +145,15 @@ def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False):
     if not var:
         var_df['gene'] = var_df['index']
     var_df.to_csv(gene_fname, sep='\t', header=False, index=False)
+
+
+def write_embedding(adata, name, embed_fn, n_comp=None, sep='\t'):
+    """Export cell embeddings as a txt table
+    """
+    if name not in adata.obsm.keys():
+        raise KeyError(f'{name} is not a valid `.obsm` key')
+    mat = adata.obsm[name].copy()
+    if n_comp is not None and mat.shape[1] >= n_comp:
+        mat = mat[:, 0:n_comp]
+    pd.DataFrame(mat, index=adata.var_names).to_csv(
+        embed_fn, sep=sep, header=False, index=True)

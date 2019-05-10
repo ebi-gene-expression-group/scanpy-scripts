@@ -3,6 +3,7 @@ scanpy umap
 """
 
 import scanpy as sc
+from ..cmd_utils import write_embedding
 
 
 def umap(
@@ -11,6 +12,7 @@ def umap(
         key_added=None,
         init_pos='spectral',
         random_state=0,
+        save_embedding=None,
         **kwargs
 ):
     """
@@ -24,12 +26,20 @@ def umap(
             umap_key = f'X_umap_{key_added}'
             adata.obsm[umap_key] = adata.obsm['X_umap']
             del adata.obsm['X_umap']
+        if save_embedding is not None:
+            if key_added:
+                if save_embedding.endswith('.tsv'):
+                    save_embedding = save_embedding[0:-4]
+                save_embedding = f'{save_embedding}_{key_added}.tsv'
+            else:
+                umap_key = 'X_umap'
+            write_embedding(adata, umap_key, save_embedding)
     else:
         for i, rseed in enumerate(random_state):
             if key_added is None:
                 umap_key = f'r{rseed}'
             elif not isinstance(key_added, (list, tuple)):
-                umap_key = f'{key_dded}_r{rseed}'
+                umap_key = f'{key_added}_r{rseed}'
             elif len(key_added) == len(random_state):
                 umap_key = key_added[i]
             else:

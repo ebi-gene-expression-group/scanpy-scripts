@@ -168,6 +168,14 @@ COMMON_OPTIONS = {
         help='Restrict the clustering to the categories within the key for '
         'sample annotation, in the form of "obs_key list_of_categories".',
     ),
+
+    'save_embedding': click.option(
+        '--save-embedding',
+        type=click.Path(dir_okay=False, writable=True),
+        default=None,
+        show_default=True,
+        help='Save embeddings in a tab-separated text table.',
+    ),
 }
 
 READ_CMD_OPTIONS = [
@@ -383,6 +391,7 @@ PCA_CMD_OPTIONS = [
     *COMMON_OPTIONS['output'],
     COMMON_OPTIONS['zero_center'],
     COMMON_OPTIONS['random_state'],
+    COMMON_OPTIONS['save_embedding'],
     click.option(
         '--n-comps', '-n',
         type=click.INT,
@@ -471,6 +480,7 @@ UMAP_CMD_OPTIONS = [
     COMMON_OPTIONS['init_pos'],
     COMMON_OPTIONS['random_state'],
     COMMON_OPTIONS['key_added'],
+    COMMON_OPTIONS['save_embedding'],
     click.option(
         '--init-pos',
         type=click.STRING,
@@ -541,6 +551,7 @@ TSNE_CMD_OPTIONS = [
     COMMON_OPTIONS['random_state'],
     COMMON_OPTIONS['key_added'],
     COMMON_OPTIONS['n_jobs'],
+    COMMON_OPTIONS['save_embedding'],
     click.option(
         '--perplexity',
         type=click.FLOAT,
@@ -593,6 +604,7 @@ FDG_CMD_OPTIONS = [
     COMMON_OPTIONS['init_pos'],
     COMMON_OPTIONS['random_state'],
     COMMON_OPTIONS['key_added'],
+    COMMON_OPTIONS['save_embedding'],
     click.option(
         '--layout',
         type=click.Choice([]),
