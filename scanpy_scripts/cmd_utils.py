@@ -157,3 +157,35 @@ def write_embedding(adata, name, embed_fn, n_comp=None, sep='\t'):
         mat = mat[:, 0:n_comp]
     pd.DataFrame(mat, index=adata.var_names).to_csv(
         embed_fn, sep=sep, header=False, index=True)
+
+
+def plot_embeddings(
+        adata,
+        basis,
+        save_fig=None,
+        fig_size=None,
+        fig_dpi=300,
+        fig_fontsize=15,
+        **kwargs,
+):
+    """Make scatter plot of cell embeddings
+    """
+    name = 'X_' + basis
+    if name not in adata.obsm.keys():
+        raise KeyError(f'{name} is not a valid `.obsm` key')
+
+    sc.settings.set_figure_params(dpi=fig_dpi, fontsize=fig_fontsize)
+    if fig_size:
+        from matplotlib import rcParams
+        rcParams.update({'figure.figsize': fig_size})
+    if save_fig:
+        import os
+        import matplotlib.pyplot as plt
+        sc.settings.figdir = os.path.dirname(save_fig)
+
+        figname = os.path.basename(save_fig)
+        sc.pl.scatter(adata, basis, save=figname, show=False, **kwargs)
+        os.rename(os.path.join(sc.settings.figdir, 'scatter' + figname), save_fig)
+        plt.close()
+    else:
+        sc.pl.scatter(adata, basis, save=False, show=True, **kwargs)
