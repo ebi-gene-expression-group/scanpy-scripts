@@ -155,13 +155,27 @@ def pseudo_bulk(adata, groupby, use_rep='X', highly_variable=False, FUN=np.mean)
         summarised[i] = FUN(x[k_grp, :], axis=0, keepdims=True)
     return pd.DataFrame(summarised.T, columns=groups, index=features)
 
-def plot_df_heatmap(df, cmap='viridis', title=None, figsize=(7, 7), rotation=90, save=None, **kwargs):
+
+def plot_df_heatmap(
+        df,
+        cmap='viridis',
+        title=None,
+        figsize=(7, 7),
+        rotation=90,
+        save=None,
+        **kwargs,
+):
     fig, ax = plt.subplots(figsize=figsize)
     im = ax.imshow(df, cmap=cmap, aspect='auto', **kwargs)
-    if rotation > 0 and rotation < 90:
+    if 0 < rotation < 90:
         horizontalalignment = 'right'
-    plt.xticks(range(len(df.columns)), df.columns, rotation=rotation, horizontalalignment=horizontalalignment);
-    plt.yticks(range(len(df.index)), df.index);
+    plt.xticks(
+        range(len(df.columns)),
+        df.columns,
+        rotation=rotation,
+        horizontalalignment=horizontalalignment,
+    )
+    plt.yticks(range(len(df.index)), df.index)
     if title:
         fig.suptitle(title)
     fig.colorbar(im)
@@ -185,13 +199,14 @@ def plot_qc(adata, groupby=None):
 def simple_default_pipeline(
         adata,
         qc_only=False,
-        transform_X=True,
+        transform_x=True,
         scale=False,
         min_genes=200,
         min_cells=3,
         max_counts=25000,
         max_mito=20,
         batch=None,
+        combat=False,
         hvg_flavor='cell_ranger',
         transform_rdim=True,
         n_neighbors=15,
@@ -208,22 +223,27 @@ def simple_default_pipeline(
         adata.var['n_cells'] = qc_tbls[1]['n_cells_by_counts'].values
         plot_qc(adata, batch)
     else:
-        if transform_X:
+        if transform_x:
             sc.pp.filter_cells(adata, min_genes=min_genes)
             sc.pp.filter_genes(adata, min_cells=min_cells)
             k = ((adata.obs['n_counts'] <= max_counts) &
                  (adata.obs['percent_mito'] <= max_mito))
             adata = adata[k, :]
-            adata.layers['counts'] = adata.X.copy()
+            if 'counts' not in adata.layers:
+                adata.layers['counts'] = adata.X.copy()
             sc.pp.normalize_total(adata, target_sum=1e4, fraction=0.9)
             sc.pp.log1p(adata)
             adata.raw = adata
             if batch and batch in adata.obs.columns:
-                sc.pp.combat(adata, key=batch)
-            if hvg_flavor == 'cell_ranger':
-                hvg(adata, flavor='cell_ranger', n_top_genes=2000)
+                if combat:
+                    sc.pp.combat(adata, key=batch)
+                by_batch = (batch, 1)
             else:
-                hvg(adata, flavor='seurat')
+                by_batch = None
+            if hvg_flavor == 'cell_ranger':
+                hvg(adata, flavor='cell_ranger', n_top_genes=2000, by_batch=by_batch)
+            else:
+                hvg(adata, flavor='seurat', by_batch=by_batch)
             sc.pl.highly_variable_genes(adata)
             if scale:
                 sc.pp.scale(adata, max_value=10)
