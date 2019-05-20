@@ -37,7 +37,7 @@ setup(
     install_requires=[
         'matplotlib',
         'pandas',
-        'scanpy>=1.4.0',
+        'scanpy>=1.4.2',
         'louvain',
         'leidenalg',
         'MulticoreTSNE',
