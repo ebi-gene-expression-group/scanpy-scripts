@@ -35,6 +35,7 @@ setup(
         ]
     ),
     install_requires=[
+        'scipy>=1.2.0,<1.3.0',
         'matplotlib',
         'pandas',
         'scanpy>=1.4.2',
