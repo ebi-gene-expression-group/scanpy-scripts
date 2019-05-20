@@ -16,9 +16,9 @@ def leiden(adata, resolution, use_graph=None, key_added=None, **kwargs):
         if use_graph not in adata.uns:
             raise KeyError(f'"{use_graph}" is not a valid key of `.uns`.')
         adj_mat = adata.uns[use_graph]['connectivities']
-    if key_added is not None:
-        key_added = f'leiden_{key_added}'
     if not isinstance(resolution, (list, tuple)):
+        if key_added is not None and not key_added.startswith('leiden_'):
+            key_added = f'leiden_{key_added}'
         sc.tl.leiden(
             adata,
             resolution=resolution,
