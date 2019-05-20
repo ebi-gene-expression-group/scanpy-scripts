@@ -42,6 +42,13 @@ setup() {
     diffexp_tsv="${output_dir}/diffexp.tsv"
     diffexp_opt="-g leiden_k10_r0_7 --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5,use_raw:true --save ${diffexp_tsv}"
     diffexp_obj="${output_dir}/diffexp.h5ad"
+    paga_opt="--use-graph neighbors_k10 --key-added k10_r0_7 --groups leiden_k10_r0_7 --model v1.2"
+    paga_obj="${output_dir}/paga.h5ad"
+    diffmap_embed="${output_dir}/diffmap.tsv"
+    diffmap_opt="--use-graph neighbors_k10 --n-comps 10 -E ${diffmap_embed}"
+    diffmap_obj="${output_dir}/diffmap.h5ad"
+    dpt_opt="--use-graph neighbors_k10 --key-added k10 --n-dcs 10 --root leiden_k10_r0_7 0 "
+    dpt_obj="${output_dir}/dpt.h5ad"
 
     if [ ! -d "$data_dir" ]; then
         mkdir -p $data_dir
@@ -243,6 +250,45 @@ setup() {
 
     [ "$status" -eq 0 ]
     [ -f  "$diffexp_obj" ] && [ -f "$diffexp_tsv" ]
+}
+
+# Run PAGA
+
+@test "Run PAGA" {
+    if [ "$resume" = 'true' ] && [ -f "$paga_obj" ]; then
+        skip "$paga_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $paga_obj && $scanpy paga $paga_opt $leiden_obj $paga_obj
+
+    [ "$status" -eq 0 ]
+    [ -f  "$paga_obj" ]
+}
+
+# Run Diffmap
+
+@test "Run Diffmap" {
+    if [ "$resume" = 'true' ] && [ -f "$diffmap_obj" ]; then
+        skip "$diffmap_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $diffmap_obj && $scanpy embed diffmap $diffmap_opt $leiden_obj $diffmap_obj
+
+    [ "$status" -eq 0 ]
+    [ -f  "$diffmap_obj" ] && [ -f "$diffmap_embed" ]
+}
+
+# Run DPT
+
+@test "Run DPT" {
+    if [ "$resume" = 'true' ] && [ -f "$dpt_obj" ]; then
+        skip "$dpt_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $dpt_obj && $scanpy dpt $dpt_opt $diffmap_obj $dpt_obj
+
+    [ "$status" -eq 0 ]
+    [ -f  "$dpt_obj" ]
 }
 
 # Local Variables:

@@ -21,6 +21,9 @@ from .cmds import (
     LOUVAIN_CMD,
     LEIDEN_CMD,
     DIFFEXP_CMD,
+    PAGA_CMD,
+    DIFFMAP_CMD,
+    DPT_CMD,
 )
 
 
@@ -75,6 +78,7 @@ def embed():
 embed.add_command(UMAP_CMD)
 embed.add_command(TSNE_CMD)
 embed.add_command(FDG_CMD)
+embed.add_command(DIFFMAP_CMD)
 
 
 @cli.group(cls=NaturalOrderGroup)
@@ -86,3 +90,5 @@ cluster.add_command(LOUVAIN_CMD)
 cluster.add_command(LEIDEN_CMD)
 
 cli.add_command(DIFFEXP_CMD)
+cli.add_command(PAGA_CMD)
+cli.add_command(DPT_CMD)

@@ -20,11 +20,15 @@ from .cmd_options import (
     LOUVAIN_CMD_OPTIONS,
     LEIDEN_CMD_OPTIONS,
     DIFFEXP_CMD_OPTIONS,
+    PAGA_CMD_OPTIONS,
+    DIFFMAP_CMD_OPTIONS,
+    DPT_CMD_OPTIONS,
 )
 from .lib._read import read_10x
 from .lib._filter import filter_anndata
 from .lib._norm import normalize
 from .lib._hvg import hvg
+from .lib._pca import pca
 from .lib._neighbors import neighbors
 from .lib._umap import umap
 from .lib._tsne import tsne
@@ -32,6 +36,9 @@ from .lib._fdg import fdg
 from .lib._louvain import louvain
 from .lib._leiden import leiden
 from .lib._diffexp import diffexp
+from .lib._paga import paga
+from .lib._diffmap import diffmap
+from .lib._dpt import dpt
 
 
 _I_DESC = '<input_obj>:   input file in format specfied by --input-format'
@@ -96,7 +103,7 @@ REGRESS_CMD = make_subcmd(
 PCA_CMD = make_subcmd(
     'pca',
     PCA_CMD_OPTIONS,
-    sc.pp.pca,
+    pca,
     cmd_desc='Dimensionality reduction by PCA.',
     arg_desc=_IO_DESC,
 )
@@ -133,6 +140,14 @@ FDG_CMD = make_subcmd(
     arg_desc=_IO_DESC,
 )
 
+DIFFMAP_CMD = make_subcmd(
+    'diffmap',
+    DIFFMAP_CMD_OPTIONS,
+    diffmap,
+    cmd_desc='Embed the neighborhood graph using diffusion map.',
+    arg_desc=_IO_DESC,
+)
+
 LOUVAIN_CMD = make_subcmd(
     'louvain',
     LOUVAIN_CMD_OPTIONS,
@@ -154,5 +169,21 @@ DIFFEXP_CMD = make_subcmd(
     DIFFEXP_CMD_OPTIONS,
     diffexp,
     cmd_desc='Find markers for each clusters.',
+    arg_desc=_IO_DESC,
+)
+
+PAGA_CMD = make_subcmd(
+    'paga',
+    PAGA_CMD_OPTIONS,
+    paga,
+    cmd_desc='Trajectory inference by abstract graph analysis.',
+    arg_desc=_IO_DESC,
+)
+
+DPT_CMD = make_subcmd(
+    'dpt',
+    DPT_CMD_OPTIONS,
+    dpt,
+    cmd_desc='Calculate diffusion pseudotime relative to the root cells.',
     arg_desc=_IO_DESC,
 )

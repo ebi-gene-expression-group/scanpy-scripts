@@ -778,7 +778,7 @@ PAGA_CMD_OPTIONS = [
         '--groups',
         type=click.STRING,
         required=True,
-        help='Key for categorical in `adata.obs`. You can pass your predefined '
+        help='Key for categorical in `.obs`. You can pass your predefined '
         'groups by choosing any categorical annotation of observations.',
     ),
     click.option(
@@ -804,6 +804,14 @@ DPT_CMD_OPTIONS = [
     *COMMON_OPTIONS['output'],
     COMMON_OPTIONS['knn_graph'][0], # --use-graph
     COMMON_OPTIONS['key_added'],
+    click.option(
+        '--root',
+        type=(click.STRING, click.STRING),
+        default=(None, None),
+        show_default=True,
+        help='Specify a categorical annotaion of observations (`.obs`) and a '
+        'value representing the root cells.',
+    ),
     click.option(
         '--n-dcs',
         type=click.INT,
