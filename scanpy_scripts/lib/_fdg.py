@@ -34,8 +34,8 @@ def fdg(
     fdg_key = f'X_draw_graph_{layout}'
     if key_added:
         fdg_key = f'X_draw_graph_{layout}_{key_added}'
-    adata.obsm[fdg_key] = adata.obsm[f'X_draw_graph_{layout}']
-    del adata.obsm[f'X_draw_graph_{layout}']
+        adata.obsm[fdg_key] = adata.obsm[f'X_draw_graph_{layout}']
+        del adata.obsm[f'X_draw_graph_{layout}']
     if export_embedding is not None:
         if key_added:
             if export_embedding.endswith('.tsv'):

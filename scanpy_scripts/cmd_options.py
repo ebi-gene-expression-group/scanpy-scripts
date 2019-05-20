@@ -143,6 +143,14 @@ COMMON_OPTIONS = {
         help='Use expression values in `.raw` if present.',
     ),
 
+    'init_pos': click.option(
+        '--init-pos',
+        type=click.STRING,
+        default=None,
+        help='Use precomputed coordinates for initialization. Can be any key '
+        'of `.obsm` or "paga" if .uns["paga"] is present',
+    ),
+
     'zero_center': click.option(
         '--no-zero-center', 'zero_center',
         is_flag=True,
@@ -601,7 +609,7 @@ FDG_CMD_OPTIONS = [
     COMMON_OPTIONS['export_embedding'],
     click.option(
         '--layout',
-        type=click.Choice([]),
+        type=click.Choice(['fa', 'fr', 'grid_fr', 'kk', 'lgl', 'drl', 'rt']),
         default='fa',
         show_default=True,
         help='Name of any valid igraph layout, including "fa" (ForceAtlas2), '
