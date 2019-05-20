@@ -6,24 +6,29 @@ import scanpy as sc
 from ..cmd_utils import write_embedding
 
 
-def tsne(adata, key_added=None, random_state=0, save_embedding=None, **kwargs):
+def tsne(
+        adata,
+        key_added=None,
+        random_state=0,
+        export_embedding=None,
+        **kwargs,
+):
     """
     Wrapper function for sc.tl.tsne, for supporting named slot of tsne embeddings
     """
     if not isinstance(random_state, (list, tuple)):
         sc.tl.tsne(adata, random_state=random_state, **kwargs)
+        tsne_key = 'X_tsne'
         if key_added:
             tsne_key = f'X_tsne_{key_added}'
             adata.obsm[tsne_key] = adata.obsm['X_tsne']
             del adata.obsm['X_tsne']
-        if save_embedding is not None:
+        if export_embedding is not None:
             if key_added:
-                if save_embedding.endswith('.tsv'):
-                    save_embedding = save_embedding[0:-4]
-                save_embedding = f'{save_embedding}_{key_added}.tsv'
-            else:
-                tsne_key = 'X_tsne'
-            write_embedding(adata, tsne_key, save_embedding)
+                if export_embedding.endswith('.tsv'):
+                    export_embedding = export_embedding[0:-4]
+                export_embedding = f'{export_embedding}_{key_added}.tsv'
+            write_embedding(adata, tsne_key, export_embedding)
     else:
         for i, rseed in enumerate(random_state):
             if key_added is None:

@@ -26,11 +26,14 @@ setup() {
     pca_obj="${output_dir}/pca.h5ad"
     neighbor_opt="-k 5,10,20 -n 25 -m umap --show-obj stdout"
     neighbor_obj="${output_dir}/neighbor.h5ad"
-    tsne_opt="-n 25 --use-rep X_pca --learning-rate 200"
+    tsne_embed="${output_dir}/tsne.tsv"
+    tsne_opt="-n 25 --use-rep X_pca --learning-rate 200 -E ${tsne_embed}"
     tsne_obj="${output_dir}/tsne.h5ad"
-    umap_opt="--use-graph neighbors_k10 --min-dist 0.75 --alpha 1 --gamma 1"
+    umap_embed="${output_dir}/umap.tsv"
+    umap_opt="--use-graph neighbors_k10 --min-dist 0.75 --alpha 1 --gamma 1 -E ${umap_embed}"
     umap_obj="${output_dir}/umap.h5ad"
-    fdg_opt="--use-graph neighbors_k10 --layout fa"
+    fdg_embed="${output_dir}/fdg.tsv"
+    fdg_opt="--use-graph neighbors_k10 --layout fa -E ${fdg_embed}"
     fdg_obj="${output_dir}/fdg.h5ad"
     louvain_opt="-r 1 --use-graph neighbors_k10 --key-added k10_r1_0"
     louvain_obj="${output_dir}/louvain.h5ad"
@@ -174,7 +177,7 @@ setup() {
     run rm -f $tsne_obj && $scanpy embed tsne $tsne_opt $pca_obj $tsne_obj
 
     [ "$status" -eq 0 ]
-    [ -f  "$tsne_obj" ]
+    [ -f  "$tsne_obj" ] && [ -f "$tsne_embed" ]
 }
 
 # Run UMAP
@@ -187,7 +190,7 @@ setup() {
     run rm -f $umap_obj && $scanpy embed umap $umap_opt $neighbor_obj $umap_obj
 
     [ "$status" -eq 0 ]
-    [ -f  "$umap_obj" ]
+    [ -f  "$umap_obj" ] && [ -f "$umap_embed" ]
 }
 
 # Run FDG
@@ -200,7 +203,7 @@ setup() {
     run rm -f $fdg_obj && $scanpy embed fdg $fdg_opt $neighbor_obj $fdg_obj
 
     [ "$status" -eq 0 ]
-    [ -f  "$fdg_obj" ]
+    [ -f  "$fdg_obj" ] && [ -f "$fdg_embed" ]
 }
 
 # Find clusters Louvain

@@ -112,12 +112,12 @@ COMMON_OPTIONS = {
         ),
     ],
 
-    'copy': click.option(
-        '--copy',
-        is_flag=True,
-        default=False,
+    'n_comps': click.option(
+        '--n-comps',
+        type=click.INT,
+        default=50,
         show_default=True,
-        help='Return a copy instead of writing to supplied input',
+        help='Number of components to compute',
     ),
 
     'key_added': click.option(
@@ -169,12 +169,12 @@ COMMON_OPTIONS = {
         'sample annotation, in the form of "obs_key list_of_categories".',
     ),
 
-    'save_embedding': click.option(
-        '--save-embedding',
+    'export_embedding': click.option(
+        '--export-embedding', '-E',
         type=click.Path(dir_okay=False, writable=True),
         default=None,
         show_default=True,
-        help='Save embeddings in a tab-separated text table.',
+        help='Export embeddings in a tab-separated text table.',
     ),
 }
 
@@ -391,14 +391,8 @@ PCA_CMD_OPTIONS = [
     *COMMON_OPTIONS['output'],
     COMMON_OPTIONS['zero_center'],
     COMMON_OPTIONS['random_state'],
-    COMMON_OPTIONS['save_embedding'],
-    click.option(
-        '--n-comps', '-n',
-        type=click.INT,
-        default=50,
-        show_default=True,
-        help='Number of principal components to compute',
-    ),
+    COMMON_OPTIONS['export_embedding'],
+    COMMON_OPTIONS['n_comps'],
     click.option(
         '--svd-solver', '-V',
         type=click.Choice(['auto', 'arpack', 'randomized']),
@@ -480,7 +474,7 @@ UMAP_CMD_OPTIONS = [
     COMMON_OPTIONS['init_pos'],
     COMMON_OPTIONS['random_state'],
     COMMON_OPTIONS['key_added'],
-    COMMON_OPTIONS['save_embedding'],
+    COMMON_OPTIONS['export_embedding'],
     click.option(
         '--init-pos',
         type=click.STRING,
@@ -551,7 +545,7 @@ TSNE_CMD_OPTIONS = [
     COMMON_OPTIONS['random_state'],
     COMMON_OPTIONS['key_added'],
     COMMON_OPTIONS['n_jobs'],
-    COMMON_OPTIONS['save_embedding'],
+    COMMON_OPTIONS['export_embedding'],
     click.option(
         '--perplexity',
         type=click.FLOAT,
@@ -604,7 +598,7 @@ FDG_CMD_OPTIONS = [
     COMMON_OPTIONS['init_pos'],
     COMMON_OPTIONS['random_state'],
     COMMON_OPTIONS['key_added'],
-    COMMON_OPTIONS['save_embedding'],
+    COMMON_OPTIONS['export_embedding'],
     click.option(
         '--layout',
         type=click.Choice([]),
@@ -764,5 +758,65 @@ DIFFEXP_CMD_OPTIONS = [
         show_default=True,
         help='Tab-separated table to store results of differential expression '
         'analysis.',
+    ),
+]
+
+PAGA_CMD_OPTIONS = [
+    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['output'],
+    COMMON_OPTIONS['knn_graph'][0], # --use-graph
+    COMMON_OPTIONS['key_added'],
+    click.option(
+        '--groups',
+        type=click.STRING,
+        required=True,
+        help='Key for categorical in `adata.obs`. You can pass your predefined '
+        'groups by choosing any categorical annotation of observations.',
+    ),
+    click.option(
+        '--model',
+        type=click.Choice(['v1.2', 'v1.0']),
+        default='v1.2',
+        show_default=True,
+        help='The PAGA connectivity model.',
+    ),
+]
+
+DIFFMAP_CMD_OPTIONS = [
+    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['output'],
+    COMMON_OPTIONS['knn_graph'][0], # --use-graph
+    COMMON_OPTIONS['key_added'],
+    COMMON_OPTIONS['export_embedding'],
+    COMMON_OPTIONS['n_comps'],
+]
+
+DPT_CMD_OPTIONS = [
+    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['output'],
+    COMMON_OPTIONS['knn_graph'][0], # --use-graph
+    COMMON_OPTIONS['key_added'],
+    click.option(
+        '--n-dcs',
+        type=click.INT,
+        default=10,
+        show_default=True,
+        help='The number of diffusion components to use.',
+    ),
+    click.option(
+        '--n-branchings',
+        type=click.INT,
+        default=0,
+        show_default=True,
+        help='Number of branchings to detect.',
+    ),
+    click.option(
+        '--min-group-size',
+        type=click.FLOAT,
+        default=0.01,
+        show_default=True,
+        help='During recursive splitting of branches for --n-branchings > 1, '
+        'do not consider branches/groups that contain fewer than this fraction '
+        'of the total number of data points.',
     ),
 ]

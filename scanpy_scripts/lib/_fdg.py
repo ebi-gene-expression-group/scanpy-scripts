@@ -12,7 +12,7 @@ def fdg(
         layout='fa',
         key_added=None,
         random_state=0,
-        save_embedding=None,
+        export_embedding=None,
         **kwargs
 ):
     """
@@ -31,16 +31,15 @@ def fdg(
         adjacency=adj_mat,
         **kwargs,
     )
+    fdg_key = f'X_draw_graph_{layout}'
     if key_added:
         fdg_key = f'X_draw_graph_{layout}_{key_added}'
-    else:
-        fdg_key = f'X_draw_graph_{layout}_r{random_state}'
     adata.obsm[fdg_key] = adata.obsm[f'X_draw_graph_{layout}']
     del adata.obsm[f'X_draw_graph_{layout}']
-    if save_embedding is not None:
+    if export_embedding is not None:
         if key_added:
-            if save_embedding.endswith('.tsv'):
-                save_embedding = save_embedding[0:-4]
-            save_embedding = f'{save_embedding}_{key_added}.tsv'
-        write_embedding(adata, fdg_key, save_embedding)
+            if export_embedding.endswith('.tsv'):
+                export_embedding = export_embedding[0:-4]
+            export_embedding = f'{export_embedding}_{key_added}.tsv'
+        write_embedding(adata, fdg_key, export_embedding)
     return adata

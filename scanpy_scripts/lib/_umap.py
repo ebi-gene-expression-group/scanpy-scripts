@@ -12,8 +12,8 @@ def umap(
         key_added=None,
         init_pos='spectral',
         random_state=0,
-        save_embedding=None,
-        **kwargs
+        export_embedding=None,
+        **kwargs,
 ):
     """
     Wrapper function for sc.tl.umap, for supporting named slot of umap embeddings
@@ -22,18 +22,17 @@ def umap(
         adata.uns['neighbors'] = adata.uns[use_graph]
     if not isinstance(random_state, (list, tuple)):
         sc.tl.umap(adata, init_pos=init_pos, random_state=random_state, **kwargs)
+        umap_key = 'X_umap'
         if key_added:
             umap_key = f'X_umap_{key_added}'
             adata.obsm[umap_key] = adata.obsm['X_umap']
             del adata.obsm['X_umap']
-        if save_embedding is not None:
+        if export_embedding is not None:
             if key_added:
-                if save_embedding.endswith('.tsv'):
-                    save_embedding = save_embedding[0:-4]
-                save_embedding = f'{save_embedding}_{key_added}.tsv'
-            else:
-                umap_key = 'X_umap'
-            write_embedding(adata, umap_key, save_embedding)
+                if export_embedding.endswith('.tsv'):
+                    export_embedding = export_embedding[0:-4]
+                export_embedding = f'{export_embedding}_{key_added}.tsv'
+            write_embedding(adata, umap_key, export_embedding)
     else:
         for i, rseed in enumerate(random_state):
             if key_added is None:
