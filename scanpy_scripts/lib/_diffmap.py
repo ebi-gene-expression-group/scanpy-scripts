@@ -3,7 +3,12 @@ scanpy diffmap
 """
 
 import scanpy as sc
-from ..cmd_utils import write_embedding
+from ..cmd_utils import (
+    _set_default_key,
+    _restore_default_key,
+    _rename_default_key,
+    write_embedding,
+)
 
 
 def diffmap(
@@ -16,22 +21,15 @@ def diffmap(
     """
     Wrapper function for sc.tl.diffmap, for supporting named slot
     """
-    if use_graph != 'neighbors':
-        if use_graph not in adata.uns.keys():
-            raise KeyError(f'{use_graph} not found in `.uns`')
-        if 'neighbors' in adata.uns.keys():
-            adata.uns['neighbors_bkup'] = adata.uns['neighbors']
-        adata.uns['neighbors'] = adata.uns[use_graph]
+    _set_default_key(adata, 'uns', 'neighbors', use_graph)
     sc.tl.diffmap(adata, **kwargs)
-    diffmap_key = f'X_diffmap'
+    _restore_default_key(adata, 'uns', 'neighbors', use_graph)
+
+    diffmap_key = 'X_diffmap'
     if key_added:
-        diffmap_key = f'X_diffmap_{key_added}'
-        adata.obsm[diffmap_key] = adata.obsm['X_diffmap']
-        del adata.obsm['X_diffmap']
+        diffmap_key = f'{diffmap_key}_{key_added}'
+        _rename_default_key(adata, 'obsm', 'X_diffmap', diffmap_key)
+
     if export_embedding is not None:
-        if key_added:
-            if export_embedding.endswith('.tsv'):
-                export_embedding = export_embedding[0:-4]
-            export_embedding = f'{export_embedding}_{key_added}.tsv'
-        write_embedding(adata, diffmap_key, export_embedding)
+        write_embedding(adata, diffmap_key, export_embedding, key_added=key_added)
     return adata

@@ -158,12 +158,16 @@ def write_cluster(adata, names, cluster_fn, sep='\t'):
     adata[names].to_csv(cluster_fn, sep=sep, header=True, index=True)
 
 
-def write_embedding(adata, name, embed_fn, n_comp=None, sep='\t'):
+def write_embedding(adata, key, embed_fn, n_comp=None, sep='\t', key_added=None):
     """Export cell embeddings as a txt table
     """
-    if name not in adata.obsm.keys():
-        raise KeyError(f'{name} is not a valid `.obsm` key')
-    mat = adata.obsm[name].copy()
+    if key_added:
+        if embed_fn.endswith('.tsv'):
+            embed_fn = embed_fn[0:-4]
+        embed_fn = f'{embed_fn}_{key_added}.tsv'
+    if key not in adata.obsm.keys():
+        raise KeyError(f'{key} is not a valid `.obsm` key')
+    mat = adata.obsm[key].copy()
     if n_comp is not None and mat.shape[1] >= n_comp:
         mat = mat[:, 0:n_comp]
     pd.DataFrame(mat, index=adata.obs_names).to_csv(
@@ -200,3 +204,33 @@ def plot_embeddings(
         plt.close()
     else:
         sc.pl.scatter(adata, basis, save=False, show=True, **kwargs)
+
+
+def _set_default_key(adata, slot_name, default, replacement):
+    slot = getattr(adata, slot_name)
+    if replacement != default:
+        if replacement not in slot.keys():
+            raise KeyError(f'{replacement} not found in `.{slot_name}`')
+        if default in slot.keys():
+            slot[f'{default}_bkup'] = slot[default]
+        slot[default] = slot[replacement]
+
+
+def _restore_default_key(adata, slot_name, default, replacement):
+    slot = getattr(adata, slot_name)
+    if replacement != default:
+        del slot[default]
+        bkup_key = f'{default}_bkup'
+        if bkup_key in slot.keys():
+            slot[default] = slot[bkup_key]
+            del slot[bkup_key]
+
+
+def _rename_default_key(adata, slot_name, default, key):
+    slot = getattr(adata, slot_name)
+    slot[key] = slot[default]
+    del slot[default]
+    bkup_key = f'{default}_bkup'
+    if bkup_key in slot.keys():
+        slot[default] = slot[bkup_key]
+        del slot[bkup_key]

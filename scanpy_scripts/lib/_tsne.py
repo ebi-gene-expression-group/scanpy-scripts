@@ -3,7 +3,10 @@ scanpy tsne
 """
 
 import scanpy as sc
-from ..cmd_utils import write_embedding
+from ..cmd_utils import (
+    _rename_default_key,
+    write_embedding,
+)
 
 
 def tsne(
@@ -18,17 +21,14 @@ def tsne(
     """
     if not isinstance(random_state, (list, tuple)):
         sc.tl.tsne(adata, random_state=random_state, **kwargs)
+
         tsne_key = 'X_tsne'
         if key_added:
             tsne_key = f'X_tsne_{key_added}'
-            adata.obsm[tsne_key] = adata.obsm['X_tsne']
-            del adata.obsm['X_tsne']
+            _rename_default_key(adata, 'obsm', 'X_tsne', tsne_key)
+
         if export_embedding is not None:
-            if key_added:
-                if export_embedding.endswith('.tsv'):
-                    export_embedding = export_embedding[0:-4]
-                export_embedding = f'{export_embedding}_{key_added}.tsv'
-            write_embedding(adata, tsne_key, export_embedding)
+            write_embedding(adata, tsne_key, export_embedding, key_added=key_added)
     else:
         for i, rseed in enumerate(random_state):
             if key_added is None:

@@ -3,6 +3,12 @@ scanpy paga
 """
 
 import scanpy as sc
+from ..cmd_utils import (
+    _set_default_key,
+    _restore_default_key,
+    _rename_default_key,
+)
+
 
 def paga(
         adata,
@@ -13,20 +19,12 @@ def paga(
     """
     Wrapper function for sc.tl.paga, for supporting named slot
     """
-    if use_graph != 'neighbors':
-        if use_graph not in adata.uns.keys():
-            raise KeyError(f'{use_graph} not found in `.uns`')
-        if 'neighbors' in adata.uns.keys():
-            adata.uns['neighbors_bkup'] = adata.uns['neighbors']
-        adata.uns['neighbors'] = adata.uns[use_graph]
+    _set_default_key(adata, 'uns', 'neighbors', use_graph)
     sc.tl.paga(adata, **kwargs)
+    _restore_default_key(adata, 'uns', 'neighbors', use_graph)
+
     if key_added:
-        uns_key = f'paga_{key_added}'
-        adata.uns[uns_key] = adata.uns['paga']
-        del adata.uns['paga']
-    if use_graph != 'neighbors':
-        del adata.uns['neighbors']
-        if 'neighbors_bkup' in adata.uns.keys():
-            adata.uns['neighbors'] = adata.uns['neighbors_bkup']
-            del adata.uns['neighbors_bkup']
+        paga_key = f'paga_{key_added}'
+        _rename_default_key(adata, 'uns', 'paga', paga_key)
+
     return adata

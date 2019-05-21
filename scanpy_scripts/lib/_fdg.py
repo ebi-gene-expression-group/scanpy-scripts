@@ -3,7 +3,10 @@ scanpy fdg
 """
 
 import scanpy as sc
-from ..cmd_utils import write_embedding
+from ..cmd_utils import (
+    _rename_default_key,
+    write_embedding,
+)
 
 
 def fdg(
@@ -31,15 +34,12 @@ def fdg(
         adjacency=adj_mat,
         **kwargs,
     )
+
     fdg_key = f'X_draw_graph_{layout}'
     if key_added:
         fdg_key = f'X_draw_graph_{layout}_{key_added}'
-        adata.obsm[fdg_key] = adata.obsm[f'X_draw_graph_{layout}']
-        del adata.obsm[f'X_draw_graph_{layout}']
+        _rename_default_key(adata, 'obsm', f'X_draw_graph_{layout}', fdg_key)
+
     if export_embedding is not None:
-        if key_added:
-            if export_embedding.endswith('.tsv'):
-                export_embedding = export_embedding[0:-4]
-            export_embedding = f'{export_embedding}_{key_added}.tsv'
-        write_embedding(adata, fdg_key, export_embedding)
+        write_embedding(adata, fdg_key, export_embedding, key_added=key_added)
     return adata

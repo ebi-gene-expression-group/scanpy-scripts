@@ -24,9 +24,5 @@ def pca(adata, key_added=None, export_embedding=None, **kwargs):
         pca_key = 'X_pca'
 
     if export_embedding is not None:
-        if key_added:
-            if export_embedding.endswith('.tsv'):
-                export_embedding = export_embedding[0:-4]
-            export_embedding = f'{export_embedding}_{key_added}.tsv'
-        write_embedding(adata, pca_key, export_embedding)
+        write_embedding(adata, pca_key, export_embedding, key_added=key_added)
     return adata
