@@ -32,7 +32,7 @@ COMMON_OPTIONS = {
         click.argument(
             'output_obj',
             metavar='<output_obj>',
-            type=click.Path(),
+            type=click.Path(dir_okay=False, writable=True),
         ),
         click.option(
             '--output-format', '-F',
@@ -63,6 +63,35 @@ COMMON_OPTIONS = {
             default=None,
             show_default=True,
             help='Print output object summary info to specified stream.',
+        ),
+    ],
+
+    'plot': [
+        click.argument(
+            'output_fig',
+            metavar='<output_fig>',
+            type=click.Path(dir_okay=False, writable=True),
+        ),
+        click.option(
+            '--fig-size',
+            type=CommaSeparatedText(click.INT, length=2),
+            default="7,7",
+            show_default=True,
+            help='Figure size.',
+        ),
+        click.option(
+            '--fig-dpi',
+            type=click.INT,
+            default=80,
+            show_default=True,
+            help='Figure DPI.',
+        ),
+        click.option(
+            '--fig-fontsize',
+            type=click.INT,
+            default=15,
+            show_default=True,
+            help='Figure font size.',
         ),
     ],
 
@@ -170,7 +199,7 @@ COMMON_OPTIONS = {
 
     'restrict_to': click.option(
         '--restrict-to',
-        type=(click.STRING, CommaSeparatedText(click.STRING)),
+        type=(click.STRING, CommaSeparatedText()),
         default=(None, None),
         show_default=True,
         help='Restrict the clustering to the categories within the key for '
@@ -834,5 +863,56 @@ DPT_CMD_OPTIONS = [
         help='During recursive splitting of branches for --n-branchings > 1, '
         'do not consider branches/groups that contain fewer than this fraction '
         'of the total number of data points.',
+    ),
+]
+
+PLOT_EMBED_CMD_OPTIONS = [
+    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['plot'],
+    click.option(
+        '--basis',
+        type=click.STRING,
+        default='umap',
+        show_default=True,
+        help='Name of the embedding to plot, must be a key of `.obsm` without '
+        'the prefix "X_".',
+    ),
+    click.option(
+        '--color',
+        type=CommaSeparatedText(simplify=True),
+        default=None,
+        show_default=True,
+        help='Keys for annotations of observations/cells or variables/genes.',
+    ),
+    click.option(
+        '--use-raw/--no-raw',
+        default=None,
+        show_default=True,
+        help='Use `.raw` attribute for coloring with gene expression. If '
+        '`None`, uses `.raw` if present.',
+    ),
+    click.option(
+        '--layers',
+        type=click.STRING,
+        default=None,
+        help='Name of the AnnData object layer to be plotted. By default '
+        '`.raw.X` is plotted. If --no-raw, then `.X` is plotted. If --layer '
+        'is set to a valid layer name, then the layer is plotted. --layer '
+        'takes precedence over --use-raw/--no-raw.'
+    ),
+    click.option(
+        '--legend-loc',
+        type=click.Choice(['right margin', 'on data']),
+        default='right margin',
+        show_default=True,
+        help='Location of legend, either "on data", "right margin" or valid '
+        'keywords for `matplotlib.legend`.',
+    ),
+    click.option(
+        '--legend-fontsize',
+        type=click.INT,
+        default=15,
+        show_default=True,
+        help='Legend font size.',
     ),
 ]

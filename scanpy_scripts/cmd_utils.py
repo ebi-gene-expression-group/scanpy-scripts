@@ -40,14 +40,15 @@ def make_subcmd(cmd_name, options, func, cmd_desc, arg_desc):
         else:
             adata = func(**kwargs)
 
-        _write_obj(
-            adata,
-            output_obj,
-            output_format=output_format,
-            chunk_size=zarr_chunk_size,
-            export_mtx=export_mtx,
-            show_obj=show_obj,
-        )
+        if output_obj:
+            _write_obj(
+                adata,
+                output_obj,
+                output_format=output_format,
+                chunk_size=zarr_chunk_size,
+                export_mtx=export_mtx,
+                show_obj=show_obj,
+            )
         return 0
 
     return cmd
@@ -147,15 +148,15 @@ def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False):
     var_df.to_csv(gene_fname, sep='\t', header=False, index=False)
 
 
-def write_cluster(adata, names, cluster_fn, sep='\t'):
+def write_cluster(adata, keys, cluster_fn, sep='\t'):
     """Export cell clustering as a text table
     """
-    if not isinstance(names, (list, tuple)):
-        names = [names]
-    for name in names:
-        if name not in adata.obs.keys():
-            raise KeyError(f'{name} is not a valid `.uns` key')
-    adata[names].to_csv(cluster_fn, sep=sep, header=True, index=True)
+    if not isinstance(keys, (list, tuple)):
+        keys = [keys]
+    for key in keys:
+        if key not in adata.obs.keys():
+            raise KeyError(f'{key} is not a valid `.uns` key')
+    adata[keys].to_csv(cluster_fn, sep=sep, header=True, index=True)
 
 
 def write_embedding(adata, key, embed_fn, n_comp=None, sep='\t', key_added=None):
@@ -176,8 +177,8 @@ def write_embedding(adata, key, embed_fn, n_comp=None, sep='\t', key_added=None)
 
 def plot_embeddings(
         adata,
-        basis,
-        save_fig=None,
+        basis=None,
+        output_fig=None,
         fig_size=None,
         fig_dpi=300,
         fig_fontsize=15,
@@ -185,22 +186,23 @@ def plot_embeddings(
 ):
     """Make scatter plot of cell embeddings
     """
-    name = 'X_' + basis
-    if name not in adata.obsm.keys():
-        raise KeyError(f'{name} is not a valid `.obsm` key')
+    key = 'X_' + basis
+    if key not in adata.obsm.keys():
+        raise KeyError(f'{key} is not a valid `.obsm` key')
 
     sc.settings.set_figure_params(dpi=fig_dpi, fontsize=fig_fontsize)
     if fig_size:
         from matplotlib import rcParams
         rcParams.update({'figure.figsize': fig_size})
-    if save_fig:
+    if output_fig:
         import os
         import matplotlib.pyplot as plt
-        sc.settings.figdir = os.path.dirname(save_fig)
+        sc.settings.figdir = os.path.dirname(output_fig)
 
-        figname = os.path.basename(save_fig)
-        sc.pl.scatter(adata, basis, save=figname, show=False, **kwargs)
-        os.rename(os.path.join(sc.settings.figdir, 'scatter' + figname), save_fig)
+        figname = os.path.basename(output_fig)
+        sc.pl.scatter(adata, basis=basis, save=figname, show=False, **kwargs)
+        os.rename(
+            os.path.join(sc.settings.figdir, basis + figname), output_fig)
         plt.close()
     else:
         sc.pl.scatter(adata, basis, save=False, show=True, **kwargs)

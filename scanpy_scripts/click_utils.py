@@ -25,18 +25,21 @@ class CommaSeparatedText(click.ParamType):
     """
     Comma separated text
     """
-    def __init__(self, dtype=click.STRING, simplify=False):
+    def __init__(self, dtype=click.STRING, simplify=False, length=None):
         self.dtype = dtype
         self.dtype_name = _get_type_name(dtype)
-        self.name = '{}[,{}...]'.format(self.dtype_name, self.dtype_name)
         self.simplify = simplify
+        self.length = length
+        if length and length <= 3:
+            self.name = ','.join([f'{self.dtype_name}'] * length)
+        else:
+            self.name = '{}[,{}...]'.format(self.dtype_name, self.dtype_name)
 
     def convert(self, value, param, ctx):
         try:
             converted = list(map(self.dtype, value.split(',')))
             if self.simplify and len(converted) == 1:
                 converted = converted[0]
-            return converted
         except ValueError:
             self.fail(
                 '{} is not a valid comma separated list of {}'.format(
@@ -44,6 +47,15 @@ class CommaSeparatedText(click.ParamType):
                 param,
                 ctx
             )
+        if self.length:
+            if len(converted) != self.length:
+                self.fail(
+                    '{} is not a valid comma separated list of length {}'.format(
+                        value, self.length),
+                    param,
+                    ctx
+                )
+        return converted
 
 
 class Dictionary(click.ParamType):

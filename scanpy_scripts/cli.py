@@ -24,6 +24,7 @@ from .cmds import (
     PAGA_CMD,
     DIFFMAP_CMD,
     DPT_CMD,
+    PLOT_EMBED_CMD,
 )
 
 
@@ -89,6 +90,15 @@ def cluster():
 cluster.add_command(LOUVAIN_CMD)
 cluster.add_command(LEIDEN_CMD)
 
+
 cli.add_command(DIFFEXP_CMD)
 cli.add_command(PAGA_CMD)
 cli.add_command(DPT_CMD)
+
+
+@cli.group(cls=NaturalOrderGroup)
+def plot():
+    """Visualise data."""
+
+
+plot.add_command(PLOT_EMBED_CMD)

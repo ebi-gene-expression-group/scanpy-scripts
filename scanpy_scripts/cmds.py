@@ -4,7 +4,10 @@ Provides sub-commands
 
 import scanpy as sc
 
-from .cmd_utils import make_subcmd
+from .cmd_utils import (
+    make_subcmd,
+    plot_embeddings,
+)
 from .cmd_options import (
     READ_CMD_OPTIONS,
     FILTER_CMD_OPTIONS,
@@ -23,6 +26,7 @@ from .cmd_options import (
     PAGA_CMD_OPTIONS,
     DIFFMAP_CMD_OPTIONS,
     DPT_CMD_OPTIONS,
+    PLOT_EMBED_CMD_OPTIONS,
 )
 from .lib._read import read_10x
 from .lib._filter import filter_anndata
@@ -43,7 +47,9 @@ from .lib._dpt import dpt
 
 _I_DESC = '<input_obj>:   input file in format specfied by --input-format'
 _O_DESC = '<output_obj>:  output file in format specfied by --output-format'
+_P_DESC = '<output_fig>:  output figure in pdf or png format'
 _IO_DESC = '\n'.join([_I_DESC, _O_DESC])
+_IP_DESC = '\n'.join([_I_DESC, _P_DESC])
 
 
 READ_CMD = make_subcmd(
@@ -186,4 +192,12 @@ DPT_CMD = make_subcmd(
     dpt,
     cmd_desc='Calculate diffusion pseudotime relative to the root cells.',
     arg_desc=_IO_DESC,
+)
+
+PLOT_EMBED_CMD = make_subcmd(
+    'embed',
+    PLOT_EMBED_CMD_OPTIONS,
+    plot_embeddings,
+    cmd_desc='Plot cell embeddings.',
+    arg_desc=_IP_DESC,
 )
