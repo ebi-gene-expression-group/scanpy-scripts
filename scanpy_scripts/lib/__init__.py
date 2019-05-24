@@ -26,8 +26,8 @@ from ..cmd_utils import _write_obj as write_obj
 def expression_colormap():
     """Returns a nice color map for highlighting gene expression
     """
-    reds = plt.cm.Reds(np.linspace(0, 1, 128))
-    greys = plt.cm.Greys_r(np.linspace(0.7, 0.8, 20))
+    reds = plt.cm.Reds(np.linspace(0, 1, 118))
+    greys = plt.cm.Greys_r(np.linspace(0.7, 0.8, 10))
     palette = np.vstack([greys, reds])
     return LinearSegmentedColormap.from_list('expression', palette)
 
@@ -39,7 +39,7 @@ def cross_table(adata, x, y, normalise=None, highlight=False):
     y_attr = adata.obs[y]
     assert not _is_numeric(x_attr.values), f'Can not operate on numerical {x}'
     assert not _is_numeric(y_attr.values), f'Can not operate on numerical {y}'
-    crs_tbl = pd.crosstab(x, y)
+    crs_tbl = pd.crosstab(x_attr, y_attr)
     if normalise == 'x':
         x_sizes = x_attr.groupby(x_attr).size().values
         crs_tbl = (crs_tbl.T / x_sizes * 100).round(2).T
@@ -55,7 +55,15 @@ def _is_numeric(x):
     return x.dtype.kind in ('i', 'f')
 
 
-def run_harmony(adata, batch, theta=2.0, key='X_pca', tmp_dir='.harmony', script='harmonise.R'):
+def run_harmony(
+        adata,
+        batch,
+        theta=2.0,
+        key='X_pca',
+        key_added='hm',
+        tmp_dir='.harmony',
+        script='harmonise.R'
+):
     if not isinstance(batch, (tuple, list)):
         batch = [batch]
     if not isinstance(theta, (tuple, list)):
@@ -74,16 +82,16 @@ def run_harmony(adata, batch, theta=2.0, key='X_pca', tmp_dir='.harmony', script
     embed_fn = os.path.join(tmp_dir, 'embed.tsv')
     meta.to_csv(meta_fn, sep='\t', index=True, header=True)
     pd.DataFrame(embed, index=adata.obs_names).to_csv(
-            embed_fn, sep='\t', index=True, header=True)
+        embed_fn, sep='\t', index=True, header=True)
     grouping = ','.join(batch)
     thetas = ','.join(list(map(str, theta)))
     hm_embed_fn = os.path.join(tmp_dir, 'hm_embed.tsv')
 
     import subprocess as sbp
-    cmd = f'Rscript harmonise.R {embed_fn} {meta_fn} {grouping} {thetas} {hm_embed_fn}'
+    cmd = f'Rscript {script} {embed_fn} {meta_fn} {grouping} {thetas} {hm_embed_fn}'
     sbp.call(cmd.split())
     hm_embed = pd.read_csv(hm_embed_fn, header=0, index_col=0, sep='\t')
-    adata.obsm[key + '_hm'] = hm_embed.values
+    adata.obsm[f'{key}_{key_added}'] = hm_embed.values
     os.remove(meta_fn)
     os.remove(embed_fn)
     os.remove(hm_embed_fn)
@@ -114,14 +122,15 @@ def subsample(adata, fraction, groupby=None, min_n=0, **kwargs):
                                           n_obs=n_obs_per_group[grp],
                                           copy=True,
                                           **kwargs) for grp in groups]
-        subsampled =  sampled_groups[0].concatenate(sampled_groups[1:])
+        subsampled = sampled_groups[0].concatenate(sampled_groups[1:])
         subsampled.var = adata.var.copy()
     else:
         subsampled = sc.pp.subsample(adata, fraction, **kwargs, copy=True)
     return subsampled
 
 
-def pseudo_bulk(adata, groupby, use_rep='X', highly_variable=False, FUN=np.mean):
+def pseudo_bulk(
+        adata, groupby, use_rep='X', highly_variable=False, FUN=np.mean):
     """Make pseudo bulk data from grouped sc data
     """
     group_attr = adata.obs[groupby].astype(str).values
@@ -191,9 +200,11 @@ def plot_qc(adata, groupby=None):
     if groupby:
         sc.pl.violin(adata, keys=qc_metrics, groupby=groupby, rotation=45)
     sc.pl.violin(adata, keys=qc_metrics, multi_panel=True, rotation=45)
-    sc.pl.scatter(adata, x='n_counts', y='n_genes', color='percent_mito', alpha=0.5)
+    sc.pl.scatter(
+        adata, x='n_counts', y='n_genes', color='percent_mito', alpha=0.5)
     sc.pl.scatter(adata, x='n_counts', y='n_genes', color=groupby, alpha=0.5)
-    sc.pl.scatter(adata, x='n_counts', y='percent_mito', color=groupby, alpha=0.5)
+    sc.pl.scatter(
+        adata, x='n_counts', y='percent_mito', color=groupby, alpha=0.5)
 
 
 def simple_default_pipeline(
@@ -207,11 +218,11 @@ def simple_default_pipeline(
         max_mito=20,
         batch=None,
         combat=False,
+        combat_args=None,
         hvg_flavor='cell_ranger',
         transform_rdim=True,
         n_neighbors=15,
         n_pcs=40,
-        graph_layout='fr',
 ):
     if qc_only:
         adata.var['mito'] = adata.var_names.str.startswith('MT-')
@@ -228,15 +239,15 @@ def simple_default_pipeline(
             sc.pp.filter_genes(adata, min_cells=min_cells)
             k = ((adata.obs['n_counts'] <= max_counts) &
                  (adata.obs['percent_mito'] <= max_mito))
-            adata = adata[k, :]
+            adata._inplace_subset_obs(k)
             if 'counts' not in adata.layers:
                 adata.layers['counts'] = adata.X.copy()
             sc.pp.normalize_total(adata, target_sum=1e4, fraction=0.9)
             sc.pp.log1p(adata)
             adata.raw = adata
+            if combat:
+                sc.pp.combat(adata, **combat_args)
             if batch and batch in adata.obs.columns:
-                if combat:
-                    sc.pp.combat(adata, key=batch)
                 by_batch = (batch, 1)
             else:
                 by_batch = None
@@ -251,6 +262,6 @@ def simple_default_pipeline(
             sc.pp.pca(adata, n_comps=50, use_highly_variable=True, svd_solver='arpack')
             neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs)
             umap(adata)
-            sc.tl.draw_graph(adata, layout=graph_layout)
+            sc.tl.diffmap(adata, n_comps=15)
             leiden(adata, resolution=(0.1, 0.4, 0.7))
     return adata
