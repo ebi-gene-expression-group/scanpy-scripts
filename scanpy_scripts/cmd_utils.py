@@ -3,6 +3,7 @@ Provide helper functions for constructing sub-commands
 """
 
 import click
+import pandas as pd
 import scanpy as sc
 
 
@@ -39,14 +40,15 @@ def make_subcmd(cmd_name, options, func, cmd_desc, arg_desc):
         else:
             adata = func(**kwargs)
 
-        _write_obj(
-            adata,
-            output_obj,
-            output_format=output_format,
-            chunk_size=zarr_chunk_size,
-            export_mtx=export_mtx,
-            show_obj=show_obj,
-        )
+        if output_obj:
+            _write_obj(
+                adata,
+                output_obj,
+                output_format=output_format,
+                chunk_size=zarr_chunk_size,
+                export_mtx=export_mtx,
+                show_obj=show_obj,
+            )
         return 0
 
     return cmd
@@ -124,7 +126,6 @@ def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False):
     obs = list(set(obs) & set(adata.obs.columns))
     var = list(set(var) & set(adata.var.columns))
 
-    import pandas as pd
     import scipy.sparse as sp
     mat = sp.coo_matrix(adata.X)
     n_obs, n_var = mat.shape
@@ -145,3 +146,93 @@ def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False):
     if not var:
         var_df['gene'] = var_df['index']
     var_df.to_csv(gene_fname, sep='\t', header=False, index=False)
+
+
+def write_cluster(adata, keys, cluster_fn, sep='\t'):
+    """Export cell clustering as a text table
+    """
+    if not isinstance(keys, (list, tuple)):
+        keys = [keys]
+    for key in keys:
+        if key not in adata.obs.keys():
+            raise KeyError(f'{key} is not a valid `.uns` key')
+    adata[keys].to_csv(cluster_fn, sep=sep, header=True, index=True)
+
+
+def write_embedding(adata, key, embed_fn, n_comp=None, sep='\t', key_added=None):
+    """Export cell embeddings as a txt table
+    """
+    if key_added:
+        if embed_fn.endswith('.tsv'):
+            embed_fn = embed_fn[0:-4]
+        embed_fn = f'{embed_fn}_{key_added}.tsv'
+    if key not in adata.obsm.keys():
+        raise KeyError(f'{key} is not a valid `.obsm` key')
+    mat = adata.obsm[key].copy()
+    if n_comp is not None and mat.shape[1] >= n_comp:
+        mat = mat[:, 0:n_comp]
+    pd.DataFrame(mat, index=adata.obs_names).to_csv(
+        embed_fn, sep=sep, header=False, index=True)
+
+
+def plot_embeddings(
+        adata,
+        basis=None,
+        output_fig=None,
+        fig_size=None,
+        fig_dpi=300,
+        fig_fontsize=15,
+        **kwargs,
+):
+    """Make scatter plot of cell embeddings
+    """
+    key = 'X_' + basis
+    if key not in adata.obsm.keys():
+        raise KeyError(f'{key} is not a valid `.obsm` key')
+
+    sc.settings.set_figure_params(dpi=fig_dpi, fontsize=fig_fontsize)
+    if fig_size:
+        from matplotlib import rcParams
+        rcParams.update({'figure.figsize': fig_size})
+    if output_fig:
+        import os
+        import matplotlib.pyplot as plt
+        sc.settings.figdir = os.path.dirname(output_fig)
+
+        figname = os.path.basename(output_fig)
+        sc.pl.scatter(adata, basis=basis, save=figname, show=False, **kwargs)
+        os.rename(
+            os.path.join(sc.settings.figdir, basis + figname), output_fig)
+        plt.close()
+    else:
+        sc.pl.scatter(adata, basis, save=False, show=True, **kwargs)
+
+
+def _set_default_key(adata, slot_name, default, replacement):
+    slot = getattr(adata, slot_name)
+    if replacement != default:
+        if replacement not in slot.keys():
+            raise KeyError(f'{replacement} not found in `.{slot_name}`')
+        if default in slot.keys():
+            slot[f'{default}_bkup'] = slot[default]
+        slot[default] = slot[replacement]
+
+
+def _restore_default_key(adata, slot_name, default, replacement):
+    slot = getattr(adata, slot_name)
+    if replacement != default:
+        del slot[default]
+        bkup_key = f'{default}_bkup'
+        if bkup_key in slot.keys():
+            slot[default] = slot[bkup_key]
+            del slot[bkup_key]
+
+
+def _rename_default_key(adata, slot_name, default, key):
+    slot = getattr(adata, slot_name)
+    slot[key] = slot[default]
+    del slot[default]
+    bkup_key = f'{default}_bkup'
+    if bkup_key in slot.keys():
+        slot[default] = slot[bkup_key]
+        del slot[bkup_key]

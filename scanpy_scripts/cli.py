@@ -17,9 +17,14 @@ from .cmds import (
     NEIGHBOR_CMD,
     UMAP_CMD,
     TSNE_CMD,
+    FDG_CMD,
     LOUVAIN_CMD,
     LEIDEN_CMD,
     DIFFEXP_CMD,
+    PAGA_CMD,
+    DIFFMAP_CMD,
+    DPT_CMD,
+    PLOT_EMBED_CMD,
 )
 
 
@@ -73,6 +78,8 @@ def embed():
 
 embed.add_command(UMAP_CMD)
 embed.add_command(TSNE_CMD)
+embed.add_command(FDG_CMD)
+embed.add_command(DIFFMAP_CMD)
 
 
 @cli.group(cls=NaturalOrderGroup)
@@ -83,4 +90,15 @@ def cluster():
 cluster.add_command(LOUVAIN_CMD)
 cluster.add_command(LEIDEN_CMD)
 
+
 cli.add_command(DIFFEXP_CMD)
+cli.add_command(PAGA_CMD)
+cli.add_command(DPT_CMD)
+
+
+@cli.group(cls=NaturalOrderGroup)
+def plot():
+    """Visualise data."""
+
+
+plot.add_command(PLOT_EMBED_CMD)

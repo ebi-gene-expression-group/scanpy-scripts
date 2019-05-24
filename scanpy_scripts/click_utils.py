@@ -25,18 +25,21 @@ class CommaSeparatedText(click.ParamType):
     """
     Comma separated text
     """
-    def __init__(self, dtype=click.STRING, simplify=False):
+    def __init__(self, dtype=click.STRING, simplify=False, length=None):
         self.dtype = dtype
         self.dtype_name = _get_type_name(dtype)
-        self.name = '{}[,{}...]'.format(self.dtype_name, self.dtype_name)
         self.simplify = simplify
+        self.length = length
+        if length and length <= 3:
+            self.name = ','.join([f'{self.dtype_name}'] * length)
+        else:
+            self.name = '{}[,{}...]'.format(self.dtype_name, self.dtype_name)
 
     def convert(self, value, param, ctx):
         try:
             converted = list(map(self.dtype, value.split(',')))
             if self.simplify and len(converted) == 1:
                 converted = converted[0]
-            return converted
         except ValueError:
             self.fail(
                 '{} is not a valid comma separated list of {}'.format(
@@ -44,14 +47,24 @@ class CommaSeparatedText(click.ParamType):
                 param,
                 ctx
             )
+        if self.length:
+            if len(converted) != self.length:
+                self.fail(
+                    '{} is not a valid comma separated list of length {}'.format(
+                        value, self.length),
+                    param,
+                    ctx
+                )
+        return converted
 
 
 class Dictionary(click.ParamType):
     """
     Text to be parsed as a python dict definition
     """
-    def __init__(self):
+    def __init__(self, keys=None):
         self.name = 'TEXT:VAL[,TEXT:VAL...]'
+        self.keys = keys
 
     def convert(self, value, param, ctx):
         try:
@@ -62,8 +75,14 @@ class Dictionary(click.ParamType):
                 key, _, value = token.partition(':')
                 if not key:
                     raise ValueError
+                if isinstance(self.keys, (list, tuple)) and key not in self.keys:
+                    self.fail(f'{key} is not a valid key ({self.keys})')
                 if value == 'None':
                     value = None
+                elif value.lower() == 'true':
+                    value = True
+                elif value.lower() == 'false':
+                    value = False
                 else:
                     try:
                         value = float(value)
@@ -73,7 +92,7 @@ class Dictionary(click.ParamType):
             return converted
         except ValueError:
             self.fail(
-                '{} is not a valid python dict definition'.format(value),
+                f'{value} is not a valid python dict definition',
                 param,
                 ctx
             )

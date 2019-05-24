@@ -32,7 +32,7 @@ COMMON_OPTIONS = {
         click.argument(
             'output_obj',
             metavar='<output_obj>',
-            type=click.Path(),
+            type=click.Path(dir_okay=False, writable=True),
         ),
         click.option(
             '--output-format', '-F',
@@ -63,6 +63,35 @@ COMMON_OPTIONS = {
             default=None,
             show_default=True,
             help='Print output object summary info to specified stream.',
+        ),
+    ],
+
+    'plot': [
+        click.argument(
+            'output_fig',
+            metavar='<output_fig>',
+            type=click.Path(dir_okay=False, writable=True),
+        ),
+        click.option(
+            '--fig-size',
+            type=CommaSeparatedText(click.INT, length=2),
+            default="7,7",
+            show_default=True,
+            help='Figure size.',
+        ),
+        click.option(
+            '--fig-dpi',
+            type=click.INT,
+            default=80,
+            show_default=True,
+            help='Figure DPI.',
+        ),
+        click.option(
+            '--fig-fontsize',
+            type=click.INT,
+            default=15,
+            show_default=True,
+            help='Figure font size.',
         ),
     ],
 
@@ -112,12 +141,12 @@ COMMON_OPTIONS = {
         ),
     ],
 
-    'copy': click.option(
-        '--copy',
-        is_flag=True,
-        default=False,
+    'n_comps': click.option(
+        '--n-comps',
+        type=click.INT,
+        default=50,
         show_default=True,
-        help='Return a copy instead of writing to supplied input',
+        help='Number of components to compute',
     ),
 
     'key_added': click.option(
@@ -143,6 +172,14 @@ COMMON_OPTIONS = {
         help='Use expression values in `.raw` if present.',
     ),
 
+    'init_pos': click.option(
+        '--init-pos',
+        type=click.STRING,
+        default=None,
+        help='Use precomputed coordinates for initialization. Can be any key '
+        'of `.obsm` or "paga" if .uns["paga"] is present',
+    ),
+
     'zero_center': click.option(
         '--no-zero-center', 'zero_center',
         is_flag=True,
@@ -162,11 +199,19 @@ COMMON_OPTIONS = {
 
     'restrict_to': click.option(
         '--restrict-to',
-        type=(click.STRING, CommaSeparatedText(click.STRING)),
+        type=(click.STRING, CommaSeparatedText()),
         default=(None, None),
         show_default=True,
         help='Restrict the clustering to the categories within the key for '
         'sample annotation, in the form of "obs_key list_of_categories".',
+    ),
+
+    'export_embedding': click.option(
+        '--export-embedding', '-E',
+        type=click.Path(dir_okay=False, writable=True),
+        default=None,
+        show_default=True,
+        help='Export embeddings in a tab-separated text table.',
     ),
 }
 
@@ -275,11 +320,20 @@ NORM_CMD_OPTIONS = [
         help='Save raw data existing raw data.',
     ),
     click.option(
-        '--normalize-to', '-t', 'counts_per_cell_after',
+        '--normalize-to', '-t', 'target_sum',
         type=float,
         default=10_000,
         show_default=True,
         help='Normalize per cell nUMI to this number.',
+    ),
+    click.option(
+        '--fraction',
+        type=float,
+        default=0.9,
+        show_default=True,
+        help='Only use genes that make up less than this fraction of the total '
+        'count in every cell. So only these genes will sum up to the number '
+        'specified by --normalize-to.',
     ),
 ]
 
@@ -374,13 +428,8 @@ PCA_CMD_OPTIONS = [
     *COMMON_OPTIONS['output'],
     COMMON_OPTIONS['zero_center'],
     COMMON_OPTIONS['random_state'],
-    click.option(
-        '--n-comps', '-n',
-        type=click.INT,
-        default=50,
-        show_default=True,
-        help='Number of principal components to compute',
-    ),
+    COMMON_OPTIONS['export_embedding'],
+    COMMON_OPTIONS['n_comps'],
     click.option(
         '--svd-solver', '-V',
         type=click.Choice(['auto', 'arpack', 'randomized']),
@@ -459,8 +508,17 @@ UMAP_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['output'],
     COMMON_OPTIONS['knn_graph'][0], # --use-graph
+    COMMON_OPTIONS['init_pos'],
     COMMON_OPTIONS['random_state'],
     COMMON_OPTIONS['key_added'],
+    COMMON_OPTIONS['export_embedding'],
+    click.option(
+        '--init-pos',
+        type=click.STRING,
+        default='spectral',
+        show_default=True,
+        help='How to initialize the low dimensional embedding.',
+    ),
     click.option(
         '--min-dist',
         type=click.FLOAT,
@@ -515,13 +573,6 @@ UMAP_CMD_OPTIONS = [
         help='The number of negative edge samples to use per positive edge '
         'sample in optimizing the low dimensional embedding.',
     ),
-    click.option(
-        '--init-pos',
-        type=click.STRING,
-        default='spectral',
-        show_default=True,
-        help='How to initialize the low dimensional embedding.',
-    ),
 ]
 
 TSNE_CMD_OPTIONS = [
@@ -531,6 +582,7 @@ TSNE_CMD_OPTIONS = [
     COMMON_OPTIONS['random_state'],
     COMMON_OPTIONS['key_added'],
     COMMON_OPTIONS['n_jobs'],
+    COMMON_OPTIONS['export_embedding'],
     click.option(
         '--perplexity',
         type=click.FLOAT,
@@ -576,6 +628,35 @@ TSNE_CMD_OPTIONS = [
     ),
 ]
 
+FDG_CMD_OPTIONS = [
+    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['output'],
+    COMMON_OPTIONS['knn_graph'][0], # --use-graph
+    COMMON_OPTIONS['init_pos'],
+    COMMON_OPTIONS['random_state'],
+    COMMON_OPTIONS['key_added'],
+    COMMON_OPTIONS['export_embedding'],
+    click.option(
+        '--layout',
+        type=click.Choice(['fa', 'fr', 'grid_fr', 'kk', 'lgl', 'drl', 'rt']),
+        default='fa',
+        show_default=True,
+        help='Name of any valid igraph layout, including "fa" (ForceAtlas2), '
+        '"fr" (Fruchterman Reingold), "grid_fr" (Grid Fruchterman Reingold, '
+        'faster than "fr"), "kk" (Kamadi Kawai, slower than "fr"), "lgl" '
+        '(Large Graph Layout, very fast), "drl" (Distributed Recursive Layout, '
+        'pretty fast) and "rt" (Reingold Tilford tree layout).',
+    ),
+    click.option(
+        '--init-pos',
+        type=click.STRING,
+        default=None,
+        show_default=True,
+        help='How to initialize the low dimensional embedding. Can be "paga", '
+        'or any valid key of `.obsm`.',
+    ),
+]
+
 LOUVAIN_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['output'],
@@ -605,7 +686,7 @@ LEIDEN_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['output'],
     *COMMON_OPTIONS['knn_graph'],
-    # COMMON_OPTIONS['restrict_to'],
+    COMMON_OPTIONS['restrict_to'],
     COMMON_OPTIONS['random_state'],
     COMMON_OPTIONS['key_added'],
     click.option(
@@ -687,6 +768,20 @@ DIFFEXP_CMD_OPTIONS = [
         'The returned scores are never the absolute values.',
     ),
     click.option(
+        '--filter-params',
+        type=Dictionary(keys=[
+            'min_in_group_fraction',
+            'max_out_group_fraction',
+            'min_fold_change',
+            'use_raw',
+        ]),
+        default=None,
+        show_default=True,
+        help='Parameters for filtering DE results, valid parameters are: '
+        '"min_in_group_fraction" (float), "max_out_group_fraction" (float), '
+        '"min_fold_change" (float), and "use_raw" (bool).',
+    ),
+    click.option(
         '--logreg-param',
         type=Dictionary(),
         default=None,
@@ -700,5 +795,124 @@ DIFFEXP_CMD_OPTIONS = [
         show_default=True,
         help='Tab-separated table to store results of differential expression '
         'analysis.',
+    ),
+]
+
+PAGA_CMD_OPTIONS = [
+    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['output'],
+    COMMON_OPTIONS['knn_graph'][0], # --use-graph
+    COMMON_OPTIONS['key_added'],
+    click.option(
+        '--groups',
+        type=click.STRING,
+        required=True,
+        help='Key for categorical in `.obs`. You can pass your predefined '
+        'groups by choosing any categorical annotation of observations.',
+    ),
+    click.option(
+        '--model',
+        type=click.Choice(['v1.2', 'v1.0']),
+        default='v1.2',
+        show_default=True,
+        help='The PAGA connectivity model.',
+    ),
+]
+
+DIFFMAP_CMD_OPTIONS = [
+    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['output'],
+    COMMON_OPTIONS['knn_graph'][0], # --use-graph
+    COMMON_OPTIONS['key_added'],
+    COMMON_OPTIONS['export_embedding'],
+    COMMON_OPTIONS['n_comps'],
+]
+
+DPT_CMD_OPTIONS = [
+    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['output'],
+    COMMON_OPTIONS['knn_graph'][0], # --use-graph
+    COMMON_OPTIONS['key_added'],
+    click.option(
+        '--root',
+        type=(click.STRING, click.STRING),
+        default=(None, None),
+        show_default=True,
+        help='Specify a categorical annotaion of observations (`.obs`) and a '
+        'value representing the root cells.',
+    ),
+    click.option(
+        '--n-dcs',
+        type=click.INT,
+        default=10,
+        show_default=True,
+        help='The number of diffusion components to use.',
+    ),
+    click.option(
+        '--n-branchings',
+        type=click.INT,
+        default=0,
+        show_default=True,
+        help='Number of branchings to detect.',
+    ),
+    click.option(
+        '--min-group-size',
+        type=click.FLOAT,
+        default=0.01,
+        show_default=True,
+        help='During recursive splitting of branches for --n-branchings > 1, '
+        'do not consider branches/groups that contain fewer than this fraction '
+        'of the total number of data points.',
+    ),
+]
+
+PLOT_EMBED_CMD_OPTIONS = [
+    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['plot'],
+    click.option(
+        '--basis',
+        type=click.STRING,
+        default='umap',
+        show_default=True,
+        help='Name of the embedding to plot, must be a key of `.obsm` without '
+        'the prefix "X_".',
+    ),
+    click.option(
+        '--color',
+        type=CommaSeparatedText(simplify=True),
+        default=None,
+        show_default=True,
+        help='Keys for annotations of observations/cells or variables/genes.',
+    ),
+    click.option(
+        '--use-raw/--no-raw',
+        default=None,
+        show_default=True,
+        help='Use `.raw` attribute for coloring with gene expression. If '
+        '`None`, uses `.raw` if present.',
+    ),
+    click.option(
+        '--layers',
+        type=click.STRING,
+        default=None,
+        help='Name of the AnnData object layer to be plotted. By default '
+        '`.raw.X` is plotted. If --no-raw, then `.X` is plotted. If --layer '
+        'is set to a valid layer name, then the layer is plotted. --layer '
+        'takes precedence over --use-raw/--no-raw.'
+    ),
+    click.option(
+        '--legend-loc',
+        type=click.Choice(['right margin', 'on data']),
+        default='right margin',
+        show_default=True,
+        help='Location of legend, either "on data", "right margin" or valid '
+        'keywords for `matplotlib.legend`.',
+    ),
+    click.option(
+        '--legend-fontsize',
+        type=click.INT,
+        default=15,
+        show_default=True,
+        help='Legend font size.',
     ),
 ]

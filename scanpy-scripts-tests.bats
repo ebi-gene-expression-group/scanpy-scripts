@@ -22,21 +22,36 @@ setup() {
     regress_obj="${output_dir}/regress.h5ad"
     scale_opt="-m 10 --show-obj stdout"
     scale_obj="${output_dir}/scale.h5ad"
-    pca_opt="-n 50 -V arpack --show-obj stdout"
+    pca_embed="${output_dir}/pca.tsv"
+    pca_opt="--n-comps 50 -V arpack --show-obj stdout -E ${pca_embed}"
     pca_obj="${output_dir}/pca.h5ad"
     neighbor_opt="-k 5,10,20 -n 25 -m umap --show-obj stdout"
     neighbor_obj="${output_dir}/neighbor.h5ad"
-    tsne_opt="-n 25 --use-rep X_pca --learning-rate 200"
+    tsne_embed="${output_dir}/tsne.tsv"
+    tsne_opt="-n 25 --use-rep X_pca --learning-rate 200 -E ${tsne_embed}"
     tsne_obj="${output_dir}/tsne.h5ad"
-    umap_opt="--use-graph neighbors_k10 --min-dist 0.75 --alpha 1 --gamma 1"
+    umap_embed="${output_dir}/umap.tsv"
+    umap_opt="--use-graph neighbors_k10 --min-dist 0.75 --alpha 1 --gamma 1 -E ${umap_embed}"
     umap_obj="${output_dir}/umap.h5ad"
-    louvain_opt="-r 1 --use-graph neighbors_k10 --key-added louvain_k10_r1_0"
+    fdg_embed="${output_dir}/fdg.tsv"
+    fdg_opt="--use-graph neighbors_k10 --layout fr -E ${fdg_embed}"
+    fdg_obj="${output_dir}/fdg.h5ad"
+    louvain_opt="-r 0.5,1 --use-graph neighbors_k10 --key-added k10"
     louvain_obj="${output_dir}/louvain.h5ad"
-    leiden_opt="-r 0.7 --use-graph neighbors_k10 --key-added leiden_k10_r0_7"
+    leiden_opt="-r 0.3,0.7 --use-graph neighbors_k10 --key-added k10"
     leiden_obj="${output_dir}/leiden.h5ad"
     diffexp_tsv="${output_dir}/diffexp.tsv"
-    diffexp_opt="-g leiden_k10_r0_7 --reference rest --save ${diffexp_tsv}"
+    diffexp_opt="-g leiden_k10_r0_7 --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5,use_raw:true --save ${diffexp_tsv}"
     diffexp_obj="${output_dir}/diffexp.h5ad"
+    paga_opt="--use-graph neighbors_k10 --key-added k10_r0_7 --groups leiden_k10_r0_7 --model v1.2"
+    paga_obj="${output_dir}/paga.h5ad"
+    diffmap_embed="${output_dir}/diffmap.tsv"
+    diffmap_opt="--use-graph neighbors_k10 --n-comps 10 -E ${diffmap_embed}"
+    diffmap_obj="${output_dir}/diffmap.h5ad"
+    dpt_opt="--use-graph neighbors_k10 --key-added k10 --n-dcs 10 --root leiden_k10_r0_7 0"
+    dpt_obj="${output_dir}/dpt.h5ad"
+    plt_embed_opt="--color leiden_k10_r0_7"
+    plt_embed_pdf="${output_dir}/umap_leiden_k10_r0_7.pdf"
 
     if [ ! -d "$data_dir" ]; then
         mkdir -p $data_dir
@@ -172,7 +187,7 @@ setup() {
     run rm -f $tsne_obj && $scanpy embed tsne $tsne_opt $pca_obj $tsne_obj
 
     [ "$status" -eq 0 ]
-    [ -f  "$tsne_obj" ]
+    [ -f  "$tsne_obj" ] && [ -f "$tsne_embed" ]
 }
 
 # Run UMAP
@@ -185,7 +200,20 @@ setup() {
     run rm -f $umap_obj && $scanpy embed umap $umap_opt $neighbor_obj $umap_obj
 
     [ "$status" -eq 0 ]
-    [ -f  "$umap_obj" ]
+    [ -f  "$umap_obj" ] && [ -f "$umap_embed" ]
+}
+
+# Run FDG
+
+@test "Run FDG analysis" {
+    if [ "$resume" = 'true' ] && [ -f "$fdg_obj" ]; then
+        skip "$fdg_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $fdg_obj && $scanpy embed fdg $fdg_opt $neighbor_obj $fdg_obj
+
+    [ "$status" -eq 0 ]
+    [ -f  "$fdg_obj" ] && [ -f "$fdg_embed" ]
 }
 
 # Find clusters Louvain
@@ -225,6 +253,58 @@ setup() {
 
     [ "$status" -eq 0 ]
     [ -f  "$diffexp_obj" ] && [ -f "$diffexp_tsv" ]
+}
+
+# Run PAGA
+
+@test "Run PAGA" {
+    if [ "$resume" = 'true' ] && [ -f "$paga_obj" ]; then
+        skip "$paga_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $paga_obj && $scanpy paga $paga_opt $leiden_obj $paga_obj
+
+    [ "$status" -eq 0 ]
+    [ -f  "$paga_obj" ]
+}
+
+# Run Diffmap
+
+@test "Run Diffmap" {
+    if [ "$resume" = 'true' ] && [ -f "$diffmap_obj" ]; then
+        skip "$diffmap_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $diffmap_obj && $scanpy embed diffmap $diffmap_opt $leiden_obj $diffmap_obj
+
+    [ "$status" -eq 0 ]
+    [ -f  "$diffmap_obj" ] && [ -f "$diffmap_embed" ]
+}
+
+# Run DPT
+
+@test "Run DPT" {
+    if [ "$resume" = 'true' ] && [ -f "$dpt_obj" ]; then
+        skip "$dpt_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $dpt_obj && $scanpy dpt $dpt_opt $diffmap_obj $dpt_obj
+
+    [ "$status" -eq 0 ]
+    [ -f  "$dpt_obj" ]
+}
+
+# Run Plot embedding
+
+@test "Run Plot embedding" {
+    if [ "$resume" = 'true' ] && [ -f "$plt_embed_pdf" ]; then
+        skip "$plt_embed_pdf exists and resume is set to 'true'"
+    fi
+
+    run rm -f $plt_embed_pdf && $scanpy plot embed $plt_embed_opt $leiden_obj $plt_embed_pdf
+
+    [ "$status" -eq 0 ]
+    [ -f  "$dpt_obj" ]
 }
 
 # Local Variables:
