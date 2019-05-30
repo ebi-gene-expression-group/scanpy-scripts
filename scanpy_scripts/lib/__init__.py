@@ -19,6 +19,9 @@ from ._tsne import tsne
 from ._louvain import louvain
 from ._leiden import leiden
 from ._diffexp import diffexp, diffexp_paired, extract_de_table
+from ._diffmap import diffmap
+from ._dpt import dpt
+from ._paga import paga
 from ..cmd_utils import _read_obj as read_obj
 from ..cmd_utils import _write_obj as write_obj
 
@@ -240,7 +243,7 @@ def simple_default_pipeline(
             k = ((adata.obs['n_counts'] <= max_counts) &
                  (adata.obs['percent_mito'] <= max_mito))
             adata._inplace_subset_obs(k)
-            if 'counts' not in adata.layers:
+            if 'counts' not in adata.layers.keys():
                 adata.layers['counts'] = adata.X.copy()
             sc.pp.normalize_total(adata, target_sum=1e4, fraction=0.9)
             sc.pp.log1p(adata)
@@ -255,7 +258,8 @@ def simple_default_pipeline(
                 hvg(adata, flavor='cell_ranger', n_top_genes=2000, by_batch=by_batch)
             else:
                 hvg(adata, flavor='seurat', by_batch=by_batch)
-            sc.pl.highly_variable_genes(adata)
+            if not batch:
+                sc.pl.highly_variable_genes(adata)
             if scale:
                 sc.pp.scale(adata, max_value=10)
         if transform_rdim:
