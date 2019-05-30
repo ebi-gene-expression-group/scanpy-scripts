@@ -208,31 +208,77 @@ def plot_embeddings(
         sc.pl.scatter(adata, basis, save=False, show=True, **kwargs)
 
 
-def _set_default_key(adata, slot_name, default, replacement):
-    slot = getattr(adata, slot_name)
-    if replacement != default:
-        if replacement not in slot.keys():
-            raise KeyError(f'{replacement} not found in `.{slot_name}`')
-        if default in slot.keys():
-            slot[f'{default}_bkup'] = slot[default]
-        slot[default] = slot[replacement]
+def _backup_default_key(slot, default):
+    if default in slot.keys():
+        bkup_key = f'{default}_bkup'
+        if bkup_key in slot.keys():
+            sc.logging.warn(f'overwrite existing {bkup_key}')
+        slot[bkup_key] = slot[default]
 
 
-def _restore_default_key(adata, slot_name, default, replacement):
-    slot = getattr(adata, slot_name)
-    if replacement != default:
-        del slot[default]
+def _restore_default_key(slot, default, key=None):
+    if key != default:
         bkup_key = f'{default}_bkup'
         if bkup_key in slot.keys():
             slot[default] = slot[bkup_key]
             del slot[bkup_key]
 
 
-def _rename_default_key(adata, slot_name, default, key):
-    slot = getattr(adata, slot_name)
-    slot[key] = slot[default]
-    del slot[default]
+def _delete_backup_key(slot, default):
     bkup_key = f'{default}_bkup'
     if bkup_key in slot.keys():
-        slot[default] = slot[bkup_key]
         del slot[bkup_key]
+
+
+def _set_default_key(slot, default, key):
+    if key != default:
+        if key not in slot.keys():
+            raise KeyError(f'{key} does not exist')
+        _backup_default_key(slot, default)
+        slot[default] = slot[key]
+
+
+def _rename_default_key(slot, default, key):
+    if not default in slot.keys():
+        raise KeyError(f'{default} does not exist')
+    slot[key] = slot[default]
+    del slot[default]
+    _restore_default_key(slot, default)
+
+
+def _backup_obsm_key(adata, key):
+    if key in adata.obsm_keys():
+        bkup_key = f'{key}_bkup'
+        if bkup_key in adata.obsm_keys():
+            sc.logging.warn(f'overwrite existing {bkup_key}')
+        adata.obsm[bkup_key] = adata.obsm[key]
+
+
+def _restore_obsm_key(adata, key, new_key=None):
+    if new_key != key:
+        bkup_key = f'{key}_bkup'
+        if bkup_key in adata.obsm_keys():
+            adata.obsm[key] = adata.obsm[bkup_key]
+            del adata.obsm[bkup_key]
+
+
+def _delete_obsm_backup_key(adata, key):
+    bkup_key = f'{key}_bkup'
+    if bkup_key in adata.obsm_keys():
+        del adata.obsm[bkup_key]
+
+
+def _set_obsm_key(adata, key, new_key):
+    if new_key != key:
+        if new_key not in adata.obsm_keys():
+            raise KeyError(f'{new_key} does not exist')
+        _backup_obsm_key(adata, key)
+        adata.obsm[key] = adata.obsm[new_key]
+
+
+def _rename_obsm_key(adata, from_key, to_key):
+    if not from_key in adata.obsm_keys():
+        raise KeyError(f'{from_key} does not exist')
+    adata.obsm[to_key] = adata.obsm[from_key]
+    del adata.obsm[from_key]
+    _restore_obsm_key(adata, from_key)

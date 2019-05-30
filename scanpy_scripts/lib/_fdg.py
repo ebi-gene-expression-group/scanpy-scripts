@@ -4,7 +4,9 @@ scanpy fdg
 
 import scanpy as sc
 from ..cmd_utils import (
-    _rename_default_key,
+    _backup_obsm_key,
+    _delete_obsm_backup_key,
+    _rename_obsm_key,
     write_embedding,
 )
 
@@ -27,6 +29,9 @@ def fdg(
         if use_graph not in adata.uns.keys():
             raise KeyError(f'"{use_graph}" is not a valid key of `.uns`.')
         adj_mat = adata.uns[use_graph]['connectivities']
+
+    _backup_obsm_key(adata, f'X_draw_graph_{layout}')
+
     sc.tl.draw_graph(
         adata,
         layout=layout,
@@ -38,7 +43,9 @@ def fdg(
     fdg_key = f'X_draw_graph_{layout}'
     if key_added:
         fdg_key = f'X_draw_graph_{layout}_{key_added}'
-        _rename_default_key(adata, 'obsm', f'X_draw_graph_{layout}', fdg_key)
+        _rename_obsm_key(adata, f'X_draw_graph_{layout}', fdg_key)
+    else:
+        _delete_obsm_backup_key(adata, f'X_draw_graph_{layout}')
 
     if export_embedding is not None:
         write_embedding(adata, fdg_key, export_embedding, key_added=key_added)

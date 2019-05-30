@@ -6,7 +6,9 @@ import scanpy as sc
 from ..cmd_utils import (
     _set_default_key,
     _restore_default_key,
-    _rename_default_key,
+    _backup_obsm_key,
+    _delete_obsm_backup_key,
+    _rename_obsm_key,
     write_embedding,
 )
 
@@ -21,14 +23,19 @@ def diffmap(
     """
     Wrapper function for sc.tl.diffmap, for supporting named slot
     """
-    _set_default_key(adata, 'uns', 'neighbors', use_graph)
+    _set_default_key(adata.uns, 'neighbors', use_graph)
+    _backup_obsm_key(adata, 'X_diffmap')
+
     sc.tl.diffmap(adata, **kwargs)
-    _restore_default_key(adata, 'uns', 'neighbors', use_graph)
+
+    _restore_default_key(adata.uns, 'neighbors', use_graph)
 
     diffmap_key = 'X_diffmap'
     if key_added:
         diffmap_key = f'{diffmap_key}_{key_added}'
-        _rename_default_key(adata, 'obsm', 'X_diffmap', diffmap_key)
+        _rename_obsm_key(adata, 'X_diffmap', diffmap_key)
+    else:
+        _delete_obsm_backup_key(adata, 'X_diffmap')
 
     if export_embedding is not None:
         write_embedding(adata, diffmap_key, export_embedding, key_added=key_added)

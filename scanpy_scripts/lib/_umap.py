@@ -6,7 +6,9 @@ import scanpy as sc
 from ..cmd_utils import (
     _set_default_key,
     _restore_default_key,
-    _rename_default_key,
+    _backup_obsm_key,
+    _rename_obsm_key,
+    _delete_obsm_backup_key,
     write_embedding,
 )
 
@@ -22,14 +24,18 @@ def umap(
     """
     Wrapper function for sc.tl.umap, for supporting named slot of umap embeddings
     """
-    _set_default_key(adata, 'uns', 'neighbors', use_graph)
+    _set_default_key(adata.uns, 'neighbors', use_graph)
     if not isinstance(random_state, (list, tuple)):
+        _backup_obsm_key(adata, 'X_umap')
+
         sc.tl.umap(adata, random_state=random_state, **kwargs)
 
         umap_key = 'X_umap'
         if key_added:
             umap_key = f'X_umap_{key_added}'
-            _rename_default_key(adata, 'obsm', 'X_umap', umap_key)
+            _rename_obsm_key(adata, 'X_umap', umap_key)
+        else:
+            _delete_obsm_backup_key(adata, 'X_umap')
 
         if export_embedding is not None:
             write_embedding(adata, umap_key, export_embedding, key_added=key_added)
@@ -51,5 +57,5 @@ def umap(
                 random_state=rseed,
                 **kwargs,
             )
-    _restore_default_key(adata, 'uns', 'neighbors', use_graph)
+    _restore_default_key(adata.uns, 'neighbors', use_graph)
     return adata

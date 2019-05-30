@@ -4,7 +4,9 @@ scanpy tsne
 
 import scanpy as sc
 from ..cmd_utils import (
-    _rename_default_key,
+    _backup_obsm_key,
+    _rename_obsm_key,
+    _delete_obsm_backup_key,
     write_embedding,
 )
 
@@ -20,12 +22,16 @@ def tsne(
     Wrapper function for sc.tl.tsne, for supporting named slot of tsne embeddings
     """
     if not isinstance(random_state, (list, tuple)):
+        _backup_obsm_key(adata, 'X_tsne')
+
         sc.tl.tsne(adata, random_state=random_state, **kwargs)
 
         tsne_key = 'X_tsne'
         if key_added:
             tsne_key = f'X_tsne_{key_added}'
-            _rename_default_key(adata, 'obsm', 'X_tsne', tsne_key)
+            _rename_obsm_key(adata, 'X_tsne', tsne_key)
+        else:
+            _delete_obsm_backup_key(adata, 'X_tsne')
 
         if export_embedding is not None:
             write_embedding(adata, tsne_key, export_embedding, key_added=key_added)
