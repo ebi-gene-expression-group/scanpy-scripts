@@ -12,6 +12,7 @@ from ._read import read_10x
 from ._filter import filter_anndata
 from ._norm import normalize
 from ._hvg import hvg
+from ._pca import pca
 from ._neighbors import neighbors
 from ._umap import umap
 from ._fdg import fdg
@@ -24,6 +25,7 @@ from ._dpt import dpt
 from ._paga import paga
 from ..cmd_utils import _read_obj as read_obj
 from ..cmd_utils import _write_obj as write_obj
+from ..cmd_utils import switch_layer
 
 
 def expression_colormap():
@@ -62,7 +64,7 @@ def run_harmony(
         adata,
         batch,
         theta=2.0,
-        key='X_pca',
+        use_rep='X_pca',
         key_added='hm',
         tmp_dir='.harmony',
         script='harmonise.R'
@@ -74,13 +76,22 @@ def run_harmony(
     for b in batch:
         if b not in adata.obs.columns:
             raise KeyError(f'{b} is not a valid obs annotation.')
-    if key not in adata.obsm.keys():
-        raise KeyError(f'{key} is not a valid embedding.')
+    if use_rep not in adata.obsm.keys():
+        raise KeyError(f'{use_rep} is not a valid embedding.')
     meta = adata.obs[batch]
-    embed = adata.obsm[key]
+    embed = adata.obsm[use_rep]
 
     import os
     os.makedirs(tmp_dir, exist_ok=True)
+    # ===========
+    # from rpy2.robjects.package import importr
+    # harmony = importr('harmony')
+    # from rpy2.robjects import numpy2ri, pandas2ri
+    # numpy2ri.activate()
+    # hm_embed = harmony.HarmonyMatrix(
+    #     embed, adata.obs[[batch]].reset_index(), batch, theta, do_pca=False)
+    # numpy2ri.deactivate()
+    # ===========
     meta_fn = os.path.join(tmp_dir, 'meta.tsv')
     embed_fn = os.path.join(tmp_dir, 'embed.tsv')
     meta.to_csv(meta_fn, sep='\t', index=True, header=True)
@@ -93,8 +104,11 @@ def run_harmony(
     import subprocess as sbp
     cmd = f'Rscript {script} {embed_fn} {meta_fn} {grouping} {thetas} {hm_embed_fn}'
     sbp.call(cmd.split())
-    hm_embed = pd.read_csv(hm_embed_fn, header=0, index_col=0, sep='\t')
-    adata.obsm[f'{key}_{key_added}'] = hm_embed.values
+    hm_embed = pd.read_csv(hm_embed_fn, header=0, index_col=0, sep='\t').values
+    if key_added:
+        adata.obsm[f'{use_rep}_{key_added}'] = hm_embed
+    else:
+        adata.obsm[use_rep] = hm_embed
     os.remove(meta_fn)
     os.remove(embed_fn)
     os.remove(hm_embed_fn)
@@ -213,20 +227,25 @@ def plot_qc(adata, groupby=None):
 def simple_default_pipeline(
         adata,
         qc_only=False,
-        transform_x=True,
-        scale=False,
-        min_genes=200,
-        min_cells=3,
-        max_counts=25000,
-        max_mito=20,
         batch=None,
-        combat=False,
-        combat_args=None,
-        hvg_flavor='cell_ranger',
-        transform_rdim=True,
-        n_neighbors=15,
-        n_pcs=40,
+        filter_params={'min_genes': 200, 'min_cells': 3, 'max_counts': 25000, 'max_mito': 20},
+        norm_params={'target_sum': 1e4, 'fraction': 0.9},
+        combat_args={'key': None},
+        hvg_params={'flavor': 'seurat', 'by_batch': None},
+        scale_params={'max_value': 10},
+        pca_params={'n_comps': 50, 'svd_solver': 'arpack', 'use_highly_variable': True},
+        harmony_params={'batch': None, 'theta': 2.0, 'script': 'harmonise.R'},
+        nb_params={'n_neighbors': 15, 'n_pcs': 40},
+        umap_params={},
+        tsne_params={},
+        diffmap_params={'n_comps': 15},
+        leiden_params={
+            'resolution': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]},
+        fdg_params={'layout': 'fa'},
 ):
+    """
+    Scanpy pipeline
+    """
     if qc_only:
         adata.var['mito'] = adata.var_names.str.startswith('MT-')
         qc_tbls = sc.pp.calculate_qc_metrics(
@@ -237,35 +256,56 @@ def simple_default_pipeline(
         adata.var['n_cells'] = qc_tbls[1]['n_cells_by_counts'].values
         plot_qc(adata, batch)
     else:
-        if transform_x:
-            sc.pp.filter_cells(adata, min_genes=min_genes)
-            sc.pp.filter_genes(adata, min_cells=min_cells)
-            k = ((adata.obs['n_counts'] <= max_counts) &
-                 (adata.obs['percent_mito'] <= max_mito))
-            adata._inplace_subset_obs(k)
+        if filter_params is not None and isinstance(filter_params, dict):
+            if 'min_genes' in filter_params:
+                sc.pp.filter_cells(adata, min_genes=filter_params['min_genes'])
+            if 'min_cells' in filter_params:
+                sc.pp.filter_genes(adata, min_cells=filter_params['min_cells'])
+            if 'min_counts' in filter_params:
+                k = adata.obs['n_counts'] >= filter_params['min_counts']
+                adata._inplace_subset_obs(k)
+            if 'max_counts' in filter_params:
+                k = adata.obs['n_counts'] <= filter_params['max_counts']
+                adata._inplace_subset_obs(k)
+            if 'max_mito' in filter_params:
+                k = adata.obs['percent_mito'] <= filter_params['max_mito']
+                adata._inplace_subset_obs(k)
             if 'counts' not in adata.layers.keys():
-                adata.layers['counts'] = adata.X.copy()
-            sc.pp.normalize_total(adata, target_sum=1e4, fraction=0.9)
+                adata.layers['counts'] = adata.X
+        if norm_params is not None and isinstance(norm_params, dict):
+            if 'counts' in adata.layers.keys():
+                adata.X = adata.layers['counts']
+            sc.pp.normalize_total(adata, **norm_params)
             sc.pp.log1p(adata)
             adata.raw = adata
-            if combat:
-                sc.pp.combat(adata, **combat_args)
-            if batch and batch in adata.obs.columns:
-                by_batch = (batch, 1)
-            else:
-                by_batch = None
-            if hvg_flavor == 'cell_ranger':
-                hvg(adata, flavor='cell_ranger', n_top_genes=2000, by_batch=by_batch)
-            else:
-                hvg(adata, flavor='seurat', by_batch=by_batch)
-            if not batch:
-                sc.pl.highly_variable_genes(adata)
-            if scale:
-                sc.pp.scale(adata, max_value=10)
-        if transform_rdim:
-            sc.pp.pca(adata, n_comps=50, use_highly_variable=True, svd_solver='arpack')
-            neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs)
-            umap(adata)
-            sc.tl.diffmap(adata, n_comps=15)
-            leiden(adata, resolution=(0.1, 0.4, 0.7))
+        if (combat_args is not None and (
+                isinstance(combat_args, dict) and
+                combat_args.get('key', None) and
+                combat_args['key'] in adata.obs.keys())):
+            adata.layers['X'] = adata.X
+            adata.X = adata.raw.X
+            sc.pp.combat(adata, **combat_args)
+        if hvg_params is not None and isinstance(hvg_params, dict):
+            hvg(adata, **hvg_params)
+        if scale_params is not None and isinstance(scale_params, dict):
+            sc.pp.scale(adata, **scale_params)
+        if pca_params is not None and isinstance(pca_params, dict):
+            pca(adata, **pca_params)
+        if (harmony_params is not None and (
+                isinstance(harmony_params, dict) and
+                harmony_params.get('batch', None) and
+                harmony_params['batch'] in adata.obs.keys())):
+            run_harmony(adata, **harmony_params)
+        if nb_params is not None and isinstance(nb_params, dict):
+            neighbors(adata, **nb_params)
+        if umap_params is not None and isinstance(umap_params, dict):
+            umap(adata, **umap_params)
+        if tsne_params is not None and isinstance(tsne_params, dict):
+            tsne(adata, **tsne_params)
+        if diffmap_params is not None and isinstance(diffmap_params, dict):
+            diffmap(adata, **diffmap_params)
+        if leiden_params is not None and isinstance(leiden_params, dict):
+            leiden(adata, **leiden_params)
+        if fdg_params is not None and isinstance(fdg_params, dict):
+            fdg(adata, **fdg_params)
     return adata
