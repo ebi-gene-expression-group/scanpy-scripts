@@ -345,6 +345,8 @@ def _rename_obsm_key(adata, from_key, to_key):
 def switch_layer(adata, layer, x_name='X'):
     """Make the specified layer the default, i.e. `adata.X`
     """
+    if not layer in adata.layers.keys():
+        raise KeyError(f'"{layer}" does not exist')
     if x_name in adata.layers.keys():
         sc.logging.warn(f'overwrite existing layer "{x_name}"')
     adata.layers[x_name] = adata.X
