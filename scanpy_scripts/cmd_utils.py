@@ -208,6 +208,29 @@ def plot_embeddings(
         sc.pl.scatter(adata, basis, save=False, show=True, **kwargs)
 
 
+# The functions below handles slot key.
+#
+# Default keys are those read and written by scanpy functions by default, e.g
+# "X_pca", "neighbors", "louvain", etc.
+#
+# Of them, `obsm_key` specifically refers to those used for embedding, e.g
+# "X_pca", "X_tsne", "X_umap", etc.
+#
+# The approach for supplying a non-standard key to a function as input is:
+# if the function only reads the value in the default key, we first backup the
+# value in the default key, then write the value of the non-standard key into
+# the standard key, run the funtion, and finally restore the value of the
+# default key from backup and delete the backup.
+#
+# The approach for writting the results of a function to a non-standard key is:
+# if the function only writes to the default key, we first backup the value in
+# the default key, run the function, copy the value of the default key to the
+# desired non-standard key, and finally restore the value of the default key
+# from backup and delete the backup.
+#
+# Specical treatment for obsm_key is needed, as the underlying data type is not
+# a python dictionary but a numpy array.
+
 def _backup_default_key(slot, default):
     if default in slot.keys():
         bkup_key = f'{default}_bkup'
