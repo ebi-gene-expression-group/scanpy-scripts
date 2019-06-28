@@ -5,6 +5,7 @@ Provide helper functions for constructing sub-commands
 import click
 import pandas as pd
 import scanpy as sc
+from .exchangeable_loom import read_exchangeable_loom, write_exchangeable_loom
 
 
 def make_subcmd(cmd_name, options, func, cmd_desc, arg_desc):
@@ -69,7 +70,7 @@ def _read_obj(input_obj, input_format='anndata'):
     if input_format == 'anndata':
         adata = sc.read(input_obj)
     elif input_format == 'loom':
-        adata = sc.read_loom(input_obj)
+        adata = sc.read_exchangeable_loom(input_obj)
     else:
         raise NotImplementedError(
             'Unsupported input format: {}'.format(input_format))
@@ -88,7 +89,7 @@ def _write_obj(
     if output_format == 'anndata':
         adata.write(output_obj, compression='gzip')
     elif output_format == 'loom':
-        adata.write_loom(output_obj, **kwargs)
+        write_exchangeable_loom(adata, output_obj, **kwargs)
     elif output_format == 'zarr':
         adata.write_zarr(output_obj, chunk_size=chunk_size, **kwargs)
     else:
