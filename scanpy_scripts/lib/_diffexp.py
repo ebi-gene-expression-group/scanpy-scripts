@@ -19,6 +19,9 @@ def diffexp(
     """
     Wrapper function for sc.tl.rank_genes_groups.
     """
+    if adata.raw is None:
+        use_raw = False
+
     if n_genes is None:
         n_genes = adata.raw.shape[1] if use_raw else adata.shape[1]
 
