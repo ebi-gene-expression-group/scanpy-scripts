@@ -70,7 +70,7 @@ def _read_obj(input_obj, input_format='anndata'):
     if input_format == 'anndata':
         adata = sc.read(input_obj)
     elif input_format == 'loom':
-        adata = sc.read_exchangeable_loom(input_obj)
+        adata = read_exchangeable_loom(input_obj)
     else:
         raise NotImplementedError(
             'Unsupported input format: {}'.format(input_format))
