@@ -773,13 +773,12 @@ DIFFEXP_CMD_OPTIONS = [
             'min_in_group_fraction',
             'max_out_group_fraction',
             'min_fold_change',
-            'use_raw',
         ]),
         default=None,
         show_default=True,
         help='Parameters for filtering DE results, valid parameters are: '
         '"min_in_group_fraction" (float), "max_out_group_fraction" (float), '
-        '"min_fold_change" (float), and "use_raw" (bool).',
+        '"min_fold_change" (float).',
     ),
     click.option(
         '--logreg-param',

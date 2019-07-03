@@ -41,6 +41,7 @@ setup(
         'scanpy>=1.4.2',
         'louvain',
         'leidenalg',
+        'loompy',
         'MulticoreTSNE',
         'Click'
     ],
