@@ -41,6 +41,7 @@ def diffexp(
             adata,
             key=key_added,
             key_added=key_added + '_filtered',
+            use_raw=use_raw,
             **filter_params,
         )
 
