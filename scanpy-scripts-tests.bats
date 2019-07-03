@@ -41,7 +41,7 @@ setup() {
     leiden_opt="-r 0.3,0.7 --use-graph neighbors_k10 --key-added k10 -F loom"
     leiden_obj="${output_dir}/leiden.loom"
     diffexp_tsv="${output_dir}/diffexp.tsv"
-    diffexp_opt="-g leiden_k10_r0_7 --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5,use_raw:true --save ${diffexp_tsv} -f loom"
+    diffexp_opt="-g leiden_k10_r0_7 --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5 --save ${diffexp_tsv} -f loom"
     diffexp_obj="${output_dir}/diffexp.h5ad"
     paga_opt="--use-graph neighbors_k10 --key-added k10_r0_7 --groups leiden_k10_r0_7 --model v1.2 -f loom"
     paga_obj="${output_dir}/paga.h5ad"
