@@ -73,10 +73,10 @@ def _h5_write_coo_matrix(root, path, graph):
 
 def _h5_read_csr_matrix(node):
     shape = tuple(map(int, node.attrs['shape'].decode().split(',')))
-    return sp.coo_matrix((node['data'], (node['indices'], node['indptr'])), shape=shape)
+    return sp.csr_matrix((node['data'], node['indices'], node['indptr']), shape=shape)
 
 
-def _h5_write_csr_matrix(root, path, graph):
+def _h5_write_csr_matrix(root, path, matrix):
     if path not in root:
         root.create_group(path)
     graph_node = root[path]
@@ -91,10 +91,10 @@ def _h5_write_csr_matrix(root, path, graph):
         del root[indices_path]
     if indptr_path in root:
         del root[indptr_path]
-    root.create_dataset(data_path, data=graph.data)
-    root.create_dataset(indices_path, data=graph.row)
-    root.create_dataset(indptr_path, data=graph.col)
-    graph_node.attrs['shape'] = (','.join(map(str, graph.shape))).encode()
+    root.create_dataset(data_path, data=matrix.data)
+    root.create_dataset(indices_path, data=matrix.indices)
+    root.create_dataset(indptr_path, data=matrix.indptr)
+    graph_node.attrs['shape'] = (','.join(map(str, matrix.shape))).encode()
     return 0
 
 
@@ -210,6 +210,10 @@ def read_exchangeable_loom(filename, sparse=False):
                         data = data[0]
                     if isinstance(data, bytes):
                         data = data.decode()
+                elif dtype == 'csr_matrix':
+                    data = _h5_read_csr_matrix(data)
+                elif dtype == 'df':
+                    data = pd.DataFrame(data)
 
                 # Put data to the right location according to anndata_path
                 if anndata_path.startswith('/uns'):
@@ -230,6 +234,13 @@ def read_exchangeable_loom(filename, sparse=False):
                 elif anndata_path.startswith('/varm'):
                     attr = anndata_path[6:]
                     adata.varm[attr] = data
+                elif anndata_path == '/raw.X':
+                    if adata.raw is None:
+                        adata.raw = anndata.AnnData(X=data)
+                    else:
+                        adata.raw.X = data
+                elif anndata_path == '/raw.var':
+                    adata.raw.var.index = data
                 else:
                     logging.warning('Unexpected anndata path: {}'.format(anndata_path))
     return adata
@@ -337,6 +348,21 @@ def write_exchangeable_loom(adata, filename, col_graphs=['neighbors']):
                 manifest['dtype'].append(dtype)
                 manifest['anndata'].append(anndata_path)
                 manifest['sce'].append(sce_path)
+
+        # Write /raw
+        raw_entries = []
+        if adata.raw is not None:
+            _h5_write_csr_matrix(lm['/global'], 'raw.X', adata.raw.X)
+            manifest['loom'].append('/global/raw.X')
+            manifest['dtype'].append('csr_matrix')
+            manifest['anndata'].append('/raw.X')
+            manifest['sce'].append('@metadata$raw.X')
+            lm['/global'].create_dataset(
+                    'raw.var', data=adata.raw.var.index.values.astype(bytes))
+            manifest['loom'].append('/global/raw.var')
+            manifest['dtype'].append('array')
+            manifest['anndata'].append('/raw.var')
+            manifest['sce'].append('@metadata$raw.var')
 
         # Write mapping
         lm['/global'].create_dataset(
