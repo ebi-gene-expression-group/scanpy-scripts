@@ -2,7 +2,7 @@
 Provides version, author and exports
 """
 
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 
 __author__ = ', '.join([
     'Ni Huang',

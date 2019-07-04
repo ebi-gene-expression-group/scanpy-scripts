@@ -2,6 +2,7 @@
 Provides sub-commands
 """
 
+import os
 import scanpy as sc
 
 from .cmd_utils import (
@@ -43,6 +44,8 @@ from .lib._diffexp import diffexp
 from .lib._paga import paga
 from .lib._diffmap import diffmap
 from .lib._dpt import dpt
+
+os.environ['LANG'] = 'UTF-8'
 
 
 _I_DESC = '<input_obj>:   input file in format specfied by --input-format'
