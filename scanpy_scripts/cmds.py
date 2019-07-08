@@ -46,10 +46,12 @@ from .lib._paga import paga
 from .lib._diffmap import diffmap
 from .lib._dpt import dpt
 
-if not (os.environ['LANG'].endswith('UTF-8') or
-        os.environ['LANG'].endswith('UTF8') or
-        os.environ['LANG'].endswith('utf-8') or
-        os.environ['LANG'].endswith('utf8')):
+LANG = os.environ.get('LANG', None)
+
+if LANG is None or not (LANG.endswith('UTF-8') or
+                        LANG.endswith('UTF8') or
+                        LANG.endswith('utf-8') or
+                        LANG.endswith('utf8')):
     print('This programme requires a UTF-8 locale, please check your $LANG setting.')
     sys.exit(0)
 
