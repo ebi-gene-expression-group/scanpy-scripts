@@ -35,10 +35,11 @@ setup(
         ]
     ),
     install_requires=[
+        'anndata<0.6.20',
         'scipy>=1.2.0,<1.3.0',
         'matplotlib',
         'pandas',
-        'scanpy>=1.4.2',
+        'scanpy>=1.4.2,<1.4.4',
         'louvain',
         'leidenalg',
         'loompy',
