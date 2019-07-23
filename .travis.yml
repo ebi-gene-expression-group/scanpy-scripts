@@ -4,6 +4,7 @@ python:
 
 install:
   - pip install -U setuptools>=40.1
+  - pip install scanpy=1.4.2
   - pip install .
 
 script: ./scanpy-scripts-tests.bats
