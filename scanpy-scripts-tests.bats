@@ -52,6 +52,8 @@ setup() {
     dpt_obj="${output_dir}/dpt.h5ad"
     plt_embed_opt="--color leiden_k10_r0_7 -f loom"
     plt_embed_pdf="${output_dir}/umap_leiden_k10_r0_7.pdf"
+    plt_paga_opt="--use-key paga_k10_r0_7 --node-size-scale 2"
+    plt_paga_pdf="${output_dir}/paga_k10_r0_7.pdf"
 
     if [ ! -d "$data_dir" ]; then
         mkdir -p $data_dir
@@ -302,6 +304,19 @@ setup() {
     fi
 
     run rm -f $plt_embed_pdf && $scanpy plot embed $plt_embed_opt $leiden_obj $plt_embed_pdf
+
+    [ "$status" -eq 0 ]
+    [ -f  "$dpt_obj" ]
+}
+
+# Run Plot paga
+
+@test "Run Plot trajectory" {
+    if [ "$resume" = 'true' ] && [ -f "$plt_paga_pdf" ]; then
+        skip "$plt_paga_pdf exists and resume is set to 'true'"
+    fi
+
+    run rm -f $plt_paga_pdf && $scanpy plot paga $plt_paga_opt $paga_obj $plt_paga_pdf
 
     [ "$status" -eq 0 ]
     [ -f  "$dpt_obj" ]

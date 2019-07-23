@@ -93,6 +93,19 @@ COMMON_OPTIONS = {
             show_default=True,
             help='Figure font size.',
         ),
+        click.option(
+            '--frameon/--frameoff', 'frameon',
+            default=True,
+            show_default=True,
+            help='Draw a frame around the plot',
+        ),
+        click.option(
+            '--title',
+            type=CommaSeparatedText(simplify=True),
+            default=None,
+            show_default=True,
+            help='Provide title for the plot or panels.',
+        ),
     ],
 
     'use_pc': [
@@ -891,15 +904,6 @@ PLOT_EMBED_CMD_OPTIONS = [
         '`None`, uses `.raw` if present.',
     ),
     click.option(
-        '--layers',
-        type=click.STRING,
-        default=None,
-        help='Name of the AnnData object layer to be plotted. By default '
-        '`.raw.X` is plotted. If --no-raw, then `.X` is plotted. If --layer '
-        'is set to a valid layer name, then the layer is plotted. --layer '
-        'takes precedence over --use-raw/--no-raw.'
-    ),
-    click.option(
         '--legend-loc',
         type=click.Choice(['right margin', 'on data']),
         default='right margin',
@@ -913,5 +917,112 @@ PLOT_EMBED_CMD_OPTIONS = [
         default=15,
         show_default=True,
         help='Legend font size.',
+    ),
+    click.option(
+        '--size',
+        type=click.FLOAT,
+        default=None,
+        show_default=True,
+        help='Point size. Automatically computed if not specified.',
+    ),
+]
+
+PLOT_PAGA_CMD_OPTIONS = [
+    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['plot'],
+    COMMON_OPTIONS['random_state'],
+    click.option(
+        '--type', 'prefix',
+        type=click.Choice(['paga', 'paga_compare']),
+        default='paga',
+        show_default=True,
+        help='The type of visualisation.',
+    ),
+    click.option(
+        '--use-key',
+        type=click.STRING,
+        default='paga',
+        show_default=True,
+        help='The key in `.uns` that contains trajectory information.',
+    ),
+    click.option(
+        '--layout',
+        type=click.Choice(['fa', 'fr', 'grid_fr', 'kk', 'lgl', 'drl', 'rt']),
+        default='fr',
+        show_default=True,
+        help='Plotting layout that computes positions.',
+    ),
+    click.option(
+        '--init-pos',
+        type=click.STRING,
+        default=None,
+        show_default=True,
+        help='Plotting layout that computes positions.',
+    ),
+    click.option(
+        '--threshold',
+        type=click.FLOAT,
+        default=0.01,
+        show_default=True,
+        help='Do not draw edges for weights below this threshold. Set to 0 to '
+        'include all edges.',
+    ),
+    click.option(
+        '--root',
+        type=click.INT,
+        default=0,
+        show_default=True,
+        help='If choosing a tree layout, this is the index of the root node.',
+    ),
+    click.option(
+        '--transitions',
+        type=click.STRING,
+        default=None,
+        show_default=True,
+        help='Key for `.uns["paga"]` that specifies the matrix, e.g. '
+        '`transition_confidence`, that stores the arrows.',
+    ),
+    click.option(
+        '--single-component',
+        is_flag=True,
+        default=False,
+        show_default=True,
+        help='Restrict to largest connected component',
+    ),
+    click.option(
+        '--solid-edges',
+        type=click.Choice(['connectivities', 'connectivities_tree']),
+        default='connectivities',
+        show_default=True,
+        help='Key for `.uns["paga"]` that specifies the matrix that stores the '
+        'edges to be drawn solid black.',
+    ),
+    click.option(
+        '--color',
+        type=CommaSeparatedText(simplify=True),
+        default=None,
+        show_default=True,
+        help='Keys for annotations of observations/cells or variables/genes.',
+    ),
+    click.option(
+        '--node-size-scale',
+        type=click.FLOAT,
+        default=1.0,
+        show_default=True,
+        help='Increase of decrease the size of the nodes.',
+    ),
+    click.option(
+        '--fontsize',
+        type=click.INT,
+        default=None,
+        show_default=True,
+        help='Font size for node labels',
+    ),
+    click.option(
+        '--arrowsize',
+        type=click.INT,
+        default=30,
+        show_default=True,
+        help='For directed graphs, specify the length and width of the arrowhead',
     ),
 ]
