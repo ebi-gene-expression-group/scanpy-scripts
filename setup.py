@@ -3,9 +3,12 @@ from setuptools import setup, find_packages
 with open('README.md', 'r') as fh:
     long_description = fh.read()
 
+with open('VERSION', 'r') as fh:
+    version = fh.read().rstrip()
+
 setup(
     name='scanpy-scripts',
-    version='0.2.2',
+    version=version,
     author='nh3',
     author_email='nh3@users.noreply.github.com',
     description='Scripts for using scanpy from the command line',
