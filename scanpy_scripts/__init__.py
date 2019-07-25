@@ -1,8 +1,9 @@
 """
 Provides version, author and exports
 """
+import pkg_resources
 
-__version__ = '0.2.3'
+__version__ = pkg_resources.get_distribution('scanpy-scripts').version
 
 __author__ = ', '.join([
     'Ni Huang',
