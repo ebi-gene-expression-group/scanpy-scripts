@@ -35,3 +35,21 @@ def paga(
         _delete_backup_key(adata.uns, 'paga')
 
     return adata
+
+
+def plot_paga(
+        adata,
+        prefix='paga',
+        use_key='paga',
+        **kwargs,
+):
+    """Make PAGA plot
+    """
+    _set_default_key(adata.uns, 'paga', use_key)
+    if prefix == 'paga':
+        sc.pl.paga(adata, **kwargs)
+    elif prefix == 'paga_compare':
+        sc.pl.paga_compare(adata, **kwargs)
+    else:
+        raise ValueError(f'{prefix}: unknown plot type for PAGA')
+    _restore_default_key(adata.uns, 'paga', use_key)

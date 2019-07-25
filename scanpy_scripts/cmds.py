@@ -8,7 +8,7 @@ import scanpy as sc
 
 from .cmd_utils import (
     make_subcmd,
-    plot_embeddings,
+    make_plot_function,
 )
 from .cmd_options import (
     READ_CMD_OPTIONS,
@@ -29,6 +29,7 @@ from .cmd_options import (
     DIFFMAP_CMD_OPTIONS,
     DPT_CMD_OPTIONS,
     PLOT_EMBED_CMD_OPTIONS,
+    PLOT_PAGA_CMD_OPTIONS,
 )
 from .lib._read import read_10x
 from .lib._filter import filter_anndata
@@ -42,7 +43,7 @@ from .lib._fdg import fdg
 from .lib._louvain import louvain
 from .lib._leiden import leiden
 from .lib._diffexp import diffexp
-from .lib._paga import paga
+from .lib._paga import paga, plot_paga
 from .lib._diffmap import diffmap
 from .lib._dpt import dpt
 
@@ -208,7 +209,15 @@ DPT_CMD = make_subcmd(
 PLOT_EMBED_CMD = make_subcmd(
     'embed',
     PLOT_EMBED_CMD_OPTIONS,
-    plot_embeddings,
+    make_plot_function(sc.plotting._tools.scatterplots.plot_scatter),
     cmd_desc='Plot cell embeddings.',
+    arg_desc=_IP_DESC,
+)
+
+PLOT_PAGA_CMD = make_subcmd(
+    'paga',
+    PLOT_PAGA_CMD_OPTIONS,
+    make_plot_function(plot_paga),
+    cmd_desc='Plot PAGA trajectories.',
     arg_desc=_IP_DESC,
 )

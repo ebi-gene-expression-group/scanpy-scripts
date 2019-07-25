@@ -25,6 +25,7 @@ from .cmds import (
     DIFFMAP_CMD,
     DPT_CMD,
     PLOT_EMBED_CMD,
+    PLOT_PAGA_CMD,
 )
 
 
@@ -102,3 +103,4 @@ def plot():
 
 
 plot.add_command(PLOT_EMBED_CMD)
+plot.add_command(PLOT_PAGA_CMD)

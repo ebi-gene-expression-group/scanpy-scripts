@@ -176,37 +176,49 @@ def write_embedding(adata, key, embed_fn, n_comp=None, sep='\t', key_added=None)
         embed_fn, sep=sep, header=False, index=True)
 
 
-def plot_embeddings(
-        adata,
-        basis=None,
-        output_fig=None,
-        fig_size=None,
-        fig_dpi=300,
-        fig_fontsize=15,
-        **kwargs,
-):
-    """Make scatter plot of cell embeddings
+def make_plot_function(FUN):
+    """Make plot function that handles common plotting parameters
     """
-    key = 'X_' + basis
-    if key not in adata.obsm.keys():
-        raise KeyError(f'{key} is not a valid `.obsm` key')
+    def plot_function(
+            adata,
+            output_fig=None,
+            fig_size=None,
+            fig_dpi=300,
+            fig_fontsize=15,
+            title=None,
+            frameon=True,
+            **kwargs,
+    ):
+        sc.settings.set_figure_params(dpi=fig_dpi, fontsize=fig_fontsize)
+        if fig_size:
+            from matplotlib import rcParams
+            rcParams.update({'figure.figsize': fig_size})
 
-    sc.settings.set_figure_params(dpi=fig_dpi, fontsize=fig_fontsize)
-    if fig_size:
-        from matplotlib import rcParams
-        rcParams.update({'figure.figsize': fig_size})
-    if output_fig:
-        import os
-        import matplotlib.pyplot as plt
-        sc.settings.figdir = os.path.dirname(output_fig)
+        figname = False
+        showfig = True
+        if output_fig:
+            import os
+            import matplotlib.pyplot as plt
+            sc.settings.figdir = os.path.dirname(output_fig)
 
-        figname = os.path.basename(output_fig)
-        sc.pl.scatter(adata, basis=basis, save=figname, show=False, **kwargs)
-        os.rename(
-            os.path.join(sc.settings.figdir, basis + figname), output_fig)
-        plt.close()
-    else:
-        sc.pl.scatter(adata, basis, save=False, show=True, **kwargs)
+            figname = os.path.basename(output_fig)
+            showfig = False
+
+        FUN(
+            adata,
+            save=figname,
+            show=showfig,
+            title=title,
+            frameon=frameon,
+            **kwargs)
+
+        if output_fig:
+            prefix = kwargs.get('prefix', kwargs.get('basis', FUN.__name__))
+            os.rename(
+                os.path.join(sc.settings.figdir, prefix + figname), output_fig)
+            plt.close()
+
+    return plot_function
 
 
 # The functions below handles slot key.
