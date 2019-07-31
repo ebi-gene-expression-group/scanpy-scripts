@@ -15,6 +15,6 @@ from ._leiden import leiden
 from ._diffexp import diffexp, diffexp_paired, extract_de_table
 from ._diffmap import diffmap
 from ._dpt import dpt
-from ._paga import paga
+from ._paga import paga, plot_paga
 from ..cmd_utils import _read_obj as read_obj
 from ..cmd_utils import _write_obj as write_obj

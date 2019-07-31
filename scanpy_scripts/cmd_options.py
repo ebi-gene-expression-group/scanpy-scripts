@@ -930,14 +930,6 @@ PLOT_EMBED_CMD_OPTIONS = [
 PLOT_PAGA_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['plot'],
-    COMMON_OPTIONS['random_state'],
-    click.option(
-        '--type', 'prefix',
-        type=click.Choice(['paga', 'paga_compare']),
-        default='paga',
-        show_default=True,
-        help='The type of visualisation.',
-    ),
     click.option(
         '--use-key',
         type=click.STRING,
@@ -998,11 +990,34 @@ PLOT_PAGA_CMD_OPTIONS = [
         'edges to be drawn solid black.',
     ),
     click.option(
-        '--color',
-        type=CommaSeparatedText(simplify=True),
+        '--basis',
+        type=click.STRING,
         default=None,
         show_default=True,
-        help='Keys for annotations of observations/cells or variables/genes.',
+        help='Name of the embedding to plot, must be a key of `.obsm` without '
+        'the prefix "X_".',
+    ),
+    click.option(
+        '--color',
+        type=click.STRING,
+        default=None,
+        show_default=True,
+        help='Key for annotation of observations/cells or variables/genes.',
+    ),
+    click.option(
+        '--legend-loc',
+        type=click.Choice(['right margin', 'on data']),
+        default='right margin',
+        show_default=True,
+        help='Location of legend, either "on data", "right margin" or valid '
+        'keywords for `matplotlib.legend`.',
+    ),
+    click.option(
+        '--size',
+        type=click.FLOAT,
+        default=None,
+        show_default=True,
+        help='Point size. Automatically computed if not specified.',
     ),
     click.option(
         '--node-size-scale',

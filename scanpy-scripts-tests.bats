@@ -52,7 +52,7 @@ setup() {
     dpt_obj="${output_dir}/dpt.h5ad"
     plt_embed_opt="--color leiden_k10_r0_7 -f loom"
     plt_embed_pdf="${output_dir}/umap_leiden_k10_r0_7.pdf"
-    plt_paga_opt="--use-key paga_k10_r0_7 --node-size-scale 2"
+    plt_paga_opt="--use-key paga_k10_r0_7 --node-size-scale 2 --basis diffmap --color dpt_pseudotime_k10 --frameoff"
     plt_paga_pdf="${output_dir}/paga_k10_r0_7.pdf"
 
     if [ ! -d "$data_dir" ]; then
@@ -277,7 +277,7 @@ setup() {
         skip "$diffmap_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $diffmap_obj && $scanpy embed diffmap $diffmap_opt $leiden_obj $diffmap_obj
+    run rm -f $diffmap_obj && $scanpy embed diffmap $diffmap_opt $paga_obj $diffmap_obj
 
     [ "$status" -eq 0 ]
     [ -f  "$diffmap_obj" ] && [ -f "$diffmap_embed" ]
@@ -316,7 +316,7 @@ setup() {
         skip "$plt_paga_pdf exists and resume is set to 'true'"
     fi
 
-    run rm -f $plt_paga_pdf && $scanpy plot paga $plt_paga_opt $paga_obj $plt_paga_pdf
+    run rm -f $plt_paga_pdf && $scanpy plot paga $plt_paga_opt $dpt_obj $plt_paga_pdf
 
     [ "$status" -eq 0 ]
     [ -f  "$dpt_obj" ]
