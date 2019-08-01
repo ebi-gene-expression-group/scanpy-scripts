@@ -46,7 +46,7 @@ setup() {
     paga_opt="--use-graph neighbors_k10 --key-added k10_r0_7 --groups leiden_k10_r0_7 --model v1.2 -f loom"
     paga_obj="${output_dir}/paga.h5ad"
     diffmap_embed="${output_dir}/diffmap.tsv"
-    diffmap_opt="--use-graph neighbors_k10 --n-comps 10 -E ${diffmap_embed} -f loom"
+    diffmap_opt="--use-graph neighbors_k10 --n-comps 10 -E ${diffmap_embed}"
     diffmap_obj="${output_dir}/diffmap.h5ad"
     dpt_opt="--use-graph neighbors_k10 --key-added k10 --n-dcs 10 --root leiden_k10_r0_7 0"
     dpt_obj="${output_dir}/dpt.h5ad"
