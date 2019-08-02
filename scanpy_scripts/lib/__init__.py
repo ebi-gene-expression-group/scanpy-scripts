@@ -37,11 +37,14 @@ def expression_colormap():
     return LinearSegmentedColormap.from_list('expression', palette)
 
 
-def cross_table(adata, x, y, normalise=None, highlight=False):
+def cross_table(adata, x, y, normalise=None, highlight=False, subset=None):
     """Make a cross table comparing two categorical annotations
     """
     x_attr = adata.obs[x]
     y_attr = adata.obs[y]
+    if subset is not None:
+        x_attr = x_attr[subset]
+        y_attr = y_attr[subset]
     assert not _is_numeric(x_attr.values), f'Can not operate on numerical {x}'
     assert not _is_numeric(y_attr.values), f'Can not operate on numerical {y}'
     crs_tbl = pd.crosstab(x_attr, y_attr)
@@ -66,8 +69,6 @@ def run_harmony(
         theta=2.0,
         use_rep='X_pca',
         key_added='hm',
-        tmp_dir='.harmony',
-        script='harmonise.R'
 ):
     if not isinstance(batch, (tuple, list)):
         batch = [batch]
@@ -78,40 +79,25 @@ def run_harmony(
             raise KeyError(f'{b} is not a valid obs annotation.')
     if use_rep not in adata.obsm.keys():
         raise KeyError(f'{use_rep} is not a valid embedding.')
-    meta = adata.obs[batch]
+    meta = adata.obs[batch].reset_index()
     embed = adata.obsm[use_rep]
 
-    import os
-    os.makedirs(tmp_dir, exist_ok=True)
     # ===========
-    # from rpy2.robjects.package import importr
-    # harmony = importr('harmony')
-    # from rpy2.robjects import numpy2ri, pandas2ri
-    # numpy2ri.activate()
-    # hm_embed = harmony.HarmonyMatrix(
-    #     embed, adata.obs[[batch]].reset_index(), batch, theta, do_pca=False)
-    # numpy2ri.deactivate()
+    from rpy2.robjects.packages import importr
+    harmony = importr('harmony')
+    from rpy2.robjects import numpy2ri, pandas2ri
+    numpy2ri.activate()
+    pandas2ri.activate()
+    hm_embed = harmony.HarmonyMatrix(
+            embed, meta, batch, theta, do_pca=False, verbose=False)
+    pandas2ri.deactivate()
+    numpy2ri.deactivate()
+    hm_embed = numpy2ri.ri2py(hm_embed)
     # ===========
-    meta_fn = os.path.join(tmp_dir, 'meta.tsv')
-    embed_fn = os.path.join(tmp_dir, 'embed.tsv')
-    meta.to_csv(meta_fn, sep='\t', index=True, header=True)
-    pd.DataFrame(embed, index=adata.obs_names).to_csv(
-        embed_fn, sep='\t', index=True, header=True)
-    grouping = ','.join(batch)
-    thetas = ','.join(list(map(str, theta)))
-    hm_embed_fn = os.path.join(tmp_dir, 'hm_embed.tsv')
-
-    import subprocess as sbp
-    cmd = f'Rscript {script} {embed_fn} {meta_fn} {grouping} {thetas} {hm_embed_fn}'
-    sbp.call(cmd.split())
-    hm_embed = pd.read_csv(hm_embed_fn, header=0, index_col=0, sep='\t').values
     if key_added:
         adata.obsm[f'{use_rep}_{key_added}'] = hm_embed
     else:
         adata.obsm[use_rep] = hm_embed
-    os.remove(meta_fn)
-    os.remove(embed_fn)
-    os.remove(hm_embed_fn)
 
 
 def split_by_group(adata, groupby):
@@ -124,7 +110,18 @@ def split_by_group(adata, groupby):
     return adata_dict
 
 
-def subsample(adata, fraction, groupby=None, min_n=0, **kwargs):
+def regroup(adata, groupby, regroups):
+    if groupby not in adata.obs.columns:
+        raise KeyError(f'{groupby} is not a valid obs annotation.')
+    groups = adata.obs[groupby].astype(str)
+    new_groups = groups.copy()
+    for new_grp, old_grps in regroups.items():
+        for grp in old_grps:
+            new_groups[groups == grp] = new_grp
+    return new_groups.astype('category')
+
+
+def subsample(adata, fraction, groupby=None, min_n=0, max_n=10000, **kwargs):
     if groupby:
         if groupby not in adata.obs.columns:
             raise KeyError(f'{groupby} is not a valid obs annotation.')
@@ -133,14 +130,16 @@ def subsample(adata, fraction, groupby=None, min_n=0, **kwargs):
         for grp in groups:
             k = adata.obs[groupby] == grp
             grp_size = sum(k)
-            n_obs_per_group[grp] = int(max(np.ceil(grp_size * fraction),
-                                           min(min_n, grp_size)))
+            n_obs_per_group[grp] = int(min(max_n,
+                                           max(np.ceil(grp_size * fraction),
+                                               min(min_n, grp_size))))
         sampled_groups = [sc.pp.subsample(adata[adata.obs[groupby] == grp, :],
                                           n_obs=n_obs_per_group[grp],
                                           copy=True,
                                           **kwargs) for grp in groups]
-        subsampled = sampled_groups[0].concatenate(sampled_groups[1:])
-        subsampled.var = adata.var.copy()
+        sampled_obs_names = np.concatenate(
+                [sg.obs_names.values for sg in sampled_groups])
+        subsampled = adata[adata.obs_names.isin(sampled_obs_names), :]
     else:
         subsampled = sc.pp.subsample(adata, fraction, **kwargs, copy=True)
     return subsampled
@@ -150,8 +149,12 @@ def pseudo_bulk(
         adata, groupby, use_rep='X', highly_variable=False, FUN=np.mean):
     """Make pseudo bulk data from grouped sc data
     """
-    group_attr = adata.obs[groupby].astype(str).values
-    groups = np.unique(group_attr)
+    if adata.obs[groupby].dtype.name == 'category':
+        group_attr = adata.obs[groupby].values
+        groups = adata.obs[groupby].cat.categories.values
+    else:
+        group_attr = adata.obs[groupby].astype(str).values
+        groups = np.unique(group_attr)
     n_level = len(groups)
     if highly_variable:
         if isinstance(highly_variable, (list, tuple)):
@@ -173,13 +176,91 @@ def pseudo_bulk(
     elif use_rep in adata.obsm.keys():
         x = adata.obsm[use_rep]
         features = np.arange(x.shape[1])
+    elif (isinstance(use_rep, np.ndarray) and
+            use_rep.shape[0] == adata.shape[0]):
+        x = use_rep
+        features = np.arange(x.shape[1])
     else:
-        raise KeyError(f'{use_rep} not found.')
+        raise KeyError(f'{use_rep} invalid.')
     summarised = np.zeros((n_level, x.shape[1]))
     for i, grp in enumerate(groups):
         k_grp = group_attr == grp
         summarised[i] = FUN(x[k_grp, :], axis=0, keepdims=True)
     return pd.DataFrame(summarised.T, columns=groups, index=features)
+
+
+def LR_annotate(
+        adata,
+        train_label,
+        train_x,
+        use_rep='X',
+        subset=None,
+        penalty='l1',
+        sparcity=0.2,
+        return_label=False,
+):
+    """Annotate cells using logistic regression
+    """
+    if subset is not None:
+        train_label = train_label[subset]
+        train_x = train_x[subset, :]
+    from sklearn.linear_model import LogisticRegression
+    lr = LogisticRegression(penalty=penalty, C=sparcity)
+    lr.fit(train_x, train_label)
+    if use_rep == 'X':
+        predict_x = adata.X
+    elif use_rep in adata.layers.keys():
+        predict_x = adata.layers[use_rep]
+    elif use_rep in adata.obsm.keys():
+        predict_x = adata.obsm[use_rep]
+    if return_label:
+        return lr.predict(predict_x)
+    else:
+        return lr.predict_proba(predict_x)
+
+
+def annotate(adata, groupby, annot, annotation_matrix):
+    """Annotate a clustering based on a matrix of values
+
+    + groupby: the clustering to be annotated
+    + annot : the annotationo to be aligned/transferred
+    + annotation_matrix: a matrix with shape (n,m) where n equals the number
+                         of clusters and m equals the number of annotation
+                         categories.
+    """
+    if groupby not in adata.obs.columns:
+        raise KeyError(f'"{groupby}" not found.')
+    if annot not in adata.obs.columns:
+        raise KeyError(f'"{annot}" not found.')
+    groupby_annot = f'{groupby}_annot'
+    clustering = adata.obs[groupby]
+    annotation = adata.obs[annot]
+    k_nan = annotation == 'nan'
+    cell_types = np.unique(annotation[~k_nan].values)
+    n_celltype = cell_types.shape[0]
+    n_cluster = np.unique(clustering).shape[0]
+    n_cell = clustering.shape[0]
+
+    def dedup(names):
+        names_copy = names.copy()
+        count = {}
+        for i, name in enumerate(names):
+            n = count.get(name, 0) + 1
+            count[name] = n
+            if n > 1 or name in names[(i+1):]:
+                names_copy[i] = f'{name}{n}'
+            else:
+                names_copy[i] = name
+        return names_copy
+
+    if (annotation_matrix.shape[0] == n_cluster and
+            annotation_matrix.shape[1] == n_celltype):
+        k_max = np.argmax(annotation_matrix, axis=1)
+        cluster_annot = cell_types[k_max]
+        adata.obs[groupby_annot] = adata.obs[groupby].cat.rename_categories(
+                dedup(cluster_annot))
+    else:
+        raise ValueError(f'[annotation_matrix] not in compatible shape')
 
 
 def plot_df_heatmap(
@@ -195,6 +276,8 @@ def plot_df_heatmap(
     im = ax.imshow(df, cmap=cmap, aspect='auto', **kwargs)
     if 0 < rotation < 90:
         horizontalalignment = 'right'
+    else:
+        horizontalalignment = 'center'
     plt.xticks(
         range(len(df.columns)),
         df.columns,
@@ -224,6 +307,143 @@ def plot_qc(adata, groupby=None):
         adata, x='n_counts', y='percent_mito', color=groupby, alpha=0.5)
 
 
+def plot_metric_by_rank(
+        adata,
+        subject='cell',
+        metric='n_counts',
+        decreasing=True,
+        ax=None,
+        title=None,
+        hpos=None,
+        vpos=None,
+        logx=True,
+        logy=True,
+        **kwargs,
+):
+    """Plot metric by rank from top to bottom"""
+    kwargs['c'] = kwargs.get('c', 'black')
+    metric_names = {
+        'n_counts': 'nUMI', 'n_genes': 'nGene', 'n_cells': 'nCell', 'mt_prop': 'fracMT'}
+    if subject not in ('cell', 'gene'):
+        print('`subject` must be "cell" or "gene".')
+        return
+    if metric not in metric_names:
+        print('`metric` must be "n_counts", "n_genes", "n_cells" or "mt_prop".')
+        return
+
+    if 'mt_prop' not in adata.obs.columns:
+        k_mt = adata.var_names.str.startswith('MT-')
+        adata.obs['mt_prop'] = np.squeeze(
+            np.asarray(adata.X[:, k_mt].sum(axis=1))) / adata.obs['n_counts']
+
+    order_modifier = -1 if decreasing else 1
+
+    if subject == 'cell':
+        x = 1 + np.arange(adata.shape[0])
+        k = np.argsort(order_modifier * adata.obs[metric])
+        y = adata.obs[metric].values[k]
+    else:
+        x = 1 + np.arange(adata.shape[1])
+        k = np.argsort(order_modifier * adata.var[metric])
+        y = adata.var[metric].values[k]
+
+    if not ax:
+        fig, ax = plt.subplots()
+
+    if kwargs['c'] is not None and not isinstance(kwargs['c'], str):
+        kwargs_c = kwargs['c'][k]
+        del kwargs['c']
+        for c in np.unique(kwargs_c):
+            k = kwargs_c == c
+            ax.plot(x[k], y[k], c=c, **kwargs)
+    else:
+        ax.plot(x, y, **kwargs)
+
+    if hpos is not None:
+        ax.hlines(hpos, xmin=x.min(), xmax=x.max(), linewidth=1, colors='red')
+    if vpos is not None:
+        ax.vlines(vpos, ymin=y.min(), ymax=y.max(), linewidth=1, colors='green')
+    if logx:
+        ax.set_xscale('log')
+    if logy:
+        ax.set_yscale('log')
+    ax.set_xlabel('Rank')
+    ax.set_ylabel(metric_names[metric])
+    if title:
+        ax.set_title(title)
+    ax.grid(linestyle='--')
+    if 'label' in kwargs:
+        ax.legend(loc='upper right' if decreasing else 'upper left')
+
+    return ax
+
+
+def plot_embedding(
+        adata, basis, groupby, annot=True, highlight=None, size=None,
+        save=None, savedpi=300, **kwargs):
+    if f'X_{basis}' not in adata.obsm.keys():
+        raise KeyError(f'"X_{basis}" not found in `adata.obsm`.')
+    if isinstance(groupby, (list, tuple)):
+        groupby = groupby[0]
+    if groupby not in adata.obs.columns:
+        raise KeyError(f'"{groupby}" not found in `adata.obs`.')
+    if adata.obs[groupby].dtype.name != 'category':
+        raise ValueError(f'"{groupby}" is not categorical.')
+    from scanpy.plotting._tools.scatterplots import plot_scatter
+    groups = adata.obs[groupby].copy()
+    categories = list(adata.obs[groupby].cat.categories)
+    rename_dict = {ct: f'{i+1}: {ct}' for i, ct in enumerate(categories)}
+    restore_dict = {f'{i+1}: {ct}': ct for i, ct in enumerate(categories)}
+
+    size_ratio = 1.2
+
+    ad = adata
+    marker_size = size
+    kwargs['show'] = False
+    kwargs['save'] = False
+    kwargs['frameon'] = True
+    kwargs['legend_loc'] = 'right margin'
+
+    if highlight:
+        k = adata.obs[groupby].isin(highlight).values
+        ad = adata[~k, :]
+        marker_size = size / size_ratio if size else None
+    if annot:
+        adata.obs[groupby].cat.rename_categories(rename_dict, inplace=True)
+        if highlight:
+            ad.obs[groupby].cat.rename_categories(rename_dict, inplace=True)
+    else:
+        kwargs['frameon'] = False
+        kwargs['title'] = ''
+        kwargs['legend_loc'] = None
+
+    fig, ax = plt.subplots()
+    try:
+        plot_scatter(ad, basis, color=groupby, ax=ax, size=marker_size, **kwargs)
+
+        if highlight:
+            embed = adata.obsm[f'X_{basis}']
+            for i, ct in enumerate(categories):
+                if ct not in highlight:
+                    continue
+                k_hl = groups == ct
+                ax.scatter(embed[k_hl, 0], embed[k_hl, 1], marker='D', c=adata.uns[f'{groupby}_colors'][i], s=size/8)
+                ax.scatter([], [], marker='D', c=adata.uns[f'{groupby}_colors'][i], label=adata.obs[groupby].cat.categories[i])
+            if annot:
+                ax.legend(frameon=False, loc='center left', bbox_to_anchor=(1, 0.5),
+                          ncol=(1 if len(categories) <= 14 else 2 if len(categories) <= 30 else 3))
+    finally:
+        if annot:
+            adata.obs[groupby].cat.rename_categories(restore_dict, inplace=True)
+    if annot:
+        centroids = pseudo_bulk(adata, groupby, use_rep=f'X_{basis}', FUN=np.median).T
+        texts = [ax.text(x=row[0], y=row[1], s=f'{i+1:d}', fontsize=8, fontweight='bold') for i, row in centroids.reset_index(drop=True).iterrows()]
+        from adjustText import adjust_text
+        adjust_text(texts, ax=ax, text_from_points=False, autoalign=False)
+    if save:
+        plt.savefig(fname=save, dpi=savedpi, bbox_inches='tight', pad_inches=0.1)
+
+
 def simple_default_pipeline(
         adata,
         qc_only=False,
@@ -234,7 +454,7 @@ def simple_default_pipeline(
         hvg_params={'flavor': 'seurat', 'by_batch': None},
         scale_params={'max_value': 10},
         pca_params={'n_comps': 50, 'svd_solver': 'arpack', 'use_highly_variable': True},
-        harmony_params={'batch': None, 'theta': 2.0, 'script': 'harmonise.R'},
+        harmony_params={'batch': None, 'theta': 2.0},
         nb_params={'n_neighbors': 15, 'n_pcs': 40},
         umap_params={},
         tsne_params={},
@@ -293,8 +513,7 @@ def simple_default_pipeline(
             pca(adata, **pca_params)
         if (harmony_params is not None and (
                 isinstance(harmony_params, dict) and
-                harmony_params.get('batch', None) and
-                harmony_params['batch'] in adata.obs.keys())):
+                harmony_params.get('batch', None))):
             run_harmony(adata, **harmony_params)
         if nb_params is not None and isinstance(nb_params, dict):
             neighbors(adata, **nb_params)
