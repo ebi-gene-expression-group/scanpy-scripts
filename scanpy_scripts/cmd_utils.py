@@ -176,7 +176,7 @@ def write_embedding(adata, key, embed_fn, n_comp=None, sep='\t', key_added=None)
         embed_fn, sep=sep, header=False, index=True)
 
 
-def make_plot_function(FUN):
+def make_plot_function(FUN, kind=None):
     """Make plot function that handles common plotting parameters
     """
     def plot_function(
@@ -199,7 +199,7 @@ def make_plot_function(FUN):
         if output_fig:
             import os
             import matplotlib.pyplot as plt
-            sc.settings.figdir = os.path.dirname(output_fig)
+            sc.settings.figdir = os.path.dirname(output_fig) or '.'
 
             figname = os.path.basename(output_fig)
             showfig = False
@@ -213,7 +213,7 @@ def make_plot_function(FUN):
             **kwargs)
 
         if output_fig:
-            prefix = kwargs.get('prefix', kwargs.get('basis', FUN.__name__))
+            prefix = kind if kind else kwargs.get('basis', FUN.__name__)
             os.rename(
                 os.path.join(sc.settings.figdir, prefix + figname), output_fig)
             plt.close()
