@@ -28,11 +28,12 @@ from ..cmd_utils import _write_obj as write_obj
 from ..cmd_utils import switch_layer
 
 
-def expression_colormap():
+def expression_colormap(background_level=0.05):
     """Returns a nice color map for highlighting gene expression
     """
-    reds = plt.cm.Reds(np.linspace(0, 1, 118))
-    greys = plt.cm.Greys_r(np.linspace(0.7, 0.8, 10))
+    background_nbin = int(128 * background_level)
+    reds = plt.cm.Reds(np.linspace(0, 1, 128-background_nbin))
+    greys = plt.cm.Greys_r(np.linspace(0.7, 0.8, background_nbin))
     palette = np.vstack([greys, reds])
     return LinearSegmentedColormap.from_list('expression', palette)
 
@@ -100,6 +101,12 @@ def run_harmony(
         adata.obsm[use_rep] = hm_embed
 
 
+def run_seurat_integration(
+        adata,
+):
+    pass
+
+
 def split_by_group(adata, groupby):
     if groupby not in adata.obs.columns:
         raise KeyError(f'{groupby} is not a valid obs annotation.')
@@ -116,8 +123,11 @@ def regroup(adata, groupby, regroups):
     groups = adata.obs[groupby].astype(str)
     new_groups = groups.copy()
     for new_grp, old_grps in regroups.items():
-        for grp in old_grps:
-            new_groups[groups == grp] = new_grp
+        if isinstance(old_grps, (list, tuple)):
+            for grp in old_grps:
+                new_groups[groups == grp] = new_grp
+        else:
+            new_groups[groups == old_grps] = new_grp
     return new_groups.astype('category')
 
 
@@ -293,18 +303,36 @@ def plot_df_heatmap(
 
 
 def plot_qc(adata, groupby=None):
-    qc_metrics = ('n_counts', 'n_genes', 'percent_mito')
+    qc_metrics = ('n_counts', 'n_genes', 'percent_mito', 'percent_ribo', 'percent_hb')
     for qmt in qc_metrics:
         if qmt not in adata.obs.columns:
             raise ValueError(f'{qmt} not found.')
     if groupby:
-        sc.pl.violin(adata, keys=qc_metrics, groupby=groupby, rotation=45)
-    sc.pl.violin(adata, keys=qc_metrics, multi_panel=True, rotation=45)
+        ax = sc.pl.violin(adata, keys=qc_metrics, groupby=groupby, rotation=45, show=False)
+        #ax[2].set_ylim(-5, 50)
+    ax = sc.pl.violin(adata, keys=qc_metrics, multi_panel=True, rotation=45)
+    fig, ax = plt.subplots(figsize=(3, 3))
+    sc.pl.scatter(adata, x='n_counts', y='n_genes', color=groupby, alpha=0.5, ax=ax)
+    fig, ax = plt.subplots(figsize=(3, 3))
     sc.pl.scatter(
-        adata, x='n_counts', y='n_genes', color='percent_mito', alpha=0.5)
-    sc.pl.scatter(adata, x='n_counts', y='n_genes', color=groupby, alpha=0.5)
+        adata, x='n_counts', y='n_genes', color='percent_mito', alpha=0.5, ax=ax)
+    fig, ax = plt.subplots(figsize=(3, 3))
     sc.pl.scatter(
-        adata, x='n_counts', y='percent_mito', color=groupby, alpha=0.5)
+        adata, x='n_counts', y='percent_mito', color=groupby, alpha=0.5, ax=ax)
+
+    fig, ax = plt.subplots(figsize=(3, 3))
+    sc.pl.scatter(
+        adata, x='n_counts', y='n_genes', color='percent_ribo', alpha=0.5, ax=ax)
+    fig, ax = plt.subplots(figsize=(3, 3))
+    sc.pl.scatter(
+        adata, x='n_counts', y='percent_ribo', color=groupby, alpha=0.5, ax=ax)
+
+    fig, ax = plt.subplots(figsize=(3, 3))
+    sc.pl.scatter(
+        adata, x='n_counts', y='n_genes', color='percent_hb', alpha=0.5, ax=ax)
+    fig, ax = plt.subplots(figsize=(3, 3))
+    sc.pl.scatter(
+        adata, x='n_counts', y='percent_hb', color=groupby, alpha=0.5, ax=ax)
 
 
 def plot_metric_by_rank(
@@ -448,7 +476,7 @@ def simple_default_pipeline(
         adata,
         qc_only=False,
         batch=None,
-        filter_params={'min_genes': 200, 'min_cells': 3, 'max_counts': 25000, 'max_mito': 20},
+        filter_params={'min_genes': 200, 'min_cells': 3, 'max_counts': 25000, 'max_mito': 20, 'min_mito': 0},
         norm_params={'target_sum': 1e4, 'fraction': 0.9},
         combat_args={'key': None},
         hvg_params={'flavor': 'seurat', 'by_batch': None},
@@ -468,11 +496,15 @@ def simple_default_pipeline(
     """
     if qc_only:
         adata.var['mito'] = adata.var_names.str.startswith('MT-')
+        adata.var['ribo'] = adata.var_names.str.startswith('RPL') | adata.var_names.str.startswith('RPS')
+        adata.var['hb'] = adata.var_names.str.startswith('HB')
         qc_tbls = sc.pp.calculate_qc_metrics(
-            adata, qc_vars=['mito'], percent_top=None)
+            adata, qc_vars=['mito', 'ribo', 'hb'], percent_top=None)
         adata.obs['n_counts'] = qc_tbls[0]['total_counts'].values
         adata.obs['n_genes'] = qc_tbls[0]['n_genes_by_counts'].values
         adata.obs['percent_mito'] = qc_tbls[0]['pct_counts_mito'].values
+        adata.obs['percent_ribo'] = qc_tbls[0]['pct_counts_ribo'].values
+        adata.obs['percent_hb'] = qc_tbls[0]['pct_counts_hb'].values
         adata.var['n_cells'] = qc_tbls[1]['n_cells_by_counts'].values
         plot_qc(adata, batch)
     else:
@@ -489,6 +521,15 @@ def simple_default_pipeline(
                 adata._inplace_subset_obs(k)
             if 'max_mito' in filter_params:
                 k = adata.obs['percent_mito'] <= filter_params['max_mito']
+                adata._inplace_subset_obs(k)
+            if 'min_mito' in filter_params:
+                k = adata.obs['percent_mito'] >= filter_params['min_mito']
+                adata._inplace_subset_obs(k)
+            if 'min_ribo' in filter_params:
+                k = adata.obs['percent_ribo'] >= filter_params['min_ribo']
+                adata._inplace_subset_obs(k)
+            if 'max_hb' in filter_params:
+                k = adata.obs['percent_hb'] <= filter_params['max_hb']
                 adata._inplace_subset_obs(k)
             if 'counts' not in adata.layers.keys():
                 adata.layers['counts'] = adata.X
