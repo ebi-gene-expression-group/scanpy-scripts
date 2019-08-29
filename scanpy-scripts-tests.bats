@@ -52,7 +52,7 @@ setup() {
     dpt_obj="${output_dir}/dpt.h5ad"
     plt_embed_opt="--color leiden_k10_r0_7 -f loom"
     plt_embed_pdf="${output_dir}/umap_leiden_k10_r0_7.pdf"
-    plt_paga_opt="--use-key paga_k10_r0_7 --node-size-scale 2 --basis diffmap --color dpt_pseudotime_k10 --frameoff"
+    plt_paga_opt="--use-key paga_k10_r0_7 --node-size-scale 2 --edge-width-scale 0.5 --basis diffmap --color dpt_pseudotime_k10 --frameoff"
     plt_paga_pdf="${output_dir}/paga_k10_r0_7.pdf"
 
     if [ ! -d "$data_dir" ]; then

@@ -1031,13 +1031,20 @@ PLOT_PAGA_CMD_OPTIONS = [
         type=click.INT,
         default=None,
         show_default=True,
-        help='Font size for node labels',
+        help='Font size for node labels.',
+    ),
+    click.option(
+        '--edge-width-scale',
+        type=click.FLOAT,
+        default=1.0,
+        show_default=True,
+        help='Increase of decrease the width of the edges.',
     ),
     click.option(
         '--arrowsize',
         type=click.INT,
         default=30,
         show_default=True,
-        help='For directed graphs, specify the length and width of the arrowhead',
+        help='For directed graphs, specify the length and width of the arrowhead.',
     ),
 ]
