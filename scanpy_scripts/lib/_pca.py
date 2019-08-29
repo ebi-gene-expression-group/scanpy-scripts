@@ -9,6 +9,10 @@ def pca(adata, key_added=None, export_embedding=None, **kwargs):
     """
     Wrapper function for sc.pp.pca, for supporting named slot
     """
+    # omit "svd_solver" to let scanpy choose automatically
+    if 'svd_solver' in kwargs and kwargs['svd_solver'] == 'auto':
+        del kwargs['svd_solver']
+
     if key_added:
         if 'X_pca' in adata.obsm.keys():
             adata.obsm['X_pca_bkup'] = adata.obsm['X_pca']

@@ -2,6 +2,7 @@
 scanpy paga
 """
 
+import numpy as np
 import scanpy as sc
 from ..cmd_utils import (
     _backup_default_key,
@@ -39,17 +40,69 @@ def paga(
 
 def plot_paga(
         adata,
-        prefix='paga',
         use_key='paga',
+        basis=None,
+        layout=None,
+        init_pos=None,
+        legend_loc='on data',
+        color=None,
+        size=None,
+        title=None,
+        show=None,
+        save=None,
         **kwargs,
 ):
     """Make PAGA plot
     """
-    _set_default_key(adata.uns, 'paga', use_key)
-    if prefix == 'paga':
-        sc.pl.paga(adata, **kwargs)
-    elif prefix == 'paga_compare':
-        sc.pl.paga_compare(adata, **kwargs)
+    if basis is not None and f'X_{basis}' in adata.obsm.keys():
+        ax = sc.plotting._tools.scatterplots.plot_scatter(
+            adata,
+            basis=basis,
+            color=color,
+            legend_loc=legend_loc,
+            size=size,
+            title=None,
+            save=False,
+            show=False,
+        )
+
+        grouping = adata.uns[use_key]['groups']
+        categories = list(adata.obs[grouping].cat.categories)
+        obsm = adata.obsm[f'X_{basis}']
+        group_pos = np.zeros((len(categories), 2))
+        for i, label in enumerate(categories):
+            offset = 1 if basis.startswith('diffmap') else 0
+            _scatter = obsm[adata.obs[grouping] == label, (0+offset):(2+offset)]
+            x_pos, y_pos = np.median(_scatter, axis=0)
+            group_pos[i] = [x_pos, y_pos]
+
+        _set_default_key(adata.uns, 'paga', use_key)
+        kwargs['node_size_scale'] = 0
+        kwargs['fontsize'] = 1
+        kwargs['pos'] = group_pos
+        kwargs['color'] = None
+        try:
+            sc.pl.paga(
+                adata,
+                ax=ax,
+                title=title,
+                show=show,
+                save=save,
+                **kwargs,
+            )
+        finally:
+            _restore_default_key(adata.uns, 'paga', use_key)
     else:
-        raise ValueError(f'{prefix}: unknown plot type for PAGA')
-    _restore_default_key(adata.uns, 'paga', use_key)
+        _set_default_key(adata.uns, 'paga', use_key)
+        try:
+            sc.pl.paga(
+                adata,
+                layout=layout,
+                init_pos=init_pos,
+                title=title,
+                show=show,
+                save=save,
+                **kwargs
+            )
+        finally:
+            _restore_default_key(adata.uns, 'paga', use_key)

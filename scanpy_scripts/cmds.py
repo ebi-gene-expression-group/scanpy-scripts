@@ -217,7 +217,7 @@ PLOT_EMBED_CMD = make_subcmd(
 PLOT_PAGA_CMD = make_subcmd(
     'paga',
     PLOT_PAGA_CMD_OPTIONS,
-    make_plot_function(plot_paga),
+    make_plot_function(plot_paga, kind='paga'),
     cmd_desc='Plot PAGA trajectories.',
     arg_desc=_IP_DESC,
 )
