@@ -28,6 +28,8 @@ def louvain(
     if not isinstance(resolution, (list, tuple)):
         if key_added is not None and not key_added.startswith('louvain_'):
             key_added = f'louvain_{key_added}'
+        elif key_added is None:
+            key_added = 'louvain'
         sc.tl.louvain(
             adata,
             resolution=resolution,

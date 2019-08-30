@@ -28,6 +28,8 @@ def leiden(
     if not isinstance(resolution, (list, tuple)):
         if key_added is not None and not key_added.startswith('leiden_'):
             key_added = f'leiden_{key_added}'
+        elif key_added is None:
+            key_added = 'leiden'
         sc.tl.leiden(
             adata,
             resolution=resolution,
