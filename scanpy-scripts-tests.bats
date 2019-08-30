@@ -38,7 +38,8 @@ setup() {
     fdg_obj="${output_dir}/fdg.h5ad"
     louvain_opt="-r 0.5,1 --use-graph neighbors_k10 --key-added k10"
     louvain_obj="${output_dir}/louvain.h5ad"
-    leiden_opt="-r 0.3,0.7 --use-graph neighbors_k10 --key-added k10 -F loom"
+    leiden_tsv="${output_dir}/leiden.tsv"
+    leiden_opt="-r 0.3,0.7 --use-graph neighbors_k10 --key-added k10 -F loom --export-cluster ${leiden_tsv}"
     leiden_obj="${output_dir}/leiden.loom"
     diffexp_tsv="${output_dir}/diffexp.tsv"
     diffexp_opt="-g leiden_k10_r0_7 --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5 --save ${diffexp_tsv} -f loom"
@@ -241,7 +242,7 @@ setup() {
     run rm -f $leiden_obj && $scanpy cluster leiden $leiden_opt $umap_obj $leiden_obj
 
     [ "$status" -eq 0 ]
-    [ -f  "$leiden_obj" ]
+    [ -f  "$leiden_obj" ] && [ -f "$leiden_tsv" ]
 }
 
 # Find markers

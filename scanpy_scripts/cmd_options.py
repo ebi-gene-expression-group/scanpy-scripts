@@ -185,14 +185,6 @@ COMMON_OPTIONS = {
         help='Use expression values in `.raw` if present.',
     ),
 
-    'init_pos': click.option(
-        '--init-pos',
-        type=click.STRING,
-        default=None,
-        help='Use precomputed coordinates for initialization. Can be any key '
-        'of `.obsm` or "paga" if .uns["paga"] is present',
-    ),
-
     'zero_center': click.option(
         '--no-zero-center', 'zero_center',
         is_flag=True,
@@ -221,6 +213,14 @@ COMMON_OPTIONS = {
 
     'export_embedding': click.option(
         '--export-embedding', '-E',
+        type=click.Path(dir_okay=False, writable=True),
+        default=None,
+        show_default=True,
+        help='Export embeddings in a tab-separated text table.',
+    ),
+
+    'export_cluster': click.option(
+        '--export-cluster',
         type=click.Path(dir_okay=False, writable=True),
         default=None,
         show_default=True,
@@ -521,7 +521,6 @@ UMAP_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['output'],
     COMMON_OPTIONS['knn_graph'][0], # --use-graph
-    COMMON_OPTIONS['init_pos'],
     COMMON_OPTIONS['random_state'],
     COMMON_OPTIONS['key_added'],
     COMMON_OPTIONS['export_embedding'],
@@ -530,7 +529,8 @@ UMAP_CMD_OPTIONS = [
         type=click.STRING,
         default='spectral',
         show_default=True,
-        help='How to initialize the low dimensional embedding.',
+        help='How to initialize the low dimensional embedding. Can be '
+        '"spectral", "paga" or "random", or any key of `.obsm`.',
     ),
     click.option(
         '--min-dist',
@@ -645,10 +645,16 @@ FDG_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['output'],
     COMMON_OPTIONS['knn_graph'][0], # --use-graph
-    COMMON_OPTIONS['init_pos'],
     COMMON_OPTIONS['random_state'],
     COMMON_OPTIONS['key_added'],
     COMMON_OPTIONS['export_embedding'],
+    click.option(
+        '--init-pos',
+        type=click.STRING,
+        default=None,
+        help='Use precomputed coordinates for initialization. Can be any key '
+        'of `.obsm` or "paga" if .uns["paga"] is present',
+    ),
     click.option(
         '--layout',
         type=click.Choice(['fa', 'fr', 'grid_fr', 'kk', 'lgl', 'drl', 'rt']),
@@ -673,6 +679,7 @@ FDG_CMD_OPTIONS = [
 LOUVAIN_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['output'],
+    COMMON_OPTIONS['export_cluster'],
     *COMMON_OPTIONS['knn_graph'],
     COMMON_OPTIONS['restrict_to'],
     COMMON_OPTIONS['random_state'],
@@ -698,6 +705,7 @@ LOUVAIN_CMD_OPTIONS = [
 LEIDEN_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['output'],
+    COMMON_OPTIONS['export_cluster'],
     *COMMON_OPTIONS['knn_graph'],
     COMMON_OPTIONS['restrict_to'],
     COMMON_OPTIONS['random_state'],

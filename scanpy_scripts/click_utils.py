@@ -37,9 +37,12 @@ class CommaSeparatedText(click.ParamType):
 
     def convert(self, value, param, ctx):
         try:
-            converted = list(map(self.dtype, value.split(',')))
-            if self.simplify and len(converted) == 1:
-                converted = converted[0]
+            if value is None:
+                converted = None
+            else:
+                converted = list(map(self.dtype, str(value).split(',')))
+                if self.simplify and len(converted) == 1:
+                    converted = converted[0]
         except ValueError:
             self.fail(
                 '{} is not a valid comma separated list of {}'.format(

@@ -3,12 +3,21 @@ scanpy leiden
 """
 
 import scanpy as sc
+from ..cmd_utils import write_cluster
 
 
-def leiden(adata, resolution, use_graph=None, key_added=None, **kwargs):
+def leiden(
+        adata,
+        resolution,
+        use_graph=None,
+        key_added=None,
+        export_cluster=None,
+        **kwargs
+):
     """
     Wrapper function for sc.tl.leiden, for supporting multiple resolutions.
     """
+    keys = []
     if kwargs.get('restrict_to', None) and not kwargs['restrict_to'][0]:
         kwargs['restrict_to'] = None
     adj_mat = None
@@ -26,6 +35,7 @@ def leiden(adata, resolution, use_graph=None, key_added=None, **kwargs):
             key_added=key_added,
             **kwargs
         )
+        keys.append(key_added)
     else:
         for i, res in enumerate(resolution):
             res_key = str(res).replace('.', '_')
@@ -39,11 +49,15 @@ def leiden(adata, resolution, use_graph=None, key_added=None, **kwargs):
             else:
                 raise ValueError('`key_added` can only be None, a scalar, or an '
                                  'iterable of the same length as `resolution`.')
-            leiden(
+            keys.extend(leiden(
                 adata,
                 resolution=res,
                 use_graph=use_graph,
                 key_added=key,
                 **kwargs,
-            )
-    return adata
+            ))
+
+    if export_cluster:
+        write_cluster(adata, keys, export_cluster)
+
+    return keys
