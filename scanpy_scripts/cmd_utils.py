@@ -157,7 +157,8 @@ def write_cluster(adata, keys, cluster_fn, sep='\t'):
     for key in keys:
         if key not in adata.obs.keys():
             raise KeyError(f'{key} is not a valid `.uns` key')
-    adata[keys].to_csv(cluster_fn, sep=sep, header=True, index=True)
+    adata.obs[keys].reset_index(level=0).rename(columns={'index': 'cells'}).to_csv(
+        cluster_fn, sep=sep, header=True, index=False)
 
 
 def write_embedding(adata, key, embed_fn, n_comp=None, sep='\t', key_added=None):
