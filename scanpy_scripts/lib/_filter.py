@@ -84,8 +84,8 @@ def filter_anndata(
         attr = getattr(adata.var, name)
         k_gene = k_gene & attr.isin(values)
 
-    adata = adata[k_cell, :]
-    adata = adata[:, k_gene]
+    adata._inplace_subset_obs(k_cell)
+    adata._inplace_subset_var(k_gene)
 
     return adata
 
