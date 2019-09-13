@@ -519,14 +519,20 @@ def simple_default_pipeline(
             if 'max_counts' in filter_params:
                 k = adata.obs['n_counts'] <= filter_params['max_counts']
                 adata._inplace_subset_obs(k)
-            if 'max_mito' in filter_params:
-                k = adata.obs['percent_mito'] <= filter_params['max_mito']
-                adata._inplace_subset_obs(k)
             if 'min_mito' in filter_params:
                 k = adata.obs['percent_mito'] >= filter_params['min_mito']
                 adata._inplace_subset_obs(k)
+            if 'max_mito' in filter_params:
+                k = adata.obs['percent_mito'] <= filter_params['max_mito']
+                adata._inplace_subset_obs(k)
             if 'min_ribo' in filter_params:
                 k = adata.obs['percent_ribo'] >= filter_params['min_ribo']
+                adata._inplace_subset_obs(k)
+            if 'max_ribo' in filter_params:
+                k = adata.obs['percent_ribo'] <= filter_params['max_ribo']
+                adata._inplace_subset_obs(k)
+            if 'min_hb' in filter_params:
+                k = adata.obs['percent_hb'] >= filter_params['min_hb']
                 adata._inplace_subset_obs(k)
             if 'max_hb' in filter_params:
                 k = adata.obs['percent_hb'] <= filter_params['max_hb']
