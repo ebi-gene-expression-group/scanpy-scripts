@@ -350,7 +350,6 @@ def write_exchangeable_loom(adata, filename, col_graphs=['neighbors']):
                 manifest['sce'].append(sce_path)
 
         # Write /raw
-        raw_entries = []
         if adata.raw is not None:
             _h5_write_csr_matrix(lm['/attr'], 'raw.X', adata.raw.X)
             manifest['loom'].append('/attr/raw.X')
@@ -358,7 +357,7 @@ def write_exchangeable_loom(adata, filename, col_graphs=['neighbors']):
             manifest['anndata'].append('/raw.X')
             manifest['sce'].append('@metadata$raw.X')
             lm['/attr'].create_dataset(
-                    'raw.var', data=adata.raw.var.index.values.astype(bytes))
+                'raw.var', data=adata.raw.var.index.values.astype(bytes))
             manifest['loom'].append('/attr/raw.var')
             manifest['dtype'].append('array')
             manifest['anndata'].append('/raw.var')
