@@ -285,8 +285,8 @@ FILTER_CMD_OPTIONS = [
         type=click.STRING,
         default='index',
         show_default=True,
-        help='Name of the variable that contains gene names, '
-        'used for flagging mitochondria genes.',
+        help='Name of the variable that contains gene names, used for flagging '
+        'mitochondria genes when column "mito" is absent from `.var`.',
     ),
     click.option(
         '--list-attr', '-l',
