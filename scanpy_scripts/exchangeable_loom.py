@@ -166,7 +166,7 @@ def _read_manifest(h5file):
     )
 
 
-def read_exchangeable_loom(filename, sparse=False):
+def read_exchangeable_loom(filename, sparse=True):
     """Read exchangeable Loom
 
     * Parameters

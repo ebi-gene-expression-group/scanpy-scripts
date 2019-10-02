@@ -66,11 +66,11 @@ def add_options(options):
     return _add_options
 
 
-def _read_obj(input_obj, input_format='anndata'):
+def _read_obj(input_obj, input_format='anndata', **kwargs):
     if input_format == 'anndata':
-        adata = sc.read(input_obj)
+        adata = sc.read(input_obj, **kwargs)
     elif input_format == 'loom':
-        adata = read_exchangeable_loom(input_obj)
+        adata = read_exchangeable_loom(input_obj, **kwargs)
     else:
         raise NotImplementedError(
             'Unsupported input format: {}'.format(input_format))
