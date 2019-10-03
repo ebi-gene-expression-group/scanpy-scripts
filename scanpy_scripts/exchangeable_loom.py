@@ -34,7 +34,7 @@ import scipy.sparse as sp
 from packaging import version
 
 
-exchangeable_loom_version = '3.0.0'
+EXCHANGEABLE_LOOM_VERSION = '3.0.0'
 
 
 def _h5_read_attrs(node, name):
@@ -156,7 +156,7 @@ def _is_exchangeable_loom(filename):
             loom_version = _h5_read_attrs(lm, 'LOOM_SPEC_VERSION').decode()
         except Exception:
             loom_version = '2.0.0'
-        return version.parse(loom_version) >= version.parse(exchangeable_loom_version)
+        return version.parse(loom_version) >= version.parse(EXCHANGEABLE_LOOM_VERSION)
 
 
 def _read_manifest(h5file):
@@ -192,8 +192,8 @@ def read_exchangeable_loom(filename, sparse=False):
             dtype = row['dtype']
             if anndata_path and loom_path:
                 # Get data from loom_path
-                if loom_path.startswith('/.attrs'):
-                    lm_path = loom_path[8:-1]
+                if loom_path.startswith('/.attrs['):
+                    lm_path = loom_path[8:-1] # remove '/.attrs['
                     data = _h5_read_attrs(lm, lm_path)
                 else:
                     data = lm[loom_path]
@@ -259,7 +259,7 @@ def write_exchangeable_loom(adata, filename, col_graphs=['neighbors']):
     manifest = {'loom': [], 'dtype': [], 'anndata': [], 'sce': []}
     with h5py.File(filename, mode='r+') as lm:
         # Write modified LOOM_SPEC_VERSION
-        lm.attrs['LOOM_SPEC_VERSION'] = exchangeable_loom_version.encode()
+        lm.attrs['LOOM_SPEC_VERSION'] = EXCHANGEABLE_LOOM_VERSION.encode()
 
         # Write creation/modification info
         if 'created_from' not in lm.attrs:
@@ -336,9 +336,9 @@ def write_exchangeable_loom(adata, filename, col_graphs=['neighbors']):
                     sce_path = '@colGraphs${}'.format(path)
                 else:
                     if loom_path.startswith('/.attrs['):
-                        path = loom_path[8:-1]
+                        path = loom_path[8:-1] # remove '/.attrs['
                     elif loom_path.startswith('/attr/'):
-                        path = loom_path[8:]
+                        path = loom_path[6:] # remove '/attr/'
                     else:
                         logging.warning('unexpected path: {}'.format(loom_path))
                     sce_path = '@metadata${}'.format(path.replace('__', '$'))
