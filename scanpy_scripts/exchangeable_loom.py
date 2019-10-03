@@ -178,7 +178,7 @@ def read_exchangeable_loom(filename, sparse=False):
         An AnnData object
     """
     # Use anndata to read matrix, obs and var
-    adata = anndata.read_loom(filename, sparse=sparse)
+    adata = anndata.read_loom(filename, sparse=sparse, validate=False)
 
     if not _is_exchangeable_loom(filename):
         return adata
