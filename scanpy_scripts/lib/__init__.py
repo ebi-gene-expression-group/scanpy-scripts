@@ -5,8 +5,10 @@ Provides exported functions
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib import rcParams
 from matplotlib.colors import LinearSegmentedColormap
 import scanpy as sc
+from scanpy.plotting._tools.scatterplots import plot_scatter
 
 from ._read import read_10x
 from ._filter import filter_anndata
@@ -22,17 +24,18 @@ from ._leiden import leiden
 from ._diffexp import diffexp, diffexp_paired, extract_de_table
 from ._diffmap import diffmap
 from ._dpt import dpt
-from ._paga import paga
+from ._paga import paga, plot_paga
+from ._doublets import run_scrublet, test_outlier
 from ..cmd_utils import _read_obj as read_obj
 from ..cmd_utils import _write_obj as write_obj
 from ..cmd_utils import switch_layer
 
 
-def expression_colormap(background_level=0.05):
+def expression_colormap(background_level=0.01):
     """Returns a nice color map for highlighting gene expression
     """
-    background_nbin = int(128 * background_level)
-    reds = plt.cm.Reds(np.linspace(0, 1, 128-background_nbin))
+    background_nbin = int(100 * background_level)
+    reds = plt.cm.Reds(np.linspace(0, 1, 100-background_nbin))
     greys = plt.cm.Greys_r(np.linspace(0.7, 0.8, background_nbin))
     palette = np.vstack([greys, reds])
     return LinearSegmentedColormap.from_list('expression', palette)
@@ -70,6 +73,7 @@ def run_harmony(
         theta=2.0,
         use_rep='X_pca',
         key_added='hm',
+        random_state=0,
 ):
     if not isinstance(batch, (tuple, list)):
         batch = [batch]
@@ -84,11 +88,14 @@ def run_harmony(
     embed = adata.obsm[use_rep]
 
     # ===========
+    import rpy2.robjects
     from rpy2.robjects.packages import importr
     harmony = importr('harmony')
     from rpy2.robjects import numpy2ri, pandas2ri
     numpy2ri.activate()
     pandas2ri.activate()
+    set_seed = rpy2.robjects.r("set.seed")
+    set_seed(random_state)
     hm_embed = harmony.HarmonyMatrix(
             embed, meta, batch, theta, do_pca=False, verbose=False)
     pandas2ri.deactivate()
@@ -273,6 +280,15 @@ def annotate(adata, groupby, annot, annotation_matrix):
         raise ValueError(f'[annotation_matrix] not in compatible shape')
 
 
+def set_figsize(dim):
+    if len(dim) == 2 and (isinstance(dim[0], (int, float))
+            and isinstance(dim[1], (int, float))):
+        rcParams.update({'figure.figsize': dim})
+    else:
+        raise ValueError(f'Invalid {dim} value, must be an iterable of '
+                          'length two in the form of (width, height).')
+
+
 def plot_df_heatmap(
         df,
         cmap='viridis',
@@ -302,37 +318,25 @@ def plot_df_heatmap(
         plt.savefig(fname=save, bbox_inches='tight', pad_inches=0.1)
 
 
-def plot_qc(adata, groupby=None):
+def plot_qc(adata, groupby=None, groupby_only=False):
     qc_metrics = ('n_counts', 'n_genes', 'percent_mito', 'percent_ribo', 'percent_hb')
     for qmt in qc_metrics:
         if qmt not in adata.obs.columns:
             raise ValueError(f'{qmt} not found.')
     if groupby:
         ax = sc.pl.violin(adata, keys=qc_metrics, groupby=groupby, rotation=45, show=False)
-        #ax[2].set_ylim(-5, 50)
-    ax = sc.pl.violin(adata, keys=qc_metrics, multi_panel=True, rotation=45)
-    fig, ax = plt.subplots(figsize=(3, 3))
-    sc.pl.scatter(adata, x='n_counts', y='n_genes', color=groupby, alpha=0.5, ax=ax)
-    fig, ax = plt.subplots(figsize=(3, 3))
-    sc.pl.scatter(
-        adata, x='n_counts', y='n_genes', color='percent_mito', alpha=0.5, ax=ax)
-    fig, ax = plt.subplots(figsize=(3, 3))
-    sc.pl.scatter(
-        adata, x='n_counts', y='percent_mito', color=groupby, alpha=0.5, ax=ax)
-
-    fig, ax = plt.subplots(figsize=(3, 3))
-    sc.pl.scatter(
-        adata, x='n_counts', y='n_genes', color='percent_ribo', alpha=0.5, ax=ax)
-    fig, ax = plt.subplots(figsize=(3, 3))
-    sc.pl.scatter(
-        adata, x='n_counts', y='percent_ribo', color=groupby, alpha=0.5, ax=ax)
-
-    fig, ax = plt.subplots(figsize=(3, 3))
-    sc.pl.scatter(
-        adata, x='n_counts', y='n_genes', color='percent_hb', alpha=0.5, ax=ax)
-    fig, ax = plt.subplots(figsize=(3, 3))
-    sc.pl.scatter(
-        adata, x='n_counts', y='percent_hb', color=groupby, alpha=0.5, ax=ax)
+    if not groupby_only:
+        ax = sc.pl.violin(adata, keys=qc_metrics, multi_panel=True)
+        old_figsize = rcParams.get('figure.figsize')
+        rcParams.update({'figure.figsize': (4,3)})
+        sc.pl.scatter(adata, x='n_counts', y='n_genes', color=groupby, alpha=0.5)
+        sc.pl.scatter(adata, x='n_counts', y='n_genes', color='percent_mito', alpha=0.5)
+        sc.pl.scatter(adata, x='n_counts', y='percent_mito', color=groupby, alpha=0.5)
+        sc.pl.scatter(adata, x='n_counts', y='n_genes', color='percent_ribo', alpha=0.5)
+        sc.pl.scatter(adata, x='n_counts', y='percent_ribo', color=groupby, alpha=0.5)
+        sc.pl.scatter(adata, x='n_counts', y='n_genes', color='percent_hb', alpha=0.5)
+        sc.pl.scatter(adata, x='n_counts', y='percent_hb', color=groupby, alpha=0.5)
+        rcParams.update({'figure.figsize': old_figsize})
 
 
 def plot_metric_by_rank(
@@ -417,7 +421,6 @@ def plot_embedding(
         raise KeyError(f'"{groupby}" not found in `adata.obs`.')
     if adata.obs[groupby].dtype.name != 'category':
         raise ValueError(f'"{groupby}" is not categorical.')
-    from scanpy.plotting._tools.scatterplots import plot_scatter
     groups = adata.obs[groupby].copy()
     categories = list(adata.obs[groupby].cat.categories)
     rename_dict = {ct: f'{i+1}: {ct}' for i, ct in enumerate(categories)}
@@ -470,6 +473,52 @@ def plot_embedding(
         adjust_text(texts, ax=ax, text_from_points=False, autoalign=False)
     if save:
         plt.savefig(fname=save, dpi=savedpi, bbox_inches='tight', pad_inches=0.1)
+
+
+def plot_diffexp(
+    adata,
+    basis='umap',
+    key='rank_genes_groups',
+    top_n=4,
+    extra_genes=None,
+    figsize1=(4,4),
+    figsize2=(2.5, 2.5),
+    dotsize=None,
+    **kwargs
+):
+    grouping = adata.uns[key]['params']['groupby']
+    de_tbl = extract_de_table(adata.uns[key])
+    de_tbl = de_tbl.loc[de_tbl.genes.astype(str) != 'nan', :]
+    de_genes = list(de_tbl.groupby('cluster').head(top_n)['genes'].values)
+    de_clusters = list(de_tbl.groupby('cluster').head(top_n)['cluster'].astype(str).values)
+    if extra_genes:
+        de_genes.extend(extra_genes)
+        de_clusters.extend(['known'] * len(extra_genes))
+
+    rcParams.update({'figure.figsize': figsize1})
+    sc.pl.rank_genes_groups(adata, key=key, show=False)
+
+    sc.pl.dotplot(adata, var_names=de_genes, groupby=grouping, show=False)
+
+    expr_cmap = expression_colormap(0.01)
+    rcParams.update({'figure.figsize':figsize2})
+    plot_scatter(
+        adata,
+        basis=basis,
+        color=de_genes,
+        color_map=expr_cmap,
+        use_raw=True,
+        size=dotsize,
+        title=[f'{c}, {g}' for c, g in zip(de_clusters, de_genes)],
+        show=False,
+        **kwargs,
+    )
+
+    rcParams.update({'figure.figsize':figsize1})
+    plot_embedding(
+        adata, basis=basis, groupby=grouping, size=dotsize, show=False)
+
+    return de_tbl
 
 
 def simple_default_pipeline(
