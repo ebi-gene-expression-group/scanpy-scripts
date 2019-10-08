@@ -5,7 +5,6 @@ scanpy diffexp
 import pandas as pd
 import scanpy as sc
 
-
 def diffexp(
         adata,
         use_raw=True,
@@ -29,10 +28,10 @@ def diffexp(
         for key, val in logreg_param:
             kwargs[key] = val
 
+    key_added = f'rank_genes_groups_{key_added}' if key_added else 'rank_genes_groups'
+
     sc.tl.rank_genes_groups(
         adata, use_raw=use_raw, n_genes=n_genes, key_added=key_added, **kwargs)
-
-    key_added = key_added if key_added else 'rank_genes_groups'
 
     de_tbl = extract_de_table(adata.uns[key_added])
 
@@ -44,7 +43,6 @@ def diffexp(
             use_raw=use_raw,
             **filter_params,
         )
-
         de_tbl = extract_de_table(adata.uns[key_added + '_filtered'])
         de_tbl = de_tbl.loc[de_tbl.genes.astype(str) != 'nan', :]
 
