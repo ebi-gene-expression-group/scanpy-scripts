@@ -3,16 +3,28 @@ Remove doublets
 """
 
 import numpy as np
-import scipy.stats.norm.cdf as norm_cdf
+from scipy.stats import norm
+import scanpy as sc
 import scrublet as scr
 from statsmodels.stats.multitest import multipletests
 
-def per_run_scrublet(adata, resolution_function=None):
+def test_outlier(x, upper_mad_only=True):
+    med = np.median(x)
+    if upper_mad_only:
+        mad = np.median(x[x>med] - med) * 1.4826
+    else:
+        mad = np.median(np.abs(x - med)) * 1.4826
+    pvals = 1 - norm.cdf(x, loc=med, scale=mad)
+    bh_pvals = multipletests(pvals, method='fdr_bh')[1]
+    return pvals, bh_pvals
+
+
+def run_scrublet(adata, resolution_function=None):
     old_verbosity = sc.settings.verbosity
     sc.settings.verbosity = 1
     if resolution_function is None:
         resolution_function = lambda x: np.maximum(np.maximum(np.log10(x)-1, 0)**2, 0.1) 
-    scrub = scrublet.Scrublet(adata.X)
+    scrub = scr.Scrublet(adata.X)
     ds, pd = scrub.scrub_doublets(verbose=False)
     adata.obs['scrublet_score'] = ds
 
@@ -37,10 +49,7 @@ def per_run_scrublet(adata, resolution_function=None):
         adata_copy.obs.loc[k, 'cluster_scrublet_score'] = clst_med
         clst_meds.append(clst_med)
     clst_meds = np.array(clst_meds)
-    med = np.median(clst_meds)
-    mad = np.median(clst_meds[clst_meds > med] - med) * 1.4826
-    pvals = 1 - norm_cdf(clst_meds, loc=med, scale=mad)
-    bh_pvals = multipletests(pvals, method='bh')[1]
+    pvals, bh_pvals = test_outlier(clst_meds)
     for i, clst in enumerate(np.unique(adata_copy.obs['leiden'])):
         k = adata_copy.obs['leiden'] == clst
         adata_copy.obs.loc[k, 'pval'] = pvals[i]
