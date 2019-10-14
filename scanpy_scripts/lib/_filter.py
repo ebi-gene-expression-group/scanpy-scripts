@@ -36,6 +36,9 @@ def filter_anndata(
             k_mito = gene_names.str.startswith('MT-')
             if k_mito.sum() > 0:
                 adata.var['mito'] = k_mito.values
+            else:
+                logging.warning('No MT genes found, skip calculating '
+                                'expression of mitochondria genes')
         except AttributeError:
             logging.warning(
                 'Specified gene column [%s] not found, skip calculating '
