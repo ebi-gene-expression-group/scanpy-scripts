@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 """exchangeable_loom
 
-The exchangeable Loom format extends Loom spec 2.0.1 based on the proposed Loom
-3.0 feature (https://github.com/linnarsson-lab/loompy/issues/51) and is defined
+The exchangeable Loom format is based on Loom spec 3.0.0 and is defined
 by the following minimum structure:
 
-    /.attrs['LOOM_SPEC_VERSION'] = '3.0.0alpha'
-    /global
-    /global/manifest = table(columns=['loom_path', 'dtype', ...])
+    /.attrs['LOOM_SPEC_VERSION'] = '3.0.0'
+    /attr
+    /attr/manifest = table(columns=['loom_path', 'dtype', ...])
     /matrix
     /layers
     /col_attrs
@@ -16,7 +15,7 @@ by the following minimum structure:
     /row_graphs
 
 For conversion between AnnData and exchangeable Loom, anndata.obsm, anndata.varm
-and non-scalar value of anndata.uns are stored as datasets under /global, while
+and non-scalar value of anndata.uns are stored as datasets under /attr, while
 scalar value of anndata.uns are store at global attributes at /.attrs to make it
 backward-compatible with Loom 2.0.1 and AnnData.
 
@@ -32,9 +31,10 @@ import h5py
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
+from packaging import version
 
 
-exchangeable_loom_version = '3.0.0alpha'
+EXCHANGEABLE_LOOM_VERSION = '3.0.0'
 
 
 def _h5_read_attrs(node, name):
@@ -153,15 +153,15 @@ def _h5_write_recursive_dictionary(
 def _is_exchangeable_loom(filename):
     with h5py.File(filename, mode='r') as lm:
         try:
-            version = _h5_read_attrs(lm, 'LOOM_SPEC_VERSION').decode()
+            loom_version = _h5_read_attrs(lm, 'LOOM_SPEC_VERSION').decode()
         except Exception:
-            version = None
-        return version == exchangeable_loom_version
+            loom_version = '2.0.0'
+        return version.parse(loom_version) >= version.parse(EXCHANGEABLE_LOOM_VERSION)
 
 
 def _read_manifest(h5file):
     return pd.DataFrame(
-        np.array(h5file['global']['manifest']).astype(str),
+        np.array(h5file['attr']['manifest']).astype(str),
         columns=['loom_path', 'dtype', 'anndata_path', 'sce_path'],
     )
 
@@ -178,7 +178,7 @@ def read_exchangeable_loom(filename, sparse=True):
         An AnnData object
     """
     # Use anndata to read matrix, obs and var
-    adata = anndata.read_loom(filename, sparse=sparse)
+    adata = anndata.read_loom(filename, sparse=sparse, validate=False)
 
     if not _is_exchangeable_loom(filename):
         return adata
@@ -192,8 +192,8 @@ def read_exchangeable_loom(filename, sparse=True):
             dtype = row['dtype']
             if anndata_path and loom_path:
                 # Get data from loom_path
-                if loom_path.startswith('/.attrs'):
-                    lm_path = loom_path[8:-1]
+                if loom_path.startswith('/.attrs['):
+                    lm_path = loom_path[8:-1] # remove '/.attrs['
                     data = _h5_read_attrs(lm, lm_path)
                 else:
                     data = lm[loom_path]
@@ -259,7 +259,7 @@ def write_exchangeable_loom(adata, filename, col_graphs=['neighbors']):
     manifest = {'loom': [], 'dtype': [], 'anndata': [], 'sce': []}
     with h5py.File(filename, mode='r+') as lm:
         # Write modified LOOM_SPEC_VERSION
-        lm.attrs['LOOM_SPEC_VERSION'] = exchangeable_loom_version.encode()
+        lm.attrs['LOOM_SPEC_VERSION'] = EXCHANGEABLE_LOOM_VERSION.encode()
 
         # Write creation/modification info
         if 'created_from' not in lm.attrs:
@@ -271,7 +271,7 @@ def write_exchangeable_loom(adata, filename, col_graphs=['neighbors']):
         lm['row_attrs'].attrs['Gene'] = 'var_names'
 
         # Create necessary groups
-        lm.create_group('/global')
+        lm.create_group('/attr')
 
         # Write /obsm
         for k in adata.obsm.keys():
@@ -279,7 +279,7 @@ def write_exchangeable_loom(adata, filename, col_graphs=['neighbors']):
             arr_name = k.replace('X_', '').upper()
             # Derive paths
             anndata_path = '/obsm/{}'.format(k)
-            loom_path = '/global/reducedDims__{}'.format(arr_name)
+            loom_path = '/attr/reducedDims__{}'.format(arr_name)
             sce_path = '@reducedDims@listData${}'.format(arr_name)
             # Record mapping
             manifest['loom'].append(loom_path)
@@ -294,7 +294,7 @@ def write_exchangeable_loom(adata, filename, col_graphs=['neighbors']):
             arr = adata.varm[k]
             # Derive paths
             anndata_path = '/varm/{}'.format(k)
-            loom_path = '/global/varm__{}'.format(k)
+            loom_path = '/attr/varm__{}'.format(k)
             # Record mapping
             manifest['loom'].append(loom_path)
             manifest['dtype'].append('array')
@@ -315,7 +315,7 @@ def write_exchangeable_loom(adata, filename, col_graphs=['neighbors']):
                     k,
                     uns_entries,
                     attr_root=lm,
-                    dataset_root=lm['/global'],
+                    dataset_root=lm['/attr'],
                     graph_root=lm['/col_graphs'],
                 )
             else:
@@ -325,8 +325,8 @@ def write_exchangeable_loom(adata, filename, col_graphs=['neighbors']):
                     k,
                     uns_entries,
                     attr_root=lm,
-                    dataset_root=lm['/global'],
-                    graph_root=lm['/global'],
+                    dataset_root=lm['/attr'],
+                    graph_root=lm['/attr'],
                 )
             # Derive paths
             for entry in uns_entries:
@@ -336,9 +336,9 @@ def write_exchangeable_loom(adata, filename, col_graphs=['neighbors']):
                     sce_path = '@colGraphs${}'.format(path)
                 else:
                     if loom_path.startswith('/.attrs['):
-                        path = loom_path[8:-1]
-                    elif loom_path.startswith('/global/'):
-                        path = loom_path[8:]
+                        path = loom_path[8:-1] # remove '/.attrs['
+                    elif loom_path.startswith('/attr/'):
+                        path = loom_path[6:] # remove '/attr/'
                     else:
                         logging.warning('unexpected path: {}'.format(loom_path))
                     sce_path = '@metadata${}'.format(path.replace('__', '$'))
@@ -350,20 +350,19 @@ def write_exchangeable_loom(adata, filename, col_graphs=['neighbors']):
                 manifest['sce'].append(sce_path)
 
         # Write /raw
-        raw_entries = []
         if adata.raw is not None:
-            _h5_write_csr_matrix(lm['/global'], 'raw.X', adata.raw.X)
-            manifest['loom'].append('/global/raw.X')
+            _h5_write_csr_matrix(lm['/attr'], 'raw.X', adata.raw.X)
+            manifest['loom'].append('/attr/raw.X')
             manifest['dtype'].append('csr_matrix')
             manifest['anndata'].append('/raw.X')
             manifest['sce'].append('@metadata$raw.X')
-            lm['/global'].create_dataset(
-                    'raw.var', data=adata.raw.var.index.values.astype(bytes))
-            manifest['loom'].append('/global/raw.var')
+            lm['/attr'].create_dataset(
+                'raw.var', data=adata.raw.var.index.values.astype(bytes))
+            manifest['loom'].append('/attr/raw.var')
             manifest['dtype'].append('array')
             manifest['anndata'].append('/raw.var')
             manifest['sce'].append('@metadata$raw.var')
 
         # Write mapping
-        lm['/global'].create_dataset(
+        lm['/attr'].create_dataset(
             'manifest', data=pd.DataFrame(manifest).values.astype(np.character))

@@ -35,6 +35,7 @@ setup(
         ]
     ),
     install_requires=[
+        'packaging',
         'anndata<0.6.20',
         'scipy>=1.2.0,<1.3.0',
         'matplotlib',

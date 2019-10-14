@@ -30,10 +30,15 @@ def filter_anndata(
     logging.debug('--category=%s', category)
     logging.debug('--subset=%s', subset)
 
-    if gene_name:
+    if 'mito' not in adata.var.keys() and gene_name:
         try:
             gene_names = getattr(adata.var, gene_name)
-            adata.var['mito'] = gene_names.str.startswith('MT-')
+            k_mito = gene_names.str.startswith('MT-')
+            if k_mito.sum() > 0:
+                adata.var['mito'] = k_mito.values
+            else:
+                logging.warning('No MT genes found, skip calculating '
+                                'expression of mitochondria genes')
         except AttributeError:
             logging.warning(
                 'Specified gene column [%s] not found, skip calculating '
