@@ -35,7 +35,7 @@ def filter_anndata(
             gene_names = getattr(adata.var, gene_name)
             k_mito = gene_names.str.startswith('MT-')
             if k_mito.sum() > 0:
-                adata.var['mito'] = k_mito.values
+                adata.var['mito'] = k_mito
             else:
                 logging.warning('No MT genes found, skip calculating '
                                 'expression of mitochondria genes')
@@ -50,41 +50,41 @@ def filter_anndata(
         return 0
 
     conditions, qc_vars, pct_top = _get_filter_conditions(
-        adata, attributes, param, category, subset)
+        attributes, param, category, subset)
 
-    sc.pp.filter_cells(adata, min_genes=0)
-    sc.pp.filter_cells(adata, min_counts=0)
-    sc.pp.filter_genes(adata, min_cells=0)
-    sc.pp.filter_genes(adata, min_counts=0)
+    if 'n_genes' not in adata.obs.columns:
+        sc.pp.filter_cells(adata, min_genes=0)
+    if 'n_counts' not in adata.obs.columns:
+        sc.pp.filter_cells(adata, min_counts=0)
+    if 'n_cells' not in adata.var.columns:
+        sc.pp.filter_genes(adata, min_cells=0)
+    if 'n_counts' not in adata.var.columns:
+        sc.pp.filter_genes(adata, min_counts=0)
 
     if qc_vars or pct_top:
         if not pct_top:
-            pct_top = [50]
+            pct_top = [1]
         sc.pp.calculate_qc_metrics(
             adata, qc_vars=qc_vars, percent_top=pct_top, inplace=True)
 
     k_cell = np.ones(len(adata.obs)).astype(bool)
-    for cond in conditions['cell']['numerical']:
+    for cond in conditions['c']['numerical']:
         name, vmin, vmax = cond
-        if name.startswith('cell:'):
-            name = name[5:]
-        attr = getattr(adata.obs, name)
+        attr = adata.obs[name]
         k_cell = k_cell & (attr >= vmin) & (attr <= vmax)
 
-    for cond in conditions['cell']['categorical']:
+    for cond in conditions['c']['categorical']:
         name, values = cond
         attr = getattr(adata.obs, name)
         k_cell = k_cell & attr.isin(values)
 
     k_gene = np.ones(len(adata.var)).astype(bool)
-    for cond in conditions['gene']['numerical']:
+    for cond in conditions['g']['numerical']:
         name, vmin, vmax = cond
-        if name.startswith('gene:'):
-            name = name[5:]
-        attr = getattr(adata.var, name)
+        attr = adata.var[name]
         k_gene = k_gene & (attr >= vmin) & (attr <= vmax)
 
-    for cond in conditions['gene']['categorical']:
+    for cond in conditions['g']['categorical']:
         name, values = cond
         attr = getattr(adata.var, name)
         k_gene = k_gene & attr.isin(values)
@@ -97,14 +97,14 @@ def filter_anndata(
 
 def _get_attributes(adata):
     attributes = {
-        'cell': {
+        'c': {
             'numerical': [],
-            'categorical': ['cell:index'],
+            'categorical': ['index'],
             'bool': [],
         },
-        'gene': {
+        'g': {
             'numerical': [],
-            'categorical': ['gene:index'],
+            'categorical': ['index'],
             'bool': [],
         },
     }
@@ -112,33 +112,39 @@ def _get_attributes(adata):
     for attr, dtype in adata.obs.dtypes.to_dict().items():
         typ = dtype.kind
         if typ == 'O':
-            attributes['cell']['categorical'].append(attr)
+            if dtype.name == 'category' and dtype.categories.is_boolean():
+                attributes['c']['bool'].append(attr)
+            attributes['c']['categorical'].append(attr)
         elif typ in ('i', 'f'):
-            attributes['cell']['numerical'].append(attr)
+            attributes['c']['numerical'].append(attr)
         elif typ == 'b':
-            attributes['cell']['bool'].append(attr)
+            attributes['c']['bool'].append(attr)
 
     for attr, dtype in adata.var.dtypes.to_dict().items():
         typ = dtype.kind
         if typ == 'O':
-            attributes['gene']['categorical'].append(attr)
+            if dtype.name == 'category' and dtype.categories.is_boolean():
+                attributes['g']['bool'].append(attr)
+            attributes['g']['categorical'].append(attr)
         elif typ in ('i', 'f'):
-            attributes['gene']['numerical'].append(attr)
+            attributes['g']['numerical'].append(attr)
         elif typ == 'b':
-            attributes['gene']['bool'].append(attr)
+            attributes['g']['bool'].append(attr)
 
-    attributes['cell']['numerical'].extend([
+    attributes['c']['numerical'].extend([
         'n_genes',
-        'cell:n_counts',
-        'pct_counts_in_top_<n>_genes',
+        'n_counts',
     ])
 
-    for attr in attributes['gene']['bool']:
-        attributes['cell']['numerical'].append('pct_counts_' + attr)
+    for attr in attributes['g']['bool']:
+        attr2 = 'pct_counts_' + attr
+        if attr2 not in adata.obs.columns:
+            attr2 += '*'
+        attributes['c']['numerical'].append(attr2)
 
-    attributes['gene']['numerical'].extend([
+    attributes['g']['numerical'].extend([
         'n_cells',
-        'gene:n_counts',
+        'n_counts',
         'mean_counts',
         'pct_dropout_by_counts',
     ])
@@ -146,14 +152,29 @@ def _get_attributes(adata):
     return attributes
 
 
-def _get_filter_conditions(adata, attributes, param, category, subset):
+def _attributes_exists(name, attributes, dtype):
+    cond_cat = ''
+    if name.startswith('c:') or name.startswith('g:'):
+        cond_cat, _, cond_name = name.partition(':')
+        found = int(cond_name in attributes[cond_cat][dtype])
+    else:
+        cond_name = name
+        if cond_name in attributes['c'][dtype]:
+            cond_cat += 'c'
+        if cond_name in attributes['g'][dtype]:
+            cond_cat += 'g'
+        found = len(cond_cat)
+    return found, cond_cat, cond_name
+
+
+def _get_filter_conditions(attributes, param, category, subset):
     conditions = {
-        'cell': {
+        'c': {
             'numerical': [],
             'categorical': [],
             'bool': [],
         },
-        'gene': {
+        'g': {
             'numerical': [],
             'categorical': [],
             'bool': [],
@@ -163,45 +184,48 @@ def _get_filter_conditions(adata, attributes, param, category, subset):
     pct_top = []
     qc_vars_pattern = re.compile(r'^pct_counts_(?P<qc_var>\S+)$')
     qc_vars = []
+
     for name, vmin, vmax in param:
-        if name in ('n_counts', 'index'):
-            logging.error(
-                'Ambiguous parameter name [%s] given, choose from '
-                '"gene:{%s}" or "cell:{%s}"', name, name, name)
-            raise ValueError
-        pt_match = percent_top_pattern.match(name)
-        if pt_match:
-            if name not in adata.obs.columns:
+        found, cond_cat, cond_name = _attributes_exists(
+            name, attributes, 'numerical')
+        pt_match = percent_top_pattern.match(cond_name)
+        qv_match = qc_vars_pattern.match(cond_name)
+        if found > 1:
+            logging.warning('Parameter "%s" found in both cell and gene '
+                            'table, dropped from filtering', name)
+            continue
+        elif found < 1:
+            if pt_match:
                 pct_top.append(int(pt_match['n']))
-            conditions['cell']['numerical'].append([name, vmin*100, vmax*100])
-            continue
-        qv_match = qc_vars_pattern.match(name)
-        if qv_match and qv_match['qc_var'] in attributes['gene']['bool']:
-            if name not in adata.obs.columns:
+                cond_cat = 'c'
+            elif qv_match:
                 qc_vars.append(qv_match['qc_var'])
-            conditions['cell']['numerical'].append([name, vmin*100, vmax*100])
-            continue
-        if name in attributes['cell']['numerical']:
-            conditions['cell']['numerical'].append([name, vmin, vmax])
-        elif name in attributes['gene']['numerical']:
-            conditions['gene']['numerical'].append([name, vmin, vmax])
+                cond_cat = 'c'
+            else:
+                logging.warning('Parameter "%s" unavailable, '
+                                'dropped from filtering', name)
+                continue
+        if pt_match or qv_match:
+            vmin *= 100
+            vmax *= 100
+        conditions[cond_cat]['numerical'].append([cond_name, vmin, vmax])
+
+    for name, values in category + subset:
+        found, cond_cat, cond_name = _attributes_exists(
+            name, attributes, 'categorical')
+        if found > 1:
+            logging.warning('Attribute "%s" found in both cell and gene '
+                            'table, dropped from filtering', name)
+        elif found == 1:
+            if not isinstance(values, (list, tuple)):
+                fh = values
+                values = fh.read().rstrip().split('\n')
+                fh.close()
+            conditions[cond_cat]['categorical'].append((cond_name, values))
         else:
-            logging.warning('Parameter [%s] undefined, '
+            logging.warning('Attribute "%s" unavailable, '
                             'dropped from filtering', name)
-    for ct in category + subset:
-        name = ct[0]
-        if not isinstance(ct[1], list):
-            fh = ct[1]
-            values = fh.read().rstrip().split('\n')
-            fh.close()
-            ct[1] = values
-        if name in attributes['cell']['categorical']:
-            conditions['cell']['categorical'].append(ct)
-        elif name in attributes['gene']['categorical']:
-            conditions['gene']['categorical'].append(ct)
-        else:
-            logging.warning('Attribute [%s] undefined, '
-                            'dropped from filtering', name)
+
     logging.debug((conditions, qc_vars, pct_top))
     return conditions, qc_vars, sorted(pct_top)
 
