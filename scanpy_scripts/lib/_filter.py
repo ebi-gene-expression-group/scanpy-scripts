@@ -191,20 +191,17 @@ def _get_filter_conditions(attributes, param, category, subset):
         pt_match = percent_top_pattern.match(cond_name)
         qv_match = qc_vars_pattern.match(cond_name)
         if found > 1:
-            logging.warning('Parameter "%s" found in both cell and gene '
-                            'table, dropped from filtering', name)
-            continue
-        elif found < 1:
+            raise click.ClickException(f'Ambiguous parameter "{name}" found in '
+                                       'both cell and gene table')
+        if found < 1:
             if pt_match:
                 pct_top.append(int(pt_match['n']))
                 cond_cat = 'c'
-            elif qv_match:
+            elif qv_match and qv_match['qc_var'] in attributes['g']['bool']:
                 qc_vars.append(qv_match['qc_var'])
                 cond_cat = 'c'
             else:
-                logging.warning('Parameter "%s" unavailable, '
-                                'dropped from filtering', name)
-                continue
+                raise click.ClickException(f'Parameter "{name}" unavailable')
         if pt_match or qv_match:
             vmin *= 100
             vmax *= 100
@@ -214,17 +211,15 @@ def _get_filter_conditions(attributes, param, category, subset):
         found, cond_cat, cond_name = _attributes_exists(
             name, attributes, 'categorical')
         if found > 1:
-            logging.warning('Attribute "%s" found in both cell and gene '
-                            'table, dropped from filtering', name)
-        elif found == 1:
-            if not isinstance(values, (list, tuple)):
-                fh = values
-                values = fh.read().rstrip().split('\n')
-                fh.close()
-            conditions[cond_cat]['categorical'].append((cond_name, values))
-        else:
-            logging.warning('Attribute "%s" unavailable, '
-                            'dropped from filtering', name)
+            raise click.ClickException(f'Ambiguous attribute "{name}" found in '
+                                       'both cell and gene table')
+        if found < 1:
+            raise click.ClickException('Attribute "{name}" unavailable')
+        if not isinstance(values, (list, tuple)):
+            fh = values
+            values = fh.read().rstrip().split('\n')
+            fh.close()
+        conditions[cond_cat]['categorical'].append((cond_name, values))
 
     logging.debug((conditions, qc_vars, pct_top))
     return conditions, qc_vars, sorted(pct_top)
