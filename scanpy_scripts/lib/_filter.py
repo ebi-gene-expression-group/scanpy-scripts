@@ -63,7 +63,7 @@ def filter_anndata(
 
     if qc_vars or pct_top:
         if not pct_top:
-            pct_top = [1]
+            pct_top = [50]
         sc.pp.calculate_qc_metrics(
             adata, qc_vars=qc_vars, percent_top=pct_top, inplace=True)
 
