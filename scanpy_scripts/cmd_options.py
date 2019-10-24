@@ -333,11 +333,11 @@ NORM_CMD_OPTIONS = [
         help='Save raw data existing raw data.',
     ),
     click.option(
-        '--log-transform', '-l',
-        type=click.Choice(['yes', 'no']),
-        default='yes',
+        '--no-log-transform', '-l',
+        is_flag=True,
+        default=False,
         show_default=True,
-        help='Apply (natural) log transform following normalisation?',
+        help='When set, do not apply (natural) log transform following normalisation.',
     ),
     click.option(
         '--normalize-to', '-t', 'target_sum',
