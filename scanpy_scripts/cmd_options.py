@@ -333,9 +333,9 @@ NORM_CMD_OPTIONS = [
         help='Save raw data existing raw data.',
     ),
     click.option(
-        '--no-log-transform', '-l',
+        '--no-log-transform', 'log_transform',
         is_flag=True,
-        default=False,
+        default=True,
         show_default=True,
         help='When set, do not apply (natural) log transform following normalisation.',
     ),
@@ -644,7 +644,8 @@ TSNE_CMD_OPTIONS = [
         flag_value=False,
         default=True,
         show_default=True,
-        help='Use the MulticoreTSNE package by D. Ulyanov if it is installed.',
+        help='When NOT set, use the MulticoreTSNE package by D. Ulyanov if '
+        'installed.',
     ),
 ]
 
