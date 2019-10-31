@@ -423,8 +423,8 @@ def plot_embedding(
         raise ValueError(f'"{groupby}" is not categorical.')
     groups = adata.obs[groupby].copy()
     categories = list(adata.obs[groupby].cat.categories)
-    rename_dict = {ct: f'{i+1}: {ct}' for i, ct in enumerate(categories)}
-    restore_dict = {f'{i+1}: {ct}': ct for i, ct in enumerate(categories)}
+    rename_dict = {ct: f'{i}: {ct}' for i, ct in enumerate(categories)}
+    restore_dict = {f'{i}: {ct}': ct for i, ct in enumerate(categories)}
 
     size_ratio = 1.2
 
@@ -468,7 +468,7 @@ def plot_embedding(
             adata.obs[groupby].cat.rename_categories(restore_dict, inplace=True)
     if annot:
         centroids = pseudo_bulk(adata, groupby, use_rep=f'X_{basis}', FUN=np.median).T
-        texts = [ax.text(x=row[0], y=row[1], s=f'{i+1:d}', fontsize=8, fontweight='bold') for i, row in centroids.reset_index(drop=True).iterrows()]
+        texts = [ax.text(x=row[0], y=row[1], s=f'{i:d}', fontsize=8, fontweight='bold') for i, row in centroids.reset_index(drop=True).iterrows()]
         from adjustText import adjust_text
         adjust_text(texts, ax=ax, text_from_points=False, autoalign=False)
     if save:
