@@ -45,7 +45,7 @@ setup(
         'louvain',
         'leidenalg',
         'loompy>=2.0.0,<3.0.0',
-        'MulticoreTSNE',
+        'adjustText',
         'Click'
     ],
 )

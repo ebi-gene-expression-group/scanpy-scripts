@@ -18,7 +18,7 @@ def louvain(
     Wrapper function for sc.tl.louvain, for supporting multiple resolutions.
     """
     keys = []
-    if kwargs['restrict_to'] and not kwargs['restrict_to'][0]:
+    if 'restrict_to' in kwargs and not kwargs['restrict_to'][0]:
         kwargs['restrict_to'] = None
     adj_mat = None
     if use_graph:

@@ -23,7 +23,7 @@ def run_scrublet(adata, resolution_function=None):
     old_verbosity = sc.settings.verbosity
     sc.settings.verbosity = 1
     if resolution_function is None:
-        resolution_function = lambda x: np.maximum(np.maximum(np.log10(x)-1, 0)**2, 0.1) 
+        resolution_function = lambda x: np.maximum(np.maximum(np.log10(x)-1, 0)**2, 0.1)
     scrub = scr.Scrublet(adata.X)
     ds, pd = scrub.scrub_doublets(verbose=False)
     adata.obs['scrublet_score'] = ds
