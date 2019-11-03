@@ -55,6 +55,8 @@ def run_scrublet(adata, resolution_function=None):
         adata_copy.obs.loc[k, 'pval'] = pvals[i]
         adata_copy.obs.loc[k, 'bh_pval'] = bh_pvals[i]
     sc.settings.verbosity = old_verbosity
+    adata.obs['scrublet_score'] = adata_copy.obs['scrublet_score']
     adata.obs['cluster_scrublet_score'] = adata_copy.obs['cluster_scrublet_score']
+    adata.obs['doublet_pval'] = adata_copy.obs['pval']
     adata.obs['doublet_bh_pval'] = adata_copy.obs['bh_pval']
     del adata_copy
