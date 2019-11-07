@@ -35,10 +35,6 @@ def pca(adata, key_added=None, remove_cc=False, export_embedding=None, **kwargs)
         sc.pp.pca(adata, **kwargs)
         pca_key = 'X_pca'
 
-    if remove_cc_from_hvg:
-        adata.var['highly_variable'] = adata.var['hvg_full']
-        del adata.var['hvg_full']
-
     if export_embedding is not None:
         write_embedding(adata, pca_key, export_embedding, key_added=key_added)
     return adata

@@ -524,6 +524,7 @@ def plot_diffexp(
 def simple_default_pipeline(
         adata,
         qc_only=False,
+        plot=True,
         batch=None,
         filter_params={'min_genes': 200, 'min_cells': 3, 'max_counts': 25000, 'max_mito': 20, 'min_mito': 0},
         norm_params={'target_sum': 1e4, 'fraction': 0.9},
@@ -555,7 +556,8 @@ def simple_default_pipeline(
         adata.obs['percent_ribo'] = qc_tbls[0]['pct_counts_ribo'].values
         adata.obs['percent_hb'] = qc_tbls[0]['pct_counts_hb'].values
         adata.var['n_cells'] = qc_tbls[1]['n_cells_by_counts'].values
-        plot_qc(adata, batch)
+        if plot:
+            plot_qc(adata, batch)
     else:
         if filter_params is not None and isinstance(filter_params, dict):
             if 'min_genes' in filter_params:
