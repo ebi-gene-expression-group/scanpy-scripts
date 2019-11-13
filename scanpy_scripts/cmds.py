@@ -216,7 +216,7 @@ PLOT_EMBED_CMD = make_subcmd(
 )
 
 PLOT_STACKED_VIOLIN_CMD = make_subcmd(
-    'stacked_violin',
+    'sviolin',
     PLOT_STACKED_VIOLIN_CMD_OPTIONS,
     make_plot_function(sc.plotting._anndata.stacked_violin),
     cmd_desc='Plot stacked violin plots.',

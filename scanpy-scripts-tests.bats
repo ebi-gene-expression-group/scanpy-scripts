@@ -334,13 +334,11 @@ setup() {
         skip "$plt_stacked_violin_pdf exists and resume is set to 'true'"
     fi
 
-    run rm -f $plt_stacked_violin_pdf && eval "$scanpy plot stacked_violin $plt_stacked_violin_opt $diffexp_obj $plt_stacked_violin_pdf"
+    run rm -f $plt_stacked_violin_pdf && eval "$scanpy plot sviol $plt_stacked_violin_opt $diffexp_obj $plt_stacked_violin_pdf"
 
     [ "$status" -eq 0 ]
     [ -f  "$plt_stacked_violin_pdf" ]
 }
-
-#scanpy-cli plot stacked_violin --var-names LDHB,CD3D,CD3E --use-raw --dendrogram --groupby leiden_k10_r0_3 --no-jitter --swap-axes post_install_tests/outputs/diffexp.h5ad foo.png
 
 # Local Variables:
 # mode: sh
