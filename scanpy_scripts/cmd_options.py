@@ -943,6 +943,140 @@ PLOT_EMBED_CMD_OPTIONS = [
     ),
 ]
 
+PLOT_STACKED_VIOLIN_CMD_OPTIONS = [
+    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['plot'],
+    COMMON_OPTIONS['use_raw'],
+    click.option(
+        '--var-names',
+        type=(CommaSeparatedText()),
+        show_default=True,
+        help='var_names should be a valid subset of adata.var_names.',
+    ),
+    click.option(
+         '--groupby',
+        type=CommaSeparatedText(simplify=True),
+        default=None,
+        show_default=True,
+        help='The key of the observation grouping to consider.',
+    ),
+    click.option(
+        '--log',
+        is_flag=True,
+        default=False,
+        show_default=True,
+        help='Plot on logarithmic axis.',
+    ),
+    click.option(
+        '--num-categories',
+        type=click.INT,
+        default=7,
+        show_default=True,
+        help='Only used if groupby observation is not categorical. This value '
+        'determines the number of groups into which the groupby observation '
+        'should be subdivided.',
+    ),
+    click.option(
+        '--dendrogram',
+        is_flag=True,
+        default=False,
+        show_default=False,
+        help='If True, a dendrogram based on the hierarchical clustering '
+        'between the groupby categories is added. The dendrogram information is '
+        'computed using scanpy.tl.dendrogram(). If tl.dendrogram has not been '
+        'called previously the function is called with default parameters.',
+    ),
+    click.option(
+        '--gene-symbols',
+        type=CommaSeparatedText(simplify=True),
+        default=None,
+        show_default=True,
+        help='Column name in .var DataFrame that stores gene symbols. By '
+        'default var_names refer to the index column of the .var DataFrame. '
+        'Setting this option allows alternative names to be used.',
+    ),
+    click.option(
+        '--layer',
+        type=CommaSeparatedText(simplify=True),
+        default=None,
+        show_default=True,
+        help='Name of the AnnData object layer that wants to be plotted. By '
+        'default adata.raw.X is plotted. If use_raw=False is set, then adata.X '
+        'is plotted. If layer is set to a valid layer name, then the layer is '
+        'plotted. layer takes precedence over use_raw.',
+    ),
+    click.option(
+        '--no-stripplot', 'stripplot',
+        is_flag=True,
+        default=True,
+        show_default=True,
+        help='When set, do not add a stripplot on top of the violin plot.',
+    ),
+    click.option(
+        '--no-jitter', 'jitter',
+        is_flag=True,
+        default=True,
+        show_default=True,
+        help='Add jitter to the stripplot (only when stripplot is True)'
+    ),
+    click.option(
+        '--size',
+        type=click.INT,
+        default=1,
+        show_default=True,
+        help='Size of the jitter points.'
+    ),
+    click.option(
+        '--order',
+        type=CommaSeparatedText(),
+        default=None,
+        show_default=True,
+        help='Order in which to show the categories.'
+    ),
+    click.option(
+        '--scale',
+        type=click.Choice(['area', 'count', 'width']),
+        default='width',
+        show_default=True,
+        help='The method used to scale the width of each violin. If ‘area’, '
+        'each violin will have the same area. If ‘count’, the width of the '
+        'violins will be scaled by the number of observations in that bin. If '
+        '‘width’, each violin will have the same width.'
+    ),
+    click.option(
+        '--row-palette',
+        type=CommaSeparatedText(simplify=True),
+        default='muted',
+        show_default=True,
+        help='The row palette determines the colors to use in each of the '
+        'stacked violin plots. The value should be a valid seaborn palette name '
+        'or a valic matplotlib colormap (see '
+        'https://seaborn.pydata.org/generated/seaborn.color_palette.html). '
+        'Alternatively, a single color name or hex value can be passed. E.g. '
+        '‘red’ or ‘#cc33ff’.'
+    ),
+    click.option(
+        '--swap-axes',
+        is_flag=True,
+        default=False,
+        show_default=True,
+        help='By default, the x axis contains var_names (e.g. genes) and the y '
+        'axis the groupby categories. By setting swap_axes then x are the '
+        'groupby categories and y the var_names. When swapping axes '
+        'var_group_positions are no longer used.',
+    ),
+    click.option(
+        '--standard-scale',
+        type=click.Choice(['var', 'obs']),
+        default=None,
+        show_default=True,
+        help='By default, the x axis contains var_names (e.g. genes) and the y '
+        'axis the groupby categories. By setting swap_axes then x are the '
+        'groupby categories and y the var_names. When swapping axes '
+        'var_group_positions are no longer used.'
+    ),
+]
+
 PLOT_PAGA_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['plot'],

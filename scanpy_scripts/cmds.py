@@ -30,6 +30,7 @@ from .cmd_options import (
     DPT_CMD_OPTIONS,
     PLOT_EMBED_CMD_OPTIONS,
     PLOT_PAGA_CMD_OPTIONS,
+    PLOT_STACKED_VIOLIN_CMD_OPTIONS,
 )
 from .lib._read import read_10x
 from .lib._filter import filter_anndata
@@ -211,6 +212,14 @@ PLOT_EMBED_CMD = make_subcmd(
     PLOT_EMBED_CMD_OPTIONS,
     make_plot_function(sc.plotting._tools.scatterplots.plot_scatter),
     cmd_desc='Plot cell embeddings.',
+    arg_desc=_IP_DESC,
+)
+
+PLOT_STACKED_VIOLIN_CMD = make_subcmd(
+    'stacked_violin',
+    PLOT_STACKED_VIOLIN_CMD_OPTIONS,
+    make_plot_function(sc.plotting._anndata.stacked_violin),
+    cmd_desc='Plot stacked violin plots.',
     arg_desc=_IP_DESC,
 )
 

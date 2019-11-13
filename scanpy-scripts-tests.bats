@@ -55,6 +55,10 @@ setup() {
     plt_embed_pdf="${output_dir}/umap_leiden_k10_r0_7.pdf"
     plt_paga_opt="--use-key paga_k10_r0_7 --node-size-scale 2 --edge-width-scale 0.5 --basis diffmap --color dpt_pseudotime_k10 --frameoff"
     plt_paga_pdf="${output_dir}/paga_k10_r0_7.pdf"
+    test_markers='LDHB,CD3D,CD3E'
+    plt_stacked_violin_opt="--var-names $test_markers --use-raw --dendrogram --groupby leiden_k10_r0_3 --no-jitter --swap-axes"
+    plt_stacked_violin_pdf="${output_dir}/leiden_k10_r0_3_LDHB_CD3D_CD3E.pdf"
+
 
     if [ ! -d "$data_dir" ]; then
         mkdir -p $data_dir
@@ -83,7 +87,8 @@ setup() {
         skip "$read_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $read_obj && $scanpy read $read_opt $read_obj
+    echo -e "$scanpy read $read_opt $read_obj" 1>&2
+    run rm -f $read_obj && eval "$scanpy read $read_opt $read_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$read_obj" ]
@@ -96,7 +101,7 @@ setup() {
         skip "$filter_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $filter_obj && $scanpy filter $filter_opt $read_obj $filter_obj
+    run rm -f $filter_obj && eval "$scanpy filter $filter_opt $read_obj $filter_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$filter_obj" ]
@@ -109,7 +114,7 @@ setup() {
         skip "$norm_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $norm_obj && $scanpy norm $norm_opt $filter_obj $norm_obj
+    run rm -f $norm_obj && eval "$scanpy norm $norm_opt $filter_obj $norm_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$norm_obj" ] && [ -f "${norm_mtx}_matrix.mtx" ]
@@ -122,7 +127,7 @@ setup() {
         skip "$hvg_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $hvg_obj $hvg_obj && $scanpy hvg $hvg_opt $norm_obj $hvg_obj
+    run rm -f $hvg_obj $hvg_obj && eval "$scanpy hvg $hvg_opt $norm_obj $hvg_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$hvg_obj" ]
@@ -135,7 +140,7 @@ setup() {
         skip "$regress_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $regress_obj && $scanpy regress $regress_opt $hvg_obj $regress_obj
+    run rm -f $regress_obj && eval "$scanpy regress $regress_opt $hvg_obj $regress_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$regress_obj" ]
@@ -148,7 +153,7 @@ setup() {
         skip "$scale_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $scale_obj && $scanpy scale $scale_opt $hvg_obj $scale_obj
+    run rm -f $scale_obj && eval "$scanpy scale $scale_opt $hvg_obj $scale_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$scale_obj" ]
@@ -161,7 +166,7 @@ setup() {
         skip "$pca_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $pca_obj && $scanpy pca $pca_opt $scale_obj $pca_obj
+    run rm -f $pca_obj && eval "$scanpy pca $pca_opt $scale_obj $pca_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$pca_obj" ]
@@ -174,7 +179,7 @@ setup() {
         skip "$scaled_object exists and resume is set to 'true'"
     fi
 
-    run rm -f $neighbor_obj && $scanpy neighbor $neighbor_opt $pca_obj $neighbor_obj
+    run rm -f $neighbor_obj && eval "$scanpy neighbor $neighbor_opt $pca_obj $neighbor_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$neighbor_obj" ]
@@ -187,7 +192,7 @@ setup() {
         skip "$tsne_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $tsne_obj && $scanpy embed tsne $tsne_opt $pca_obj $tsne_obj
+    run rm -f $tsne_obj && eval "$scanpy embed tsne $tsne_opt $pca_obj $tsne_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$tsne_obj" ] && [ -f "$tsne_embed" ]
@@ -200,7 +205,7 @@ setup() {
         skip "$umap_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $umap_obj && $scanpy embed umap $umap_opt $neighbor_obj $umap_obj
+    run rm -f $umap_obj && eval "$scanpy embed umap $umap_opt $neighbor_obj $umap_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$umap_obj" ] && [ -f "$umap_embed" ]
@@ -213,7 +218,7 @@ setup() {
         skip "$fdg_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $fdg_obj && $scanpy embed fdg $fdg_opt $neighbor_obj $fdg_obj
+    run rm -f $fdg_obj && eval "$scanpy embed fdg $fdg_opt $neighbor_obj $fdg_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$fdg_obj" ] && [ -f "$fdg_embed" ]
@@ -226,7 +231,7 @@ setup() {
         skip "$louvain_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $louvain_obj && $scanpy cluster louvain $louvain_opt $umap_obj $louvain_obj
+    run rm -f $louvain_obj && eval "$scanpy cluster louvain $louvain_opt $umap_obj $louvain_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$louvain_obj" ]
@@ -239,7 +244,7 @@ setup() {
         skip "$leiden_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $leiden_obj && $scanpy cluster leiden $leiden_opt $umap_obj $leiden_obj
+    run rm -f $leiden_obj && eval "$scanpy cluster leiden $leiden_opt $umap_obj $leiden_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$leiden_obj" ] && [ -f "$leiden_tsv" ]
@@ -252,7 +257,7 @@ setup() {
         skip "$diffexp_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $diffexp_obj $diffexp_tsv && $scanpy diffexp $diffexp_opt $leiden_obj $diffexp_obj
+    run rm -f $diffexp_obj $diffexp_tsv && eval "$scanpy diffexp $diffexp_opt $leiden_obj $diffexp_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$diffexp_obj" ] && [ -f "$diffexp_tsv" ]
@@ -265,7 +270,7 @@ setup() {
         skip "$paga_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $paga_obj && $scanpy paga $paga_opt $leiden_obj $paga_obj
+    run rm -f $paga_obj && eval "$scanpy paga $paga_opt $leiden_obj $paga_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$paga_obj" ]
@@ -278,7 +283,7 @@ setup() {
         skip "$diffmap_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $diffmap_obj && $scanpy embed diffmap $diffmap_opt $paga_obj $diffmap_obj
+    run rm -f $diffmap_obj && eval "$scanpy embed diffmap $diffmap_opt $paga_obj $diffmap_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$diffmap_obj" ] && [ -f "$diffmap_embed" ]
@@ -291,7 +296,7 @@ setup() {
         skip "$dpt_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $dpt_obj && $scanpy dpt $dpt_opt $diffmap_obj $dpt_obj
+    run rm -f $dpt_obj && eval "$scanpy dpt $dpt_opt $diffmap_obj $dpt_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$dpt_obj" ]
@@ -304,7 +309,7 @@ setup() {
         skip "$plt_embed_pdf exists and resume is set to 'true'"
     fi
 
-    run rm -f $plt_embed_pdf && $scanpy plot embed $plt_embed_opt $leiden_obj $plt_embed_pdf
+    run rm -f $plt_embed_pdf && eval "$scanpy plot embed $plt_embed_opt $leiden_obj $plt_embed_pdf"
 
     [ "$status" -eq 0 ]
     [ -f  "$dpt_obj" ]
@@ -317,11 +322,27 @@ setup() {
         skip "$plt_paga_pdf exists and resume is set to 'true'"
     fi
 
-    run rm -f $plt_paga_pdf && $scanpy plot paga $plt_paga_opt $dpt_obj $plt_paga_pdf
+    run rm -f $plt_paga_pdf && eval "$scanpy plot paga $plt_paga_opt $dpt_obj $plt_paga_pdf"
 
     [ "$status" -eq 0 ]
     [ -f  "$dpt_obj" ]
 }
+
+# Plot a stacked violin plot for markers
+
+@test "Run Plot stacked violins" {
+    if [ "$resume" = 'true' ] && [ -f "$plt_stacked_violin_pdf" ]; then
+        skip "$plt_stacked_violin_pdf exists and resume is set to 'true'"
+    fi
+
+    echo -e "$scanpy plot stacked_violin $plt_stacked_violin_opt $diffexp_obj $plt_stacked_violin_pdf" 1>&2
+    run rm -f $plt_stacked_violin_pdf && eval "$scanpy plot stacked_violin $plt_stacked_violin_opt $diffexp_obj $plt_stacked_violin_pdf"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$plt_stacked_violin_pdf" ]
+}
+
+#scanpy-cli plot stacked_violin --var-names LDHB,CD3D,CD3E --use-raw --dendrogram --groupby leiden_k10_r0_3 --no-jitter --swap-axes post_install_tests/outputs/diffexp.h5ad foo.png
 
 # Local Variables:
 # mode: sh

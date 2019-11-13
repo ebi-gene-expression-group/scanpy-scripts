@@ -26,6 +26,7 @@ from .cmds import (
     DPT_CMD,
     PLOT_EMBED_CMD,
     PLOT_PAGA_CMD,
+    PLOT_STACKED_VIOLIN_CMD,
 )
 
 
@@ -104,3 +105,4 @@ def plot():
 
 plot.add_command(PLOT_EMBED_CMD)
 plot.add_command(PLOT_PAGA_CMD)
+plot.add_command(PLOT_STACKED_VIOLIN_CMD)
