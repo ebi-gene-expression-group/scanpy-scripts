@@ -217,7 +217,7 @@ PLOT_EMBED_CMD = make_subcmd(
 )
 
 PLOT_STACKED_VIOLIN_CMD = make_subcmd(
-    'sviolin',
+    'sviol',
     PLOT_STACKED_VIOLIN_CMD_OPTIONS,
     make_plot_function(sc.plotting._anndata.stacked_violin),
     cmd_desc='Plot stacked violin plots.',
@@ -225,7 +225,7 @@ PLOT_STACKED_VIOLIN_CMD = make_subcmd(
 )
 
 PLOT_RANK_GENE_GROUPS_STACKED_VIOLIN_CMD = make_subcmd(
-    'rggsviolin',
+    'rggsviol',
     PLOT_RANK_GENE_GROUPS_STACKED_VIOLIN_CMD_OPTIONS,
     make_plot_function(sc.plotting._tools.rank_genes_groups_stacked_violin, kind='stacked_violin'),
     cmd_desc='Plot ranking of genes using stacked_violin plot.',
