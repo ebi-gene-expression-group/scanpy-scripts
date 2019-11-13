@@ -57,8 +57,9 @@ setup() {
     plt_paga_pdf="${output_dir}/paga_k10_r0_7.pdf"
     test_markers='LDHB,CD3D,CD3E'
     plt_stacked_violin_opt="--var-names $test_markers --use-raw --dendrogram --groupby leiden_k10_r0_3 --no-jitter --swap-axes"
-    plt_stacked_violin_pdf="${output_dir}/leiden_k10_r0_3_LDHB_CD3D_CD3E.pdf"
-
+    plt_stacked_violin_pdf="${output_dir}/sviolin_leiden_k10_r0_3_LDHB_CD3D_CD3E.pdf"
+    plt_rank_genes_groups_stacked_violin_opt="--groups 3,5"
+    plt_rank_genes_groups_stacked_violin_pdf="${output_dir}/rggsviolin_leiden_k10_r0_3_LDHB_CD3D_CD3E.pdf"
 
     if [ ! -d "$data_dir" ]; then
         mkdir -p $data_dir
@@ -338,6 +339,20 @@ setup() {
 
     [ "$status" -eq 0 ]
     [ -f  "$plt_stacked_violin_pdf" ]
+}
+
+
+# Plot a stacked violin plot for markers
+
+@test "Run Plot ranking of genes using stacked_violin plot" {
+    if [ "$resume" = 'true' ] && [ -f "$plt_rank_genes_groups_stacked_violin_pdf" ]; then
+        skip "$plt_rank_genes_groups_stacked_violin_pdf exists and resume is set to 'true'"
+    fi
+
+    run rm -f $plt_rank_genes_groups_stacked_violin_pdf && eval "$scanpy plot rggsviolin $plt_rank_genes_groups_stacked_violin_opt $diffexp_obj $plt_rank_genes_groups_stacked_violin_pdf"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$plt_rank_genes_groups_stacked_violin_pdf" ]
 }
 
 # Local Variables:
