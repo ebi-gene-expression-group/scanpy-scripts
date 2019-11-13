@@ -87,7 +87,6 @@ setup() {
         skip "$read_obj exists and resume is set to 'true'"
     fi
 
-    echo -e "$scanpy read $read_opt $read_obj" 1>&2
     run rm -f $read_obj && eval "$scanpy read $read_opt $read_obj"
 
     [ "$status" -eq 0 ]
@@ -335,7 +334,6 @@ setup() {
         skip "$plt_stacked_violin_pdf exists and resume is set to 'true'"
     fi
 
-    echo -e "$scanpy plot stacked_violin $plt_stacked_violin_opt $diffexp_obj $plt_stacked_violin_pdf" 1>&2
     run rm -f $plt_stacked_violin_pdf && eval "$scanpy plot stacked_violin $plt_stacked_violin_opt $diffexp_obj $plt_stacked_violin_pdf"
 
     [ "$status" -eq 0 ]
