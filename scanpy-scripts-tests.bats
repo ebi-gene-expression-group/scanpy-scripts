@@ -334,7 +334,7 @@ setup() {
         skip "$plt_stacked_violin_pdf exists and resume is set to 'true'"
     fi
 
-    run rm -f $plt_stacked_violin_pdf && eval "$scanpy plot sviol $plt_stacked_violin_opt $diffexp_obj $plt_stacked_violin_pdf"
+    run rm -f $plt_stacked_violin_pdf && eval "$scanpy plot sviolin $plt_stacked_violin_opt $diffexp_obj $plt_stacked_violin_pdf"
 
     [ "$status" -eq 0 ]
     [ -f  "$plt_stacked_violin_pdf" ]
