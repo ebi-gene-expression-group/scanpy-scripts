@@ -93,6 +93,9 @@ COMMON_OPTIONS = {
             show_default=True,
             help='Figure font size.',
         ),
+    ],
+
+    'plot_opt': [
         click.option(
             '--frameon/--frameoff', 'frameon',
             default=True,
@@ -227,7 +230,16 @@ COMMON_OPTIONS = {
         help='Export embeddings in a tab-separated text table.',
     ),
 
-    'stacked_violin': [
+    'differential_pos': [ 
+        click.option(
+            '--var-names',
+            type=(CommaSeparatedText()),
+            show_default=True,
+            help='var_names should be a valid subset of adata.var_names.',
+        ),
+    ],
+
+    'differential_opt': [
         click.option(
              '--groupby',
             type=CommaSeparatedText(simplify=True),
@@ -280,6 +292,19 @@ COMMON_OPTIONS = {
             'is plotted. If layer is set to a valid layer name, then the layer is '
             'plotted. layer takes precedence over use_raw.',
         ),
+        click.option(
+            '--standard-scale',
+            type=click.Choice(['var', 'obs']),
+            default=None,
+            show_default=True,
+            help='Whether or not to standardize that dimension between 0 and 1, '
+            'meaning for each variable or group, subtract the minimum and divide '
+            'each by its maximum.'
+        ),
+
+    ],
+
+    'stacked_violin': [
         click.option(
             '--no-stripplot', 'stripplot',
             is_flag=True,
@@ -339,16 +364,6 @@ COMMON_OPTIONS = {
             'axis the groupby categories. By setting swap_axes then x are the '
             'groupby categories and y the var_names. When swapping axes '
             'var_group_positions are no longer used.',
-        ),
-        click.option(
-            '--standard-scale',
-            type=click.Choice(['var', 'obs']),
-            default=None,
-            show_default=True,
-            help='By default, the x axis contains var_names (e.g. genes) and the y '
-            'axis the groupby categories. By setting swap_axes then x are the '
-            'groupby categories and y the var_names. When swapping axes '
-            'var_group_positions are no longer used.'
         ),
     ]
 }
@@ -1022,6 +1037,7 @@ DPT_CMD_OPTIONS = [
 PLOT_EMBED_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['plot'],
+    *COMMON_OPTIONS['plot_opt'],
     click.option(
         '--basis',
         type=click.STRING,
@@ -1072,12 +1088,8 @@ PLOT_STACKED_VIOLIN_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['plot'],
     COMMON_OPTIONS['use_raw'],
-    click.option(
-        '--var-names',
-        type=(CommaSeparatedText()),
-        show_default=True,
-        help='var_names should be a valid subset of adata.var_names.',
-    ),
+    *COMMON_OPTIONS['differential_pos'],
+    *COMMON_OPTIONS['differential_opt'],
     *COMMON_OPTIONS['stacked_violin'],
 ]
 
@@ -1099,12 +1111,72 @@ PLOT_RANK_GENE_GROUPS_STACKED_VIOLIN_CMD_OPTIONS = [
         show_default=True,
         help='Number of genes to show.'
     ),
+    *COMMON_OPTIONS['differential_opt'],
     *COMMON_OPTIONS['stacked_violin'],
-]    
+]   
+
+PLOT_DOT_CMD_OPTIONS = [
+    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['plot'],
+    COMMON_OPTIONS['use_raw'],
+    *COMMON_OPTIONS['differential_pos'],
+    *COMMON_OPTIONS['differential_opt'],
+    click.option(
+        '--expression-cutoff',
+        type=click.FLOAT,
+        default=0,
+        show_default=True,
+        help='Expression cutoff that is used for binarizing the gene expression '
+        'and determining the fraction of cells expressing given genes. A gene is '
+        'expressed only if the expression value is greater than this threshold.'
+    ),
+    click.option(
+        '--mean-only-expressed',
+        is_flag=True,
+        default=False,
+        show_default=True,
+        help='If True, gene expression is averaged only over the cells '
+        'expressing the given genes.',
+    ),
+    click.option(
+        '--color-map',
+        type=CommaSeparatedText(simplify=True),
+        default='Reds',
+        show_default=True,
+        help='String denoting matplotlib color map.',
+    ),
+    click.option(
+        '--dot-max',
+        type=click.FLOAT,
+        default=None,
+        show_default=True,
+        help='If none, the maximum dot size is set to the maximum fraction '
+        'value found (e.g. 0.6). If given, the value should be a number between '
+        '0 and 1. All fractions larger than dot_max are clipped to this value.'
+    ),
+    click.option(
+        '--dot-min',
+        type=click.FLOAT,
+        default=None,
+        show_default=True,
+        help='If none, the minimum dot size is set to 0. If given, the value '
+        'should be a number between 0 and 1. All fractions smaller than dot_min '
+        'are clipped to this value.'
+    ),
+    click.option(
+        '--smallest-dot',
+        type=click.FLOAT,
+        default=0,
+        show_default=True,
+        help='If none, the smallest dot has size 0. All expression levels with '
+        'dot_min are potted with smallest_dot dot size.'
+    ),
+]
     
 PLOT_PAGA_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['plot'],
+    *COMMON_OPTIONS['plot_opt'],
     click.option(
         '--use-key',
         type=click.STRING,
