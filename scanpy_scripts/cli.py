@@ -26,6 +26,8 @@ from .cmds import (
     DPT_CMD,
     PLOT_EMBED_CMD,
     PLOT_PAGA_CMD,
+    PLOT_STACKED_VIOLIN_CMD,
+    PLOT_RANK_GENE_GROUPS_STACKED_VIOLIN_CMD,
 )
 
 
@@ -104,3 +106,5 @@ def plot():
 
 plot.add_command(PLOT_EMBED_CMD)
 plot.add_command(PLOT_PAGA_CMD)
+plot.add_command(PLOT_STACKED_VIOLIN_CMD)
+plot.add_command(PLOT_RANK_GENE_GROUPS_STACKED_VIOLIN_CMD)
