@@ -35,6 +35,8 @@ from .cmd_options import (
     PLOT_DOT_CMD_OPTIONS,
     PLOT_MATRIX_CMD_OPTIONS,
     PLOT_RANK_GENE_GROUPS_MATRIX_CMD_OPTIONS,
+    PLOT_HEATMAP_CMD_OPTIONS,
+    PLOT_RANK_GENE_GROUPS_HEATMAP_CMD_OPTIONS,
 )
 from .lib._read import read_10x
 from .lib._filter import filter_anndata
@@ -252,10 +254,26 @@ PLOT_MATRIX_CMD = make_subcmd(
 )
 
 PLOT_RANK_GENE_GROUPS_MATRIX_CMD = make_subcmd(
-    'rggsmatrix',
+    'rggmatrix',
     PLOT_RANK_GENE_GROUPS_MATRIX_CMD_OPTIONS,
     make_plot_function(sc.plotting._tools.rank_genes_groups_matrixplot, kind='matrixplot'),
     cmd_desc='Plot ranking of genes using matrixplot plot.',
+    arg_desc=_IP_DESC,
+)
+
+PLOT_HEATMAP_CMD = make_subcmd(
+    'heat',
+    PLOT_HEATMAP_CMD_OPTIONS,
+    make_plot_function(sc.plotting._anndata.heatmap),
+    cmd_desc='Plot a heatmap of the expression values of genes.',
+    arg_desc=_IP_DESC,
+)
+
+PLOT_RANK_GENE_GROUPS_HEATMAP_CMD = make_subcmd(
+    'rggheat',
+    PLOT_RANK_GENE_GROUPS_HEATMAP_CMD_OPTIONS,
+    make_plot_function(sc.plotting._tools.rank_genes_groups_heatmap, kind='heatmap'),
+    cmd_desc='Plot a ranking of genes using heatmap plot.',
     arg_desc=_IP_DESC,
 )
 

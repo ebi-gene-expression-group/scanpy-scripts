@@ -57,15 +57,16 @@ setup() {
     plt_paga_pdf="${output_dir}/paga_k10_r0_7.pdf"
     test_clustering='leiden_k10_r0_3'
     test_markers='LDHB,CD3D,CD3E'
-    plt_stacked_violin_opt="--var-names $test_markers --use-raw --dendrogram --groupby leiden_k10_r0_3 --no-jitter --swap-axes"
+    diffexp_plot_opt="--var-names $test_markers --use-raw --dendrogram --groupby ${test_clustering}"
+    plt_stacked_violin_opt="${diffexp_plot_opt} --no-jitter --swap-axes"
     plt_stacked_violin_pdf="${output_dir}/sviolin_${test_clustering}_LDHB_CD3D_CD3E.pdf"
-    plt_dotplot_opt="--var-names $test_markers --use-raw --dendrogram --groupby ${test_clustering}"
-    plt_dotplot_pdf="${output_dir}/dot_leiden_${test_clustering}_LDHB_CD3D_CD3E.pdf"
-    plt_matrixplot_opt="--var-names $test_markers --use-raw --dendrogram --groupby ${test_clustering}"
-    plt_matrixplot_pdf="${output_dir}/matrix_leiden_${test_clustering}_LDHB_CD3D_CD3E.pdf"
+    plt_dotplot_pdf="${output_dir}/dot_${test_clustering}_LDHB_CD3D_CD3E.pdf"
+    plt_matrixplot_pdf="${output_dir}/matrix_${test_clustering}_LDHB_CD3D_CD3E.pdf"
+    plt_heatmap_pdf="${output_dir}/heatmap_${test_clustering}_LDHB_CD3D_CD3E.pdf"
     plt_rank_genes_groups_opt="--groups 3,5"
     plt_rank_genes_groups_stacked_violin_pdf="${output_dir}/rggsviolin_${test_clustering}_LDHB_CD3D_CD3E.pdf"
-    plt_rank_genes_groups_matrix_pdf="${output_dir}/rggsmatrix_${test_clustering}_LDHB_CD3D_CD3E.pdf"
+    plt_rank_genes_groups_matrix_pdf="${output_dir}/rggmatrix_${test_clustering}_LDHB_CD3D_CD3E.pdf"
+    plt_rank_genes_groups_heatmap_pdf="${output_dir}/rggheatmap_${test_clustering}_LDHB_CD3D_CD3E.pdf"
 
     if [ ! -d "$data_dir" ]; then
         mkdir -p $data_dir
@@ -367,7 +368,7 @@ setup() {
         skip "$plt_dotplot_pdf exists and resume is set to 'true'"
     fi
 
-    run rm -f $plt_dotplot_pdf && eval "$scanpy plot dot $plt_dotplot_opt $diffexp_obj $plt_dotplot_pdf"
+    run rm -f $plt_dotplot_pdf && eval "$scanpy plot dot $diffexp_plot_opt $diffexp_obj $plt_dotplot_pdf"
     
     [ "$status" -eq 0 ]
     [ -f  "$plt_dotplot_pdf" ]
@@ -380,7 +381,7 @@ setup() {
         skip "$plt_matrixplot_pdf exists and resume is set to 'true'"
     fi
 
-    run rm -f $plt_matrixplot_pdf && eval "$scanpy plot matrix $plt_matrixplot_opt $diffexp_obj $plt_matrixplot_pdf"
+    run rm -f $plt_matrixplot_pdf && eval "$scanpy plot matrix $diffexp_plot_opt $diffexp_obj $plt_matrixplot_pdf"
     
     [ "$status" -eq 0 ]
     [ -f  "$plt_matrixplot_pdf" ]
@@ -393,7 +394,33 @@ setup() {
         skip "$plt_rank_genes_groups_matrix_pdf exists and resume is set to 'true'"
     fi
 
-    run rm -f $plt_rank_genes_groups_matrix_pdf && eval "$scanpy plot rggsmatrix $plt_rank_genes_groups_opt $diffexp_obj $plt_rank_genes_groups_matrix_pdf"
+    run rm -f $plt_rank_genes_groups_matrix_pdf && eval "$scanpy plot rggmatrix $plt_rank_genes_groups_opt $diffexp_obj $plt_rank_genes_groups_matrix_pdf"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$plt_rank_genes_groups_matrix_pdf" ]
+}
+
+# Plot a matrix plot for markers
+
+@test "Run Heatmap" {
+    if [ "$resume" = 'true' ] && [ -f "$plt_heatmap_pdf" ]; then
+        skip "$plt_matrixplot_pdf exists and resume is set to 'true'"
+    fi
+
+    run rm -f $plt_heatmap_pdf && eval "$scanpy plot heat $diffexp_plot_opt $diffexp_obj $plt_heatmap_pdf"
+    
+    [ "$status" -eq 0 ]
+    [ -f  "$plt_heatmap_pdf" ]
+}
+
+# Plot ranking of genes using a matrix plot for markers
+
+@test "Run Plot ranking of genes using a heatmap" {
+    if [ "$resume" = 'true' ] && [ -f "$plt_rank_genes_groups_heatmap_pdf" ]; then
+        skip "$plt_rank_genes_groups_heatmap_pdf exists and resume is set to 'true'"
+    fi
+
+    run rm -f $plt_rank_genes_groups_heatmap_pdf && eval "$scanpy plot rggheat $plt_rank_genes_groups_opt $diffexp_obj $plt_rank_genes_groups_heatmap_pdf"
 
     [ "$status" -eq 0 ]
     [ -f  "$plt_rank_genes_groups_matrix_pdf" ]
