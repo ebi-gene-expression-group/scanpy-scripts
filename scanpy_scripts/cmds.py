@@ -33,6 +33,8 @@ from .cmd_options import (
     PLOT_STACKED_VIOLIN_CMD_OPTIONS,
     PLOT_RANK_GENE_GROUPS_STACKED_VIOLIN_CMD_OPTIONS,
     PLOT_DOT_CMD_OPTIONS,
+    PLOT_MATRIX_CMD_OPTIONS,
+    PLOT_RANK_GENE_GROUPS_MATRIX_CMD_OPTIONS,
 )
 from .lib._read import read_10x
 from .lib._filter import filter_anndata
@@ -238,6 +240,22 @@ PLOT_DOT_CMD = make_subcmd(
     PLOT_DOT_CMD_OPTIONS,
     make_plot_function(sc.plotting._anndata.dotplot),
     cmd_desc='Plot a dot plot of expression values.',
+    arg_desc=_IP_DESC,
+)
+
+PLOT_MATRIX_CMD = make_subcmd(
+    'matrix',
+    PLOT_MATRIX_CMD_OPTIONS,
+    make_plot_function(sc.plotting._anndata.matrixplot),
+    cmd_desc='Plot a heatmap of the mean expression values per cluster.',
+    arg_desc=_IP_DESC,
+)
+
+PLOT_RANK_GENE_GROUPS_MATRIX_CMD = make_subcmd(
+    'rggsmatrix',
+    PLOT_RANK_GENE_GROUPS_MATRIX_CMD_OPTIONS,
+    make_plot_function(sc.plotting._tools.rank_genes_groups_matrixplot, kind='matrixplot'),
+    cmd_desc='Plot ranking of genes using matrixplot plot.',
     arg_desc=_IP_DESC,
 )
 

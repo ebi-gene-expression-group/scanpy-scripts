@@ -363,6 +363,23 @@ COMMON_OPTIONS = {
             'groupby categories and y the var_names. When swapping axes '
             'var_group_positions are no longer used.',
         ),
+    ],
+
+    'rank_genes_groups': [
+        click.option(
+            '--groups',
+            type=CommaSeparatedText(),
+            default=None,
+            show_default=True,
+            help='The groups for which to show the gene ranking.'
+        ),
+        click.option(
+            '--n-genes', '-n',
+            type=click.INT,
+            default=10,
+            show_default=True,
+            help='Number of genes to show.'
+        ),
     ]
 }
 
@@ -1095,20 +1112,7 @@ PLOT_RANK_GENE_GROUPS_STACKED_VIOLIN_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['plot'],
     COMMON_OPTIONS['use_raw'],
-    click.option(
-        '--groups',
-        type=CommaSeparatedText(),
-        default=None,
-        show_default=True,
-        help='The groups for which to show the gene ranking.'
-    ),
-    click.option(
-        '--n-genes', '-n',
-        type=click.INT,
-        default=10,
-        show_default=True,
-        help='Number of genes to show.'
-    ),
+    *COMMON_OPTIONS['rank_genes_groups'],
     *COMMON_OPTIONS['diffexp_plot'],
     *COMMON_OPTIONS['stacked_violin'],
 ]   
@@ -1170,6 +1174,22 @@ PLOT_DOT_CMD_OPTIONS = [
         'dot_min are potted with smallest_dot dot size.'
     ),
 ]
+
+PLOT_MATRIX_CMD_OPTIONS = [
+    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['plot'],
+    COMMON_OPTIONS['use_raw'],
+    *COMMON_OPTIONS['differential_pos'],
+    *COMMON_OPTIONS['diffexp_plot'],
+]
+
+PLOT_RANK_GENE_GROUPS_MATRIX_CMD_OPTIONS = [
+    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['plot'],
+    COMMON_OPTIONS['use_raw'],
+    *COMMON_OPTIONS['rank_genes_groups'],
+    *COMMON_OPTIONS['diffexp_plot'],
+]   
     
 PLOT_PAGA_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
