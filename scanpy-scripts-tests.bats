@@ -51,15 +51,18 @@ setup() {
     diffmap_obj="${output_dir}/diffmap.h5ad"
     dpt_opt="--use-graph neighbors_k10 --key-added k10 --n-dcs 10 --root leiden_k10_r0_7 0"
     dpt_obj="${output_dir}/dpt.h5ad"
-    plt_embed_opt="--color leiden_k10_r0_7 -f loom"
+    plt_embed_opt="--color leiden_k10_r0_7 -f loom --title test"
     plt_embed_pdf="${output_dir}/umap_leiden_k10_r0_7.pdf"
     plt_paga_opt="--use-key paga_k10_r0_7 --node-size-scale 2 --edge-width-scale 0.5 --basis diffmap --color dpt_pseudotime_k10 --frameoff"
     plt_paga_pdf="${output_dir}/paga_k10_r0_7.pdf"
+    test_clustering='leiden_k10_r0_3'
     test_markers='LDHB,CD3D,CD3E'
     plt_stacked_violin_opt="--var-names $test_markers --use-raw --dendrogram --groupby leiden_k10_r0_3 --no-jitter --swap-axes"
-    plt_stacked_violin_pdf="${output_dir}/sviolin_leiden_k10_r0_3_LDHB_CD3D_CD3E.pdf"
+    plt_stacked_violin_pdf="${output_dir}/sviolin_${test_clustering}_LDHB_CD3D_CD3E.pdf"
+    plt_dotplot_opt="--var-names $test_markers --use-raw --dendrogram --groupby ${test_clustering}"
+    plt_dotplot_pdf="${output_dir}/dot_leiden_${test_clustering}_LDHB_CD3D_CD3E.pdf"
     plt_rank_genes_groups_stacked_violin_opt="--groups 3,5"
-    plt_rank_genes_groups_stacked_violin_pdf="${output_dir}/rggsviolin_leiden_k10_r0_3_LDHB_CD3D_CD3E.pdf"
+    plt_rank_genes_groups_stacked_violin_pdf="${output_dir}/rggsviolin_${test_clustering}_LDHB_CD3D_CD3E.pdf"
 
     if [ ! -d "$data_dir" ]; then
         mkdir -p $data_dir
@@ -341,7 +344,6 @@ setup() {
     [ -f  "$plt_stacked_violin_pdf" ]
 }
 
-
 # Plot a stacked violin plot for markers
 
 @test "Run Plot ranking of genes using stacked_violin plot" {
@@ -353,6 +355,19 @@ setup() {
 
     [ "$status" -eq 0 ]
     [ -f  "$plt_rank_genes_groups_stacked_violin_pdf" ]
+}
+
+# Plot a stacked violin plot for markers
+
+@test "Run Plot dotplot" {
+    if [ "$resume" = 'true' ] && [ -f "$plt_dotplot_pdf" ]; then
+        skip "$plt_dotplot_pdf exists and resume is set to 'true'"
+    fi
+
+    run rm -f $plt_dotplot_pdf && eval "$scanpy plot dot $plt_dotplot_opt $diffexp_obj $plt_dotplot_pdf"
+    
+    [ "$status" -eq 0 ]
+    [ -f  "$plt_stacked_violin_pdf" ]
 }
 
 # Local Variables:

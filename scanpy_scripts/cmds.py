@@ -31,7 +31,8 @@ from .cmd_options import (
     PLOT_EMBED_CMD_OPTIONS,
     PLOT_PAGA_CMD_OPTIONS,
     PLOT_STACKED_VIOLIN_CMD_OPTIONS,
-    PLOT_RANK_GENE_GROUPS_STACKED_VIOLIN_CMD_OPTIONS
+    PLOT_RANK_GENE_GROUPS_STACKED_VIOLIN_CMD_OPTIONS,
+    PLOT_DOT_CMD_OPTIONS,
 )
 from .lib._read import read_10x
 from .lib._filter import filter_anndata
@@ -229,6 +230,14 @@ PLOT_RANK_GENE_GROUPS_STACKED_VIOLIN_CMD = make_subcmd(
     PLOT_RANK_GENE_GROUPS_STACKED_VIOLIN_CMD_OPTIONS,
     make_plot_function(sc.plotting._tools.rank_genes_groups_stacked_violin, kind='stacked_violin'),
     cmd_desc='Plot ranking of genes using stacked_violin plot.',
+    arg_desc=_IP_DESC,
+)
+
+PLOT_DOT_CMD = make_subcmd(
+    'dot',
+    PLOT_DOT_CMD_OPTIONS,
+    make_plot_function(sc.plotting._anndata.dotplot),
+    cmd_desc='Plot a dot plot of expression values.',
     arg_desc=_IP_DESC,
 )
 
