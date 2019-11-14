@@ -95,7 +95,7 @@ COMMON_OPTIONS = {
         ),
     ],
 
-    'plot_opt': [
+    'frame_title': [
         click.option(
             '--frameon/--frameoff', 'frameon',
             default=True,
@@ -230,14 +230,12 @@ COMMON_OPTIONS = {
         help='Export embeddings in a tab-separated text table.',
     ),
 
-    'differential_pos': [ 
-        click.option(
+    'var_names': click.option(
             '--var-names',
             type=(CommaSeparatedText()),
             show_default=True,
             help='var_names should be a valid subset of adata.var_names.',
-        ),
-    ],
+    ),
 
     'differential_opt': [
         click.option(
@@ -1037,7 +1035,7 @@ DPT_CMD_OPTIONS = [
 PLOT_EMBED_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['plot'],
-    *COMMON_OPTIONS['plot_opt'],
+    *COMMON_OPTIONS['frame_title'],
     click.option(
         '--basis',
         type=click.STRING,
@@ -1088,7 +1086,7 @@ PLOT_STACKED_VIOLIN_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['plot'],
     COMMON_OPTIONS['use_raw'],
-    *COMMON_OPTIONS['differential_pos'],
+    COMMON_OPTIONS['var_names'],
     *COMMON_OPTIONS['differential_opt'],
     *COMMON_OPTIONS['stacked_violin'],
 ]
@@ -1119,7 +1117,7 @@ PLOT_DOT_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['plot'],
     COMMON_OPTIONS['use_raw'],
-    *COMMON_OPTIONS['differential_pos'],
+    COMMON_OPTIONS['var_names'],
     *COMMON_OPTIONS['differential_opt'],
     click.option(
         '--expression-cutoff',
@@ -1176,7 +1174,7 @@ PLOT_DOT_CMD_OPTIONS = [
 PLOT_PAGA_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['plot'],
-    *COMMON_OPTIONS['plot_opt'],
+    *COMMON_OPTIONS['frame_title'],
     click.option(
         '--use-key',
         type=click.STRING,
