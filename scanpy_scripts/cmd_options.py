@@ -353,7 +353,20 @@ COMMON_OPTIONS = {
             'Alternatively, a single color name or hex value can be passed. E.g. '
             '‘red’ or ‘#cc33ff’.'
         ),
+    ],
+
+    'heatmap': [
         click.option(
+            '--show-gene-labels',
+            is_flag=True,
+            default=None,
+            show_default=True,
+            help='By default gene labels are shown when there are 50 or less '
+            'genes. Otherwise the labels are removed.'
+        ),
+    ],
+
+    'swap_axes': click.option(
             '--swap-axes',
             is_flag=True,
             default=False,
@@ -362,8 +375,7 @@ COMMON_OPTIONS = {
             'axis the groupby categories. By setting swap_axes then x are the '
             'groupby categories and y the var_names. When swapping axes '
             'var_group_positions are no longer used.',
-        ),
-    ],
+    ),
 
     'rank_genes_groups_plots': [
         click.option(
@@ -1106,6 +1118,7 @@ PLOT_STACKED_VIOLIN_CMD_OPTIONS = [
     COMMON_OPTIONS['var_names'],
     *COMMON_OPTIONS['diffexp_plot'],
     *COMMON_OPTIONS['stacked_violin'],
+    COMMON_OPTIONS['swap_axes'],
 ]
 
 PLOT_RANK_GENE_GROUPS_STACKED_VIOLIN_CMD_OPTIONS = [
@@ -1115,6 +1128,7 @@ PLOT_RANK_GENE_GROUPS_STACKED_VIOLIN_CMD_OPTIONS = [
     *COMMON_OPTIONS['rank_genes_groups_plots'],
     *COMMON_OPTIONS['diffexp_plot'],
     *COMMON_OPTIONS['stacked_violin'],
+    COMMON_OPTIONS['swap_axes'],
 ]   
 
 PLOT_DOT_CMD_OPTIONS = [
@@ -1313,3 +1327,23 @@ PLOT_PAGA_CMD_OPTIONS = [
         help='For directed graphs, specify the length and width of the arrowhead.',
     ),
 ]
+
+PLOT_HEATMAP_CMD_OPTIONS = [
+    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['plot'],
+    COMMON_OPTIONS['use_raw'],
+    COMMON_OPTIONS['var_names'],
+    *COMMON_OPTIONS['diffexp_plot'],
+    *COMMON_OPTIONS['heatmap'],
+    COMMON_OPTIONS['swap_axes'],
+]
+
+PLOT_RANK_GENE_GROUPS_HEATMAP_CMD_OPTIONS = [
+    *COMMON_OPTIONS['input'],
+    *COMMON_OPTIONS['plot'],
+    COMMON_OPTIONS['use_raw'],
+    *COMMON_OPTIONS['rank_genes_groups_plots'],
+    *COMMON_OPTIONS['diffexp_plot'],
+    *COMMON_OPTIONS['heatmap'],
+    COMMON_OPTIONS['swap_axes'],
+]   

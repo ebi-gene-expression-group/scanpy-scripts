@@ -31,6 +31,8 @@ from .cmds import (
     PLOT_DOT_CMD,
     PLOT_MATRIX_CMD,
     PLOT_RANK_GENE_GROUPS_MATRIX_CMD,
+    PLOT_HEATMAP_CMD,
+    PLOT_RANK_GENE_GROUPS_HEATMAP_CMD,
 )
 
 
@@ -114,3 +116,5 @@ plot.add_command(PLOT_RANK_GENE_GROUPS_STACKED_VIOLIN_CMD)
 plot.add_command(PLOT_DOT_CMD)
 plot.add_command(PLOT_MATRIX_CMD)
 plot.add_command(PLOT_RANK_GENE_GROUPS_MATRIX_CMD)
+plot.add_command(PLOT_HEATMAP_CMD)
+plot.add_command(PLOT_RANK_GENE_GROUPS_HEATMAP_CMD)
