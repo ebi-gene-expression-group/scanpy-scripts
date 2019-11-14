@@ -1179,7 +1179,7 @@ PLOT_MATRIX_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['plot'],
     COMMON_OPTIONS['use_raw'],
-    *COMMON_OPTIONS['differential_pos'],
+    COMMON_OPTIONS['var_names'],
     *COMMON_OPTIONS['diffexp_plot'],
 ]
 
