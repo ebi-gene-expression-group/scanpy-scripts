@@ -186,8 +186,6 @@ def make_plot_function(FUN, kind=None):
             fig_size=None,
             fig_dpi=300,
             fig_fontsize=15,
-            title=None,
-            frameon=True,
             **kwargs,
     ):
         sc.settings.set_figure_params(dpi=fig_dpi, fontsize=fig_fontsize)
@@ -209,8 +207,6 @@ def make_plot_function(FUN, kind=None):
             adata,
             save=figname,
             show=showfig,
-            title=title,
-            frameon=frameon,
             **kwargs)
 
         if output_fig:
