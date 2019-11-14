@@ -365,7 +365,7 @@ COMMON_OPTIONS = {
         ),
     ],
 
-    'rank_genes_groups': [
+    'rank_genes_groups_plots': [
         click.option(
             '--groups',
             type=CommaSeparatedText(),
@@ -1112,7 +1112,7 @@ PLOT_RANK_GENE_GROUPS_STACKED_VIOLIN_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['plot'],
     COMMON_OPTIONS['use_raw'],
-    *COMMON_OPTIONS['rank_genes_groups'],
+    *COMMON_OPTIONS['rank_genes_groups_plots'],
     *COMMON_OPTIONS['diffexp_plot'],
     *COMMON_OPTIONS['stacked_violin'],
 ]   
@@ -1187,7 +1187,7 @@ PLOT_RANK_GENE_GROUPS_MATRIX_CMD_OPTIONS = [
     *COMMON_OPTIONS['input'],
     *COMMON_OPTIONS['plot'],
     COMMON_OPTIONS['use_raw'],
-    *COMMON_OPTIONS['rank_genes_groups'],
+    *COMMON_OPTIONS['rank_genes_groups_plots'],
     *COMMON_OPTIONS['diffexp_plot'],
 ]   
     
