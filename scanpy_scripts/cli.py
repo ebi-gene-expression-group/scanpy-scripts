@@ -29,6 +29,8 @@ from .cmds import (
     PLOT_STACKED_VIOLIN_CMD,
     PLOT_RANK_GENE_GROUPS_STACKED_VIOLIN_CMD,
     PLOT_DOT_CMD,
+    PLOT_MATRIX_CMD,
+    PLOT_RANK_GENE_GROUPS_MATRIX_CMD,
 )
 
 
@@ -110,3 +112,5 @@ plot.add_command(PLOT_PAGA_CMD)
 plot.add_command(PLOT_STACKED_VIOLIN_CMD)
 plot.add_command(PLOT_RANK_GENE_GROUPS_STACKED_VIOLIN_CMD)
 plot.add_command(PLOT_DOT_CMD)
+plot.add_command(PLOT_MATRIX_CMD)
+plot.add_command(PLOT_RANK_GENE_GROUPS_MATRIX_CMD)

@@ -61,8 +61,11 @@ setup() {
     plt_stacked_violin_pdf="${output_dir}/sviolin_${test_clustering}_LDHB_CD3D_CD3E.pdf"
     plt_dotplot_opt="--var-names $test_markers --use-raw --dendrogram --groupby ${test_clustering}"
     plt_dotplot_pdf="${output_dir}/dot_leiden_${test_clustering}_LDHB_CD3D_CD3E.pdf"
-    plt_rank_genes_groups_stacked_violin_opt="--groups 3,5"
+    plt_matrixplot_opt="--var-names $test_markers --use-raw --dendrogram --groupby ${test_clustering}"
+    plt_matrixplot_pdf="${output_dir}/matrix_leiden_${test_clustering}_LDHB_CD3D_CD3E.pdf"
+    plt_rank_genes_groups_opt="--groups 3,5"
     plt_rank_genes_groups_stacked_violin_pdf="${output_dir}/rggsviolin_${test_clustering}_LDHB_CD3D_CD3E.pdf"
+    plt_rank_genes_groups_matrix_pdf="${output_dir}/rggsmatrix_${test_clustering}_LDHB_CD3D_CD3E.pdf"
 
     if [ ! -d "$data_dir" ]; then
         mkdir -p $data_dir
@@ -344,20 +347,20 @@ setup() {
     [ -f  "$plt_stacked_violin_pdf" ]
 }
 
-# Plot a stacked violin plot for markers
+# Plot ranking of genes using a stacked violin plot for markers
 
 @test "Run Plot ranking of genes using stacked_violin plot" {
     if [ "$resume" = 'true' ] && [ -f "$plt_rank_genes_groups_stacked_violin_pdf" ]; then
         skip "$plt_rank_genes_groups_stacked_violin_pdf exists and resume is set to 'true'"
     fi
 
-    run rm -f $plt_rank_genes_groups_stacked_violin_pdf && eval "$scanpy plot rggsviol $plt_rank_genes_groups_stacked_violin_opt $diffexp_obj $plt_rank_genes_groups_stacked_violin_pdf"
+    run rm -f $plt_rank_genes_groups_stacked_violin_pdf && eval "$scanpy plot rggsviol $plt_rank_genes_groups_opt $diffexp_obj $plt_rank_genes_groups_stacked_violin_pdf"
 
     [ "$status" -eq 0 ]
     [ -f  "$plt_rank_genes_groups_stacked_violin_pdf" ]
 }
 
-# Plot a stacked violin plot for markers
+# Plot a dot plot for markers
 
 @test "Run Plot dotplot" {
     if [ "$resume" = 'true' ] && [ -f "$plt_dotplot_pdf" ]; then
@@ -367,7 +370,33 @@ setup() {
     run rm -f $plt_dotplot_pdf && eval "$scanpy plot dot $plt_dotplot_opt $diffexp_obj $plt_dotplot_pdf"
     
     [ "$status" -eq 0 ]
-    [ -f  "$plt_stacked_violin_pdf" ]
+    [ -f  "$plt_dotplot_pdf" ]
+}
+
+# Plot a matrix plot for markers
+
+@test "Run Plot matrix" {
+    if [ "$resume" = 'true' ] && [ -f "$plt_matrixplot_pdf" ]; then
+        skip "$plt_matrixplot_pdf exists and resume is set to 'true'"
+    fi
+
+    run rm -f $plt_matrixplot_pdf && eval "$scanpy plot matrix $plt_matrixplot_opt $diffexp_obj $plt_matrixplot_pdf"
+    
+    [ "$status" -eq 0 ]
+    [ -f  "$plt_matrixplot_pdf" ]
+}
+
+# Plot ranking of genes using a matrix plot for markers
+
+@test "Run Plot ranking of genes using a matrix plot" {
+    if [ "$resume" = 'true' ] && [ -f "$plt_rank_genes_groups_matrix_pdf" ]; then
+        skip "$plt_rank_genes_groups_matrix_pdf exists and resume is set to 'true'"
+    fi
+
+    run rm -f $plt_rank_genes_groups_matrix_pdf && eval "$scanpy plot rggsmatrix $plt_rank_genes_groups_opt $diffexp_obj $plt_rank_genes_groups_matrix_pdf"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$plt_rank_genes_groups_matrix_pdf" ]
 }
 
 # Local Variables:
