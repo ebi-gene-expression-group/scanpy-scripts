@@ -237,7 +237,7 @@ COMMON_OPTIONS = {
             help='var_names should be a valid subset of adata.var_names.',
     ),
 
-    'differential_opt': [
+    'diffexp_plot': [
         click.option(
              '--groupby',
             type=CommaSeparatedText(simplify=True),
@@ -1087,7 +1087,7 @@ PLOT_STACKED_VIOLIN_CMD_OPTIONS = [
     *COMMON_OPTIONS['plot'],
     COMMON_OPTIONS['use_raw'],
     COMMON_OPTIONS['var_names'],
-    *COMMON_OPTIONS['differential_opt'],
+    *COMMON_OPTIONS['diffexp_plot'],
     *COMMON_OPTIONS['stacked_violin'],
 ]
 
@@ -1109,7 +1109,7 @@ PLOT_RANK_GENE_GROUPS_STACKED_VIOLIN_CMD_OPTIONS = [
         show_default=True,
         help='Number of genes to show.'
     ),
-    *COMMON_OPTIONS['differential_opt'],
+    *COMMON_OPTIONS['diffexp_plot'],
     *COMMON_OPTIONS['stacked_violin'],
 ]   
 
@@ -1118,7 +1118,7 @@ PLOT_DOT_CMD_OPTIONS = [
     *COMMON_OPTIONS['plot'],
     COMMON_OPTIONS['use_raw'],
     COMMON_OPTIONS['var_names'],
-    *COMMON_OPTIONS['differential_opt'],
+    *COMMON_OPTIONS['diffexp_plot'],
     click.option(
         '--expression-cutoff',
         type=click.FLOAT,
