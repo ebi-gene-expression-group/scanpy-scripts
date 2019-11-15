@@ -63,10 +63,11 @@ setup() {
     plt_dotplot_pdf="${output_dir}/dot_${test_clustering}_LDHB_CD3D_CD3E.pdf"
     plt_matrixplot_pdf="${output_dir}/matrix_${test_clustering}_LDHB_CD3D_CD3E.pdf"
     plt_heatmap_pdf="${output_dir}/heatmap_${test_clustering}_LDHB_CD3D_CD3E.pdf"
-    plt_rank_genes_groups_opt="--groups 3,5"
-    plt_rank_genes_groups_stacked_violin_pdf="${output_dir}/rggsviolin_${test_clustering}_LDHB_CD3D_CD3E.pdf"
-    plt_rank_genes_groups_matrix_pdf="${output_dir}/rggmatrix_${test_clustering}_LDHB_CD3D_CD3E.pdf"
-    plt_rank_genes_groups_heatmap_pdf="${output_dir}/rggheatmap_${test_clustering}_LDHB_CD3D_CD3E.pdf"
+    plt_rank_genes_groups_opt="--rgg --groups 3,5"
+    plt_rank_genes_groups_stacked_violin_pdf="${output_dir}/rggsviolin_${test_clustering}.pdf"
+    plt_rank_genes_groups_matrix_pdf="${output_dir}/rggmatrix_${test_clustering}.pdf"
+    plt_rank_genes_groups_dot_pdf="${output_dir}/rggdot_${test_clustering}.pdf"
+    plt_rank_genes_groups_heatmap_pdf="${output_dir}/rggheatmap_${test_clustering}.pdf"
 
     if [ ! -d "$data_dir" ]; then
         mkdir -p $data_dir
@@ -355,7 +356,7 @@ setup() {
         skip "$plt_rank_genes_groups_stacked_violin_pdf exists and resume is set to 'true'"
     fi
 
-    run rm -f $plt_rank_genes_groups_stacked_violin_pdf && eval "$scanpy plot rggsviol $plt_rank_genes_groups_opt $diffexp_obj $plt_rank_genes_groups_stacked_violin_pdf"
+    run rm -f $plt_rank_genes_groups_stacked_violin_pdf && eval "$scanpy plot sviol $plt_rank_genes_groups_opt $diffexp_obj $plt_rank_genes_groups_stacked_violin_pdf"
 
     [ "$status" -eq 0 ]
     [ -f  "$plt_rank_genes_groups_stacked_violin_pdf" ]
@@ -373,6 +374,20 @@ setup() {
     [ "$status" -eq 0 ]
     [ -f  "$plt_dotplot_pdf" ]
 }
+
+# Plot ranking of genes using a matrix plot for markers
+
+@test "Run Plot ranking of genes using a dot plot" {
+    if [ "$resume" = 'true' ] && [ -f "$plt_rank_genes_groups_dot_pdf" ]; then
+        skip "$plt_rank_genes_groups_dot_pdf exists and resume is set to 'true'"
+    fi
+
+    run rm -f $plt_rank_genes_groups_dot_pdf && eval "$scanpy plot dot $plt_rank_genes_groups_opt $diffexp_obj $plt_rank_genes_groups_dot_pdf"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$plt_rank_genes_groups_dot_pdf" ]
+}
+
 
 # Plot a matrix plot for markers
 
@@ -394,7 +409,7 @@ setup() {
         skip "$plt_rank_genes_groups_matrix_pdf exists and resume is set to 'true'"
     fi
 
-    run rm -f $plt_rank_genes_groups_matrix_pdf && eval "$scanpy plot rggmatrix $plt_rank_genes_groups_opt $diffexp_obj $plt_rank_genes_groups_matrix_pdf"
+    run rm -f $plt_rank_genes_groups_matrix_pdf && eval "$scanpy plot matrix $plt_rank_genes_groups_opt $diffexp_obj $plt_rank_genes_groups_matrix_pdf"
 
     [ "$status" -eq 0 ]
     [ -f  "$plt_rank_genes_groups_matrix_pdf" ]
@@ -420,7 +435,7 @@ setup() {
         skip "$plt_rank_genes_groups_heatmap_pdf exists and resume is set to 'true'"
     fi
 
-    run rm -f $plt_rank_genes_groups_heatmap_pdf && eval "$scanpy plot rggheat $plt_rank_genes_groups_opt $diffexp_obj $plt_rank_genes_groups_heatmap_pdf"
+    run rm -f $plt_rank_genes_groups_heatmap_pdf && eval "$scanpy plot heat $plt_rank_genes_groups_opt $diffexp_obj $plt_rank_genes_groups_heatmap_pdf"
 
     [ "$status" -eq 0 ]
     [ -f  "$plt_rank_genes_groups_matrix_pdf" ]

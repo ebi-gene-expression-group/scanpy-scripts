@@ -6,12 +6,15 @@ import click
 import pandas as pd
 import scanpy as sc
 from .exchangeable_loom import read_exchangeable_loom, write_exchangeable_loom
+from .cmd_options import CMD_OPTIONS
+from .lib._paga import plot_paga
 
-
-def make_subcmd(cmd_name, options, func, cmd_desc, arg_desc):
+def make_subcmd(cmd_name, func, cmd_desc, arg_desc, opt_set = None):
     """
     Factory function that returns a sub-command function
     """
+    opt_set = opt_set if opt_set else cmd_name
+    options = CMD_OPTIONS[opt_set]
     option_spec = [click.command(cmd_name)]
     option_spec.extend(options)
 
@@ -177,9 +180,24 @@ def write_embedding(adata, key, embed_fn, n_comp=None, sep='\t', key_added=None)
         embed_fn, sep=sep, header=False, index=True)
 
 
-def make_plot_function(FUN, kind=None):
+def make_plot_function(func_name, kind=None):
     """Make plot function that handles common plotting parameters
     """
+
+    # Provide a function translation
+
+    plot_funcs = {
+        'scatter': sc.plotting._tools.scatterplots.plot_scatter,
+        'sviol': sc.plotting._anndata.stacked_violin,
+        'rgg_sviol': sc.plotting._tools.rank_genes_groups_stacked_violin,
+        'dot': sc.plotting._anndata.dotplot,
+        'rgg_dot': sc.plotting._tools.rank_genes_groups_dotplot,
+        'matrix': sc.plotting._anndata.matrixplot,
+        'rgg_matrix': sc.plotting._tools.rank_genes_groups_matrixplot,
+        'heat': sc.plotting._anndata.heatmap,
+        'rgg_heat': sc.plotting._tools.rank_genes_groups_heatmap,
+    }
+
     def plot_function(
             adata,
             output_fig=None,
@@ -193,6 +211,29 @@ def make_plot_function(FUN, kind=None):
             from matplotlib import rcParams
             rcParams.update({'figure.figsize': fig_size})
 
+        # Choose the function to run
+
+        is_rgg=False
+
+        if func_name in plot_funcs:
+            if 'rgg' in kwargs:
+                if kwargs['rgg'] == True:
+                    is_rgg=True
+                    func=plot_funcs[ 'rgg_' + func_name ]
+                    kwargs.pop('var_names', None)
+                else:
+                    func = plot_funcs[ func_name ]
+                    kwargs.pop('groups', None)
+                    kwargs.pop('n_genes', None)
+        
+                kwargs.pop('rgg')
+            else:
+                func = plot_funcs[ func_name ]
+        else:
+            func = globals()[func_name]
+
+        # Generate the output file name
+
         figname = False
         showfig = True
         if output_fig:
@@ -203,14 +244,29 @@ def make_plot_function(FUN, kind=None):
             figname = os.path.basename(output_fig)
             showfig = False
 
-        FUN(
+        # Run the selected function
+
+        func(
             adata,
             save=figname,
             show=showfig,
             **kwargs)
 
+        # Rename output to the spefied file name. We need to work out what
+        # prefix the function will have used for its output files.
+
         if output_fig:
-            prefix = kind if kind else kwargs.get('basis', FUN.__name__)
+            prefix=''
+            if func_name == 'scatter':
+                prefix =  kwargs.get('basis', func.__name__)
+            elif kind:
+                prefix = kind
+            elif func_name in plot_funcs:
+                prefix = plot_funcs[ func_name ].__name__.split('.')[-1]
+
+            print('Prefix is %s' % prefix )
+            print('Moving %s to %s' % (os.path.join(sc.settings.figdir, prefix + figname), output_fig))
+
             os.rename(
                 os.path.join(sc.settings.figdir, prefix + figname), output_fig)
             plt.close()
