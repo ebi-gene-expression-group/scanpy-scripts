@@ -4,7 +4,7 @@ scanpy dpt
 
 import numpy as np
 import scanpy as sc
-from ..cmd_utils import (
+from ..obj_utils import (
     _set_default_key,
     _restore_default_key,
     _backup_default_key,
