@@ -4,6 +4,7 @@ Provides read_10x()
 
 import pandas as pd
 import scanpy as sc
+import logging
 
 
 def read_10x(
@@ -42,4 +43,28 @@ def read_10x(
             right_index=True,
             suffixes=(False, False),
         )
+
+    gene_name = 'index'
+    try:
+        gene_names = getattr(adata.var, gene_name)
+        k_mito = gene_names.str.startswith('MT-')
+        if k_mito.sum() > 0:
+            adata.var['mito'] = k_mito
+        else:
+            logging.warning('No MT genes found, skip calculating '
+                            'expression of mitochondria genes')
+    except AttributeError:
+        logging.warning(
+            'Specified gene column [%s] not found, skip calculating '
+            'expression of mitochondria genes', gene_name)
+
+    if 'n_genes' not in adata.obs.columns:
+        sc.pp.filter_cells(adata, min_genes=0)
+    if 'n_counts' not in adata.obs.columns:
+        sc.pp.filter_cells(adata, min_counts=0)
+    if 'n_cells' not in adata.var.columns:
+        sc.pp.filter_genes(adata, min_cells=0)
+    if 'n_counts' not in adata.var.columns:
+        sc.pp.filter_genes(adata, min_counts=0)
+
     return adata
