@@ -13,7 +13,8 @@ def read_10x(
         genome='hg19',
         var_names='gene_symbols',
         extra_obs=None,
-        extra_var=None
+        extra_var=None,
+        gene_startswith='mito:MT-'
 ):
     """
     Wrapper function for sc.read_10x_h5() and sc.read_10x_mtx(), mainly to
@@ -47,18 +48,23 @@ def read_10x(
     gene_name = 'index'
     if var_names == 'gene_ids'
         gene_name = 'gene_symbols'
-    try:
-        gene_names = getattr(adata.var, gene_name)
-        k_mito = gene_names.str.startswith('MT-')
-        if k_mito.sum() > 0:
-            adata.var['mito'] = k_mito
-        else:
-            logging.warning('No MT genes found, skip calculating '
-                            'expression of mitochondria genes')
-    except AttributeError:
-        logging.warning(
-            'Specified gene column [%s] not found, skip calculating '
-            'expression of mitochondria genes', gene_name)
+    
+    gene_startswith_list = gene_startswith.split(",") # mito:MT-,ERCC:ERCC
+    for gene_sw in gene_startswith_list:
+        if len(gene_sw.split(":"))==2:
+            var_cat = gene_sw.split(":")[0]
+            starts_with = gene_sw.split(":")[1]
+            try:
+                gene_names = getattr(adata.var, gene_name)
+                k_cat = gene_names.str.startswith(starts_with)
+                if k_cat.sum() > 0:
+                adata.var[var_cat] = k_cat
+            else:
+                logging.warning('No {} genes found, skip calculating expression of {} genes'.format(starts_with, var_cat))
+            except AttributeError:
+                logging.warning(
+                    'Specified gene column [%s] not found, skip calculating '
+                    'expression of defined genes', gene_name)
 
     if 'n_genes' not in adata.obs.columns:
         sc.pp.filter_cells(adata, min_genes=0)
