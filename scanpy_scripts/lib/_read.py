@@ -45,6 +45,8 @@ def read_10x(
         )
 
     gene_name = 'index'
+    if var_names == 'gene_ids'
+        gene_name = 'gene_symbols'
     try:
         gene_names = getattr(adata.var, gene_name)
         k_mito = gene_names.str.startswith('MT-')
