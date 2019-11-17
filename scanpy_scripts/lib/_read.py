@@ -62,8 +62,8 @@ def read_10x(
                 if k_cat.sum() > 0:
                     adata.var[var_cat] = k_cat
                     qc_vars.append(var_cat)
-            else:
-                logging.warning('No {} genes found, skip calculating expression of {} genes'.format(starts_with, var_cat))
+                else:
+                    logging.warning('No {} genes found, skip calculating expression of {} genes'.format(starts_with, var_cat))
             except AttributeError:
                 logging.warning(
                     'Specified gene column [%s] not found, skip calculating '
