@@ -46,7 +46,7 @@ def read_10x(
         )
 
     gene_name = 'index'
-    if var_names == 'gene_ids'
+    if var_names == 'gene_ids':
         gene_name = 'gene_symbols'
         
     qc_vars = list()
