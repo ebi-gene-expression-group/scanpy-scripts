@@ -48,6 +48,8 @@ def read_10x(
     gene_name = 'index'
     if var_names == 'gene_ids'
         gene_name = 'gene_symbols'
+        
+    qc_vars = list()
     
     gene_startswith_list = gene_startswith.split(",") # mito:MT-,ERCC:ERCC
     for gene_sw in gene_startswith_list:
@@ -58,13 +60,20 @@ def read_10x(
                 gene_names = getattr(adata.var, gene_name)
                 k_cat = gene_names.str.startswith(starts_with)
                 if k_cat.sum() > 0:
-                adata.var[var_cat] = k_cat
+                    adata.var[var_cat] = k_cat
+                    qc_vars.append(var_cat)
             else:
                 logging.warning('No {} genes found, skip calculating expression of {} genes'.format(starts_with, var_cat))
             except AttributeError:
                 logging.warning(
                     'Specified gene column [%s] not found, skip calculating '
                     'expression of defined genes', gene_name)
+                
+    if len(qc_vars) > 0 or pct_top:
+        if not pct_top:
+            pct_top = [50]
+        sc.pp.calculate_qc_metrics(
+            adata, qc_vars=qc_vars, percent_top=pct_top, inplace=True)
 
     if 'n_genes' not in adata.obs.columns:
         sc.pp.filter_cells(adata, min_genes=0)
