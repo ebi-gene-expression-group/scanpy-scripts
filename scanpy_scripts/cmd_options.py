@@ -534,6 +534,13 @@ CMD_OPTIONS = {
             'Multiple -p entries allowed.',
         ),
         click.option(
+            '--boolean', '-b',
+            type=(click.STRING),
+            multiple=True,
+            help='A boolean variable to filter by. Multiple -b entries '
+            'allowed.'
+        ),
+        click.option(
             '--category', '-c',
             type=(click.STRING, CommaSeparatedText()),
             multiple=True,

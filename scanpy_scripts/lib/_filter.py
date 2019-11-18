@@ -16,6 +16,7 @@ def filter_anndata(
         param=None,
         category=None,
         subset=None,
+        boolean=None,
 ):
     """
     Wrapper function for sc.pp.filter_cells() and sc.pp.filter_genes(), mainly
@@ -24,11 +25,13 @@ def filter_anndata(
     param = [] if param is None else param
     category = [] if category is None else category
     subset = [] if subset is None else subset
+    boolean = [] if boolean is None else boolean
 
     logging.debug('--gene-name=%s', gene_name)
     logging.debug('--param=%s', param)
     logging.debug('--category=%s', category)
     logging.debug('--subset=%s', subset)
+    logging.debug('--boolean=%s', boolean)
 
     if 'mito' not in adata.var.keys() and gene_name:
         try:
@@ -50,7 +53,7 @@ def filter_anndata(
         return 0
 
     conditions, qc_vars, pct_top = _get_filter_conditions(
-        attributes, param, category, subset)
+        attributes, param, category, subset, boolean)
 
     if 'n_genes' not in adata.obs.columns:
         sc.pp.filter_cells(adata, min_genes=0)
@@ -81,6 +84,13 @@ def filter_anndata(
             k_cell = k_cell & (~attr.isin(values))
         else:
             k_cell = k_cell & attr.isin(values)
+    
+    for cond in conditions['c']['bool']:
+        attr = getattr(adata.obs, name)
+        if cond.startswith('!'):
+            k_cell = k_cell & ~attr
+        else:
+            k_cell = k_cell & attr
 
     k_gene = np.ones(len(adata.var)).astype(bool)
     for cond in conditions['g']['numerical']:
@@ -96,6 +106,14 @@ def filter_anndata(
             k_gene = k_gene & (~attr.isin(values))
         else:
             k_gene = k_gene & attr.isin(values)
+    
+    for cond in conditions['g']['bool']:
+        if cond.startswith('!'):
+            attr = getattr(adata.var, cond[1:])
+            k_gene = k_gene & ~attr
+        else:
+            attr = getattr(adata.var, cond)
+            k_gene = k_gene & attr
 
     adata._inplace_subset_obs(k_cell)
     adata._inplace_subset_var(k_gene)
@@ -162,11 +180,14 @@ def _get_attributes(adata):
 
 def _attributes_exists(name, attributes, dtype):
     cond_cat = ''
+
     if name.startswith('c:') or name.startswith('g:'):
         cond_cat, _, cond_name = name.partition(':')
-        found = int(cond_name in attributes[cond_cat][dtype])
+        test_name = cond_name[1:] if cond_name.startswith('!') else cond_name
+        found = int(test_name in attributes[cond_cat][dtype])
     else:
         cond_name = name
+        test_name = cond_name[1:] if cond_name.startswith('!') else cond_name
         if cond_name in attributes['c'][dtype]:
             cond_cat += 'c'
         if cond_name in attributes['g'][dtype]:
@@ -175,7 +196,7 @@ def _attributes_exists(name, attributes, dtype):
     return found, cond_cat, cond_name
 
 
-def _get_filter_conditions(attributes, param, category, subset):
+def _get_filter_conditions(attributes, param, category, subset, boolean):
     conditions = {
         'c': {
             'numerical': [],
@@ -222,12 +243,24 @@ def _get_filter_conditions(attributes, param, category, subset):
             raise click.ClickException(f"Ambiguous attribute \"{name}\" found in "
                                        "both cell and gene table")
         if found < 1:
-            raise click.ClickException("Attribute \"{name}\" unavailable")
+            raise click.ClickException(f"Attribute \"{name}\" unavailable")
         if not isinstance(values, (list, tuple)):
             fh = values
             values = fh.read().rstrip().split('\n')
             fh.close()
         conditions[cond_cat]['categorical'].append((cond_name, values))
+
+    for name in boolean:
+        found, cond_cat, cond_name = _attributes_exists(
+            name, attributes, 'bool')
+        if found > 1:
+            raise click.ClickException(f"Ambiguous attribute \"{name}\" found in "
+                                       "both cell and gene table")
+        if found < 1:
+            raise click.ClickException(f"Boolean \"{name}\" unavailable")
+        
+        conditions[cond_cat]['bool'].append(cond_name)
+
 
     logging.debug((conditions, qc_vars, pct_top))
     return conditions, qc_vars, sorted(pct_top)
