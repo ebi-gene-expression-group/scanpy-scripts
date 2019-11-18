@@ -3,6 +3,35 @@ Provide helper functions for constructing sub-commands
 """
 
 import scanpy as sc
+import pandas as pd
+
+def write_cluster(adata, keys, cluster_fn, sep='\t'):
+    """Export cell clustering as a text table
+    """
+    if not isinstance(keys, (list, tuple)):
+        keys = [keys]
+    for key in keys:
+        if key not in adata.obs.keys():
+            raise KeyError(f'{key} is not a valid `.uns` key')
+    adata.obs[keys].reset_index(level=0).rename(columns={'index': 'cells'}).to_csv(
+        cluster_fn, sep=sep, header=True, index=False)
+
+
+def write_embedding(adata, key, embed_fn, n_comp=None, sep='\t', key_added=None):
+    """Export cell embeddings as a txt table
+    """
+    if key_added:
+        if embed_fn.endswith('.tsv'):
+            embed_fn = embed_fn[0:-4]
+        embed_fn = f'{embed_fn}_{key_added}.tsv'
+    if key not in adata.obsm.keys():
+        raise KeyError(f'{key} is not a valid `.obsm` key')
+    mat = adata.obsm[key].copy()
+    if n_comp is not None and mat.shape[1] >= n_comp:
+        mat = mat[:, 0:n_comp]
+    pd.DataFrame(mat, index=adata.obs_names).to_csv(
+        embed_fn, sep=sep, header=False, index=True)
+
 
 # The functions below handles slot key.
 #

@@ -9,9 +9,8 @@ from ..obj_utils import (
     _backup_obsm_key,
     _rename_obsm_key,
     _delete_obsm_backup_key,
-    write_embedding,
+    write_embedding
 )
-
 
 def umap(
         adata,

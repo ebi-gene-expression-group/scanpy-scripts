@@ -3,7 +3,7 @@ scanpy leiden
 """
 
 import scanpy as sc
-from ..cmd_utils import write_cluster
+from ..obj_utils import write_cluster
 
 
 def leiden(
