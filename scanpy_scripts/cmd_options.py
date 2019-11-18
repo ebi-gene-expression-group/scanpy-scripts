@@ -540,7 +540,8 @@ CMD_OPTIONS = {
             help='Categorical attributes used to filter the data, '
             'in the format of "-c <name> <values>", '
             'where entries with attribute <name> with value in <values> are kept. '
-            'Multiple -c entries allowed.',
+            'If <values> is preceded by "!", entries with value in <values> are '
+            'removed. Multiple -c entries allowed.',
         ),
         click.option(
             '--subset', '-s',
