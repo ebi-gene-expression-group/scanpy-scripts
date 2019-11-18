@@ -3,7 +3,7 @@ scanpy pca
 """
 
 import scanpy as sc
-from ..cmd_utils import write_embedding
+from ..obj_utils import write_embedding
 
 def pca(adata, key_added=None, export_embedding=None, **kwargs):
     """

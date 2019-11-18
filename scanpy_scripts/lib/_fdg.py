@@ -3,7 +3,7 @@ scanpy fdg
 """
 
 import scanpy as sc
-from ..cmd_utils import (
+from ..obj_utils import (
     _backup_obsm_key,
     _delete_obsm_backup_key,
     _rename_obsm_key,

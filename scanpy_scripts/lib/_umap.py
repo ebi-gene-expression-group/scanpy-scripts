@@ -3,15 +3,14 @@ scanpy umap
 """
 
 import scanpy as sc
-from ..cmd_utils import (
+from ..obj_utils import (
     _set_default_key,
     _restore_default_key,
     _backup_obsm_key,
     _rename_obsm_key,
     _delete_obsm_backup_key,
-    write_embedding,
+    write_embedding
 )
-
 
 def umap(
         adata,

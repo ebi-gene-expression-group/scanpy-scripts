@@ -10,34 +10,6 @@ from .cmd_utils import (
     make_subcmd,
     make_plot_function,
 )
-from .cmd_options import (
-    READ_CMD_OPTIONS,
-    FILTER_CMD_OPTIONS,
-    NORM_CMD_OPTIONS,
-    HVG_CMD_OPTIONS,
-    SCALE_CMD_OPTIONS,
-    REGRESS_CMD_OPTIONS,
-    PCA_CMD_OPTIONS,
-    NEIGHBOR_CMD_OPTIONS,
-    UMAP_CMD_OPTIONS,
-    TSNE_CMD_OPTIONS,
-    FDG_CMD_OPTIONS,
-    LOUVAIN_CMD_OPTIONS,
-    LEIDEN_CMD_OPTIONS,
-    DIFFEXP_CMD_OPTIONS,
-    PAGA_CMD_OPTIONS,
-    DIFFMAP_CMD_OPTIONS,
-    DPT_CMD_OPTIONS,
-    PLOT_EMBED_CMD_OPTIONS,
-    PLOT_PAGA_CMD_OPTIONS,
-    PLOT_STACKED_VIOLIN_CMD_OPTIONS,
-    PLOT_RANK_GENE_GROUPS_STACKED_VIOLIN_CMD_OPTIONS,
-    PLOT_DOT_CMD_OPTIONS,
-    PLOT_MATRIX_CMD_OPTIONS,
-    PLOT_RANK_GENE_GROUPS_MATRIX_CMD_OPTIONS,
-    PLOT_HEATMAP_CMD_OPTIONS,
-    PLOT_RANK_GENE_GROUPS_HEATMAP_CMD_OPTIONS,
-)
 from .lib._read import read_10x
 from .lib._filter import filter_anndata
 from .lib._norm import normalize
@@ -50,7 +22,7 @@ from .lib._fdg import fdg
 from .lib._louvain import louvain
 from .lib._leiden import leiden
 from .lib._diffexp import diffexp
-from .lib._paga import paga, plot_paga
+from .lib._paga import paga
 from .lib._diffmap import diffmap
 from .lib._dpt import dpt
 
@@ -73,7 +45,6 @@ _IP_DESC = '\n'.join([_I_DESC, _P_DESC])
 
 READ_CMD = make_subcmd(
     'read',
-    READ_CMD_OPTIONS,
     read_10x,
     cmd_desc='Read 10x data and save in specified format.',
     arg_desc=_O_DESC,
@@ -82,7 +53,6 @@ READ_CMD = make_subcmd(
 
 FILTER_CMD = make_subcmd(
     'filter',
-    FILTER_CMD_OPTIONS,
     filter_anndata,
     cmd_desc='Filter data based on specified conditions.',
     arg_desc=_IO_DESC,
@@ -91,7 +61,6 @@ FILTER_CMD = make_subcmd(
 
 NORM_CMD = make_subcmd(
     'norm',
-    NORM_CMD_OPTIONS,
     normalize,
     cmd_desc='Normalise data per cell.',
     arg_desc=_IO_DESC,
@@ -100,7 +69,6 @@ NORM_CMD = make_subcmd(
 
 HVG_CMD = make_subcmd(
     'hvg',
-    HVG_CMD_OPTIONS,
     hvg,
     cmd_desc='Find highly variable genes.',
     arg_desc=_IO_DESC,
@@ -109,7 +77,6 @@ HVG_CMD = make_subcmd(
 
 SCALE_CMD = make_subcmd(
     'scale',
-    SCALE_CMD_OPTIONS,
     sc.pp.scale,
     cmd_desc='Scale data per gene.',
     arg_desc=_IO_DESC,
@@ -118,7 +85,6 @@ SCALE_CMD = make_subcmd(
 
 REGRESS_CMD = make_subcmd(
     'regress',
-    REGRESS_CMD_OPTIONS,
     sc.pp.regress_out,
     cmd_desc='Regress-out observation variables.',
     arg_desc=_IO_DESC,
@@ -127,7 +93,6 @@ REGRESS_CMD = make_subcmd(
 
 PCA_CMD = make_subcmd(
     'pca',
-    PCA_CMD_OPTIONS,
     pca,
     cmd_desc='Dimensionality reduction by PCA.',
     arg_desc=_IO_DESC,
@@ -135,7 +100,6 @@ PCA_CMD = make_subcmd(
 
 NEIGHBOR_CMD = make_subcmd(
     'neighbor',
-    NEIGHBOR_CMD_OPTIONS,
     neighbors,
     cmd_desc='Compute a neighbourhood graph of observations.',
     arg_desc=_IO_DESC,
@@ -143,7 +107,6 @@ NEIGHBOR_CMD = make_subcmd(
 
 UMAP_CMD = make_subcmd(
     'umap',
-    UMAP_CMD_OPTIONS,
     umap,
     cmd_desc='Embed the neighborhood graph using UMAP.',
     arg_desc=_IO_DESC,
@@ -151,7 +114,6 @@ UMAP_CMD = make_subcmd(
 
 TSNE_CMD = make_subcmd(
     'tsne',
-    TSNE_CMD_OPTIONS,
     tsne,
     cmd_desc='Embed the cells using t-SNE.',
     arg_desc=_IO_DESC,
@@ -159,7 +121,6 @@ TSNE_CMD = make_subcmd(
 
 FDG_CMD = make_subcmd(
     'fdg',
-    FDG_CMD_OPTIONS,
     fdg,
     cmd_desc='Embed the neighborhood graph using force-directed graph.',
     arg_desc=_IO_DESC,
@@ -167,7 +128,6 @@ FDG_CMD = make_subcmd(
 
 DIFFMAP_CMD = make_subcmd(
     'diffmap',
-    DIFFMAP_CMD_OPTIONS,
     diffmap,
     cmd_desc='Embed the neighborhood graph using diffusion map.',
     arg_desc=_IO_DESC,
@@ -175,7 +135,6 @@ DIFFMAP_CMD = make_subcmd(
 
 LOUVAIN_CMD = make_subcmd(
     'louvain',
-    LOUVAIN_CMD_OPTIONS,
     louvain,
     cmd_desc='Find clusters by Louvain algorithm.',
     arg_desc=_IO_DESC,
@@ -183,7 +142,6 @@ LOUVAIN_CMD = make_subcmd(
 
 LEIDEN_CMD = make_subcmd(
     'leiden',
-    LEIDEN_CMD_OPTIONS,
     leiden,
     cmd_desc='Find clusters by Leiden algorithm.',
     arg_desc=_IO_DESC,
@@ -191,7 +149,6 @@ LEIDEN_CMD = make_subcmd(
 
 DIFFEXP_CMD = make_subcmd(
     'diffexp',
-    DIFFEXP_CMD_OPTIONS,
     diffexp,
     cmd_desc='Find markers for each clusters.',
     arg_desc=_IO_DESC,
@@ -199,7 +156,6 @@ DIFFEXP_CMD = make_subcmd(
 
 PAGA_CMD = make_subcmd(
     'paga',
-    PAGA_CMD_OPTIONS,
     paga,
     cmd_desc='Trajectory inference by abstract graph analysis.',
     arg_desc=_IO_DESC,
@@ -207,7 +163,6 @@ PAGA_CMD = make_subcmd(
 
 DPT_CMD = make_subcmd(
     'dpt',
-    DPT_CMD_OPTIONS,
     dpt,
     cmd_desc='Calculate diffusion pseudotime relative to the root cells.',
     arg_desc=_IO_DESC,
@@ -215,72 +170,43 @@ DPT_CMD = make_subcmd(
 
 PLOT_EMBED_CMD = make_subcmd(
     'embed',
-    PLOT_EMBED_CMD_OPTIONS,
-    make_plot_function(sc.plotting._tools.scatterplots.plot_scatter),
+    make_plot_function('scatter'),
     cmd_desc='Plot cell embeddings.',
     arg_desc=_IP_DESC,
 )
 
 PLOT_STACKED_VIOLIN_CMD = make_subcmd(
     'sviol',
-    PLOT_STACKED_VIOLIN_CMD_OPTIONS,
-    make_plot_function(sc.plotting._anndata.stacked_violin),
+    make_plot_function('sviol'),
     cmd_desc='Plot stacked violin plots.',
-    arg_desc=_IP_DESC,
-)
-
-PLOT_RANK_GENE_GROUPS_STACKED_VIOLIN_CMD = make_subcmd(
-    'rggsviol',
-    PLOT_RANK_GENE_GROUPS_STACKED_VIOLIN_CMD_OPTIONS,
-    make_plot_function(sc.plotting._tools.rank_genes_groups_stacked_violin, kind='stacked_violin'),
-    cmd_desc='Plot ranking of genes using stacked_violin plot.',
     arg_desc=_IP_DESC,
 )
 
 PLOT_DOT_CMD = make_subcmd(
     'dot',
-    PLOT_DOT_CMD_OPTIONS,
-    make_plot_function(sc.plotting._anndata.dotplot),
+    make_plot_function('dot'),
     cmd_desc='Plot a dot plot of expression values.',
     arg_desc=_IP_DESC,
 )
 
 PLOT_MATRIX_CMD = make_subcmd(
     'matrix',
-    PLOT_MATRIX_CMD_OPTIONS,
-    make_plot_function(sc.plotting._anndata.matrixplot),
+    make_plot_function('matrix'),
     cmd_desc='Plot a heatmap of the mean expression values per cluster.',
-    arg_desc=_IP_DESC,
-)
-
-PLOT_RANK_GENE_GROUPS_MATRIX_CMD = make_subcmd(
-    'rggmatrix',
-    PLOT_RANK_GENE_GROUPS_MATRIX_CMD_OPTIONS,
-    make_plot_function(sc.plotting._tools.rank_genes_groups_matrixplot, kind='matrixplot'),
-    cmd_desc='Plot ranking of genes using matrixplot plot.',
     arg_desc=_IP_DESC,
 )
 
 PLOT_HEATMAP_CMD = make_subcmd(
     'heat',
-    PLOT_HEATMAP_CMD_OPTIONS,
-    make_plot_function(sc.plotting._anndata.heatmap),
+    make_plot_function('heat'),
     cmd_desc='Plot a heatmap of the expression values of genes.',
-    arg_desc=_IP_DESC,
-)
-
-PLOT_RANK_GENE_GROUPS_HEATMAP_CMD = make_subcmd(
-    'rggheat',
-    PLOT_RANK_GENE_GROUPS_HEATMAP_CMD_OPTIONS,
-    make_plot_function(sc.plotting._tools.rank_genes_groups_heatmap, kind='heatmap'),
-    cmd_desc='Plot a ranking of genes using heatmap plot.',
     arg_desc=_IP_DESC,
 )
 
 PLOT_PAGA_CMD = make_subcmd(
     'paga',
-    PLOT_PAGA_CMD_OPTIONS,
-    make_plot_function(plot_paga, kind='paga'),
+    make_plot_function('plot_paga', kind='paga'),
     cmd_desc='Plot PAGA trajectories.',
     arg_desc=_IP_DESC,
+    opt_set='plot_paga'
 )

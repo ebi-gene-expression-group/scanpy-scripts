@@ -3,7 +3,7 @@ scanpy neighbors
 """
 
 import scanpy as sc
-from ..cmd_utils import (
+from ..obj_utils import (
     _backup_default_key,
     _delete_backup_key,
     _rename_default_key,
