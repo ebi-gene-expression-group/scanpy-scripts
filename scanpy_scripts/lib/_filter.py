@@ -141,7 +141,7 @@ def _get_attributes(adata):
             if dtype.name == 'category' and dtype.categories.is_boolean():
                 attributes['c']['bool'].append(attr)
             attributes['c']['categorical'].append(attr)
-        elif typ in ('i', 'f'):
+        elif typ in ('i', 'f', 'u'):
             attributes['c']['numerical'].append(attr)
         elif typ == 'b':
             attributes['c']['bool'].append(attr)
@@ -152,7 +152,7 @@ def _get_attributes(adata):
             if dtype.name == 'category' and dtype.categories.is_boolean():
                 attributes['g']['bool'].append(attr)
             attributes['g']['categorical'].append(attr)
-        elif typ in ('i', 'f'):
+        elif typ in ('i', 'f', 'u'):
             attributes['g']['numerical'].append(attr)
         elif typ == 'b':
             attributes['g']['bool'].append(attr)
