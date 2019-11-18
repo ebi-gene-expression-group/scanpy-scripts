@@ -254,7 +254,7 @@ def _get_filter_conditions(attributes, param, category, subset, boolean):
         found, cond_cat, cond_name = _attributes_exists(
             name, attributes, 'bool')
         if found > 1:
-            raise click.ClickException(f"Ambiguous attribute \"{name}\" found in "
+            raise click.ClickException(f"Ambiguous boolean \"{name}\" found in "
                                        "both cell and gene table")
         if found < 1:
             raise click.ClickException(f"Boolean \"{name}\" unavailable")
