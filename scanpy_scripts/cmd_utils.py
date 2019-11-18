@@ -152,34 +152,6 @@ def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False):
     var_df.to_csv(gene_fname, sep='\t', header=False, index=False)
 
 
-def write_cluster(adata, keys, cluster_fn, sep='\t'):
-    """Export cell clustering as a text table
-    """
-    if not isinstance(keys, (list, tuple)):
-        keys = [keys]
-    for key in keys:
-        if key not in adata.obs.keys():
-            raise KeyError(f'{key} is not a valid `.uns` key')
-    adata.obs[keys].reset_index(level=0).rename(columns={'index': 'cells'}).to_csv(
-        cluster_fn, sep=sep, header=True, index=False)
-
-
-def write_embedding(adata, key, embed_fn, n_comp=None, sep='\t', key_added=None):
-    """Export cell embeddings as a txt table
-    """
-    if key_added:
-        if embed_fn.endswith('.tsv'):
-            embed_fn = embed_fn[0:-4]
-        embed_fn = f'{embed_fn}_{key_added}.tsv'
-    if key not in adata.obsm.keys():
-        raise KeyError(f'{key} is not a valid `.obsm` key')
-    mat = adata.obsm[key].copy()
-    if n_comp is not None and mat.shape[1] >= n_comp:
-        mat = mat[:, 0:n_comp]
-    pd.DataFrame(mat, index=adata.obs_names).to_csv(
-        embed_fn, sep=sep, header=False, index=True)
-
-
 def make_plot_function(func_name, kind=None):
     """Make plot function that handles common plotting parameters
     """
@@ -188,14 +160,14 @@ def make_plot_function(func_name, kind=None):
 
     plot_funcs = {
         'scatter': sc.plotting._tools.scatterplots.plot_scatter,
-        'sviol': sc.plotting._anndata.stacked_violin,
-        'rgg_sviol': sc.plotting._tools.rank_genes_groups_stacked_violin,
-        'dot': sc.plotting._anndata.dotplot,
-        'rgg_dot': sc.plotting._tools.rank_genes_groups_dotplot,
-        'matrix': sc.plotting._anndata.matrixplot,
-        'rgg_matrix': sc.plotting._tools.rank_genes_groups_matrixplot,
-        'heat': sc.plotting._anndata.heatmap,
-        'rgg_heat': sc.plotting._tools.rank_genes_groups_heatmap,
+        'sviol': sc.pl.stacked_violin,
+        'rgg_sviol': sc.pl.rank_genes_groups_stacked_violin,
+        'dot': sc.pl.dotplot,
+        'rgg_dot': sc.pl.rank_genes_groups_dotplot,
+        'matrix': sc.pl.matrixplot,
+        'rgg_matrix': sc.pl.rank_genes_groups_matrixplot,
+        'heat': sc.pl.heatmap,
+        'rgg_heat': sc.pl.rank_genes_groups_heatmap,
     }
 
     def plot_function(
@@ -263,9 +235,6 @@ def make_plot_function(func_name, kind=None):
                 prefix = kind
             elif func_name in plot_funcs:
                 prefix = plot_funcs[ func_name ].__name__.split('.')[-1]
-
-            print('Prefix is %s' % prefix )
-            print('Moving %s to %s' % (os.path.join(sc.settings.figdir, prefix + figname), output_fig))
 
             os.rename(
                 os.path.join(sc.settings.figdir, prefix + figname), output_fig)
