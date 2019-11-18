@@ -91,7 +91,11 @@ def filter_anndata(
     for cond in conditions['g']['categorical']:
         name, values = cond
         attr = getattr(adata.var, name)
-        k_gene = k_gene & attr.isin(values)
+        if values[0].startswith('!'):
+            values[0] = values[0][1:]
+            k_gene = k_gene & (~attr.isin(values))
+        else:
+            k_gene = k_gene & attr.isin(values)
 
     adata._inplace_subset_obs(k_cell)
     adata._inplace_subset_var(k_gene)
@@ -195,8 +199,8 @@ def _get_filter_conditions(attributes, param, category, subset):
         pt_match = percent_top_pattern.match(cond_name)
         qv_match = qc_vars_pattern.match(cond_name)
         if found > 1:
-            raise click.ClickException(f'Ambiguous parameter "{name}" found in '
-                                       'both cell and gene table')
+            raise click.ClickException(f"Ambiguous parameter \"{name}\" found in "
+                                       "both cell and gene table")
         if found < 1:
             if pt_match:
                 pct_top.append(int(pt_match['n']))
@@ -205,7 +209,7 @@ def _get_filter_conditions(attributes, param, category, subset):
                 qc_vars.append(qv_match['qc_var'])
                 cond_cat = 'c'
             else:
-                raise click.ClickException(f'Parameter "{name}" unavailable')
+                raise click.ClickException(f"Parameter \"{name}\" unavailable")
         if pt_match or qv_match:
             vmin *= 100
             vmax *= 100
@@ -215,10 +219,10 @@ def _get_filter_conditions(attributes, param, category, subset):
         found, cond_cat, cond_name = _attributes_exists(
             name, attributes, 'categorical')
         if found > 1:
-            raise click.ClickException(f'Ambiguous attribute "{name}" found in '
-                                       'both cell and gene table')
+            raise click.ClickException(f"Ambiguous attribute \"{name}\" found in "
+                                       "both cell and gene table")
         if found < 1:
-            raise click.ClickException('Attribute "{name}" unavailable')
+            raise click.ClickException("Attribute \"{name}\" unavailable")
         if not isinstance(values, (list, tuple)):
             fh = values
             values = fh.read().rstrip().split('\n')
