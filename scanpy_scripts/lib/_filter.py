@@ -76,7 +76,11 @@ def filter_anndata(
     for cond in conditions['c']['categorical']:
         name, values = cond
         attr = getattr(adata.obs, name)
-        k_cell = k_cell & attr.isin(values)
+        if values[0].startswith('!'):
+            values[0] = values[0][1:]
+            k_cell = k_cell & (~attr.isin(values))
+        else:
+            k_cell = k_cell & attr.isin(values)
 
     k_gene = np.ones(len(adata.var)).astype(bool)
     for cond in conditions['g']['numerical']:

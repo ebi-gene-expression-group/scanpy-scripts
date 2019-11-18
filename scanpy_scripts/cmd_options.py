@@ -429,14 +429,14 @@ COMMON_OPTIONS = {
     ],
 
     'swap_axes': click.option(
-            '--swap-axes',
-            is_flag=True,
-            default=False,
-            show_default=True,
-            help='By default, the x axis contains var_names (e.g. genes) and the y '
-            'axis the groupby categories. By setting swap_axes then x are the '
-            'groupby categories and y the var_names. When swapping axes '
-            'var_group_positions are no longer used.',
+        '--swap-axes',
+        is_flag=True,
+        default=False,
+        show_default=True,
+        help='By default, the x axis contains var_names (e.g. genes) and the y '
+        'axis the groupby categories. By setting swap_axes then x are the '
+        'groupby categories and y the var_names. When swapping axes '
+        'var_group_positions are no longer used.',
     ),
 
     'rank_genes_groups_plots': [
@@ -540,7 +540,8 @@ CMD_OPTIONS = {
             help='Categorical attributes used to filter the data, '
             'in the format of "-c <name> <values>", '
             'where entries with attribute <name> with value in <values> are kept. '
-            'Multiple -c entries allowed.',
+            'If <values> is preceded by "!", entries with value in <values> are '
+            'removed. Multiple -c entries allowed.',
         ),
         click.option(
             '--subset', '-s',
@@ -659,7 +660,7 @@ CMD_OPTIONS = {
             'not clip',
         ),
     ],
-    
+
     'regress': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
@@ -1296,7 +1297,7 @@ CMD_OPTIONS = {
             help='For directed graphs, specify the length and width of the arrowhead.',
         ),
     ],
-    
+
     'sviol': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['plot'],
@@ -1308,7 +1309,7 @@ CMD_OPTIONS = {
         COMMON_OPTIONS['swap_axes'],
     ],
 
-    'dot': [ 
+    'dot': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['plot'],
         COMMON_OPTIONS['use_raw'],
@@ -1317,7 +1318,7 @@ CMD_OPTIONS = {
         *COMMON_OPTIONS['diffexp_plot'],
         *COMMON_OPTIONS['dot'],
     ],
-    
+
     'matrix': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['plot'],
@@ -1326,7 +1327,7 @@ CMD_OPTIONS = {
         *COMMON_OPTIONS['rank_genes_groups_plots'],
         *COMMON_OPTIONS['diffexp_plot'],
     ],
-    
+
     'heat': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['plot'],
