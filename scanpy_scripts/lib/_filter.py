@@ -36,6 +36,7 @@ def filter_anndata(
             k_mito = gene_names.str.startswith('MT-')
             if k_mito.sum() > 0:
                 adata.var['mito'] = k_mito
+                adata.var['mito'] = adata.var['mito'].astype('category')
             else:
                 logging.warning('No MT genes found, skip calculating '
                                 'expression of mitochondria genes')
@@ -75,7 +76,7 @@ def filter_anndata(
 
     for cond in conditions['c']['categorical']:
         name, values = cond
-        attr = getattr(adata.obs, name)
+        attr = getattr(adata.obs, name).astype(str)
         if values[0].startswith('!'):
             values[0] = values[0][1:]
             k_cell = k_cell & (~attr.isin(values))
@@ -90,8 +91,12 @@ def filter_anndata(
 
     for cond in conditions['g']['categorical']:
         name, values = cond
-        attr = getattr(adata.var, name)
-        k_gene = k_gene & attr.isin(values)
+        attr = getattr(adata.var, name).astype(str)
+        if values[0].startswith('!'):
+            values[0] = values[0][1:]
+            k_gene = k_gene & ~(attr.isin(values))
+        else:
+            k_gene = k_gene & attr.isin(values)
 
     adata._inplace_subset_obs(k_cell)
     adata._inplace_subset_var(k_gene)
@@ -119,7 +124,7 @@ def _get_attributes(adata):
             if dtype.name == 'category' and dtype.categories.is_boolean():
                 attributes['c']['bool'].append(attr)
             attributes['c']['categorical'].append(attr)
-        elif typ in ('i', 'f'):
+        elif typ in ('i', 'f', 'u'):
             attributes['c']['numerical'].append(attr)
         elif typ == 'b':
             attributes['c']['bool'].append(attr)
@@ -130,7 +135,7 @@ def _get_attributes(adata):
             if dtype.name == 'category' and dtype.categories.is_boolean():
                 attributes['g']['bool'].append(attr)
             attributes['g']['categorical'].append(attr)
-        elif typ in ('i', 'f'):
+        elif typ in ('i', 'f', 'u'):
             attributes['g']['numerical'].append(attr)
         elif typ == 'b':
             attributes['g']['bool'].append(attr)
@@ -218,7 +223,7 @@ def _get_filter_conditions(attributes, param, category, subset):
             raise click.ClickException(f'Ambiguous attribute "{name}" found in '
                                        'both cell and gene table')
         if found < 1:
-            raise click.ClickException('Attribute "{name}" unavailable')
+            raise click.ClickException(f'Attribute "{name}" unavailable')
         if not isinstance(values, (list, tuple)):
             fh = values
             values = fh.read().rstrip().split('\n')
