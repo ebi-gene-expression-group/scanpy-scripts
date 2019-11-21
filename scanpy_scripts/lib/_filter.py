@@ -166,19 +166,24 @@ def _get_attributes(adata):
     return attributes
 
 
-def _attributes_exists(name, attributes, dtype):
+def _attributes_exists(name, attributes, dtypes=list()):
     cond_cat = ''
-    if name.startswith('c:') or name.startswith('g:'):
-        cond_cat, _, cond_name = name.partition(':')
-        found = int(cond_name in attributes[cond_cat][dtype])
-    else:
-        cond_name = name
-        if cond_name in attributes['c'][dtype]:
-            cond_cat += 'c'
-        if cond_name in attributes['g'][dtype]:
-            cond_cat += 'g'
-        found = len(cond_cat)
-    return found, cond_cat, cond_name
+    for dtype in dtypes:
+        if name.startswith('c:') or name.startswith('g:'):
+            cond_cat, _, cond_name = name.partition(':')
+            found = int(cond_name in attributes[cond_cat][dtype])
+        else:
+            cond_name = name
+            if cond_name in attributes['c'][dtype]:
+                cond_cat += 'c'
+            if cond_name in attributes['g'][dtype]:
+                cond_cat += 'g'
+            found = len(cond_cat)
+        if found == 1:
+            return found, cond_cat, cond_name
+        else:
+            max_found = max(max_found, found)
+    return max_found, cond_cat, cond_name
 
 
 def _get_filter_conditions(attributes, param, category, subset):
@@ -201,7 +206,7 @@ def _get_filter_conditions(attributes, param, category, subset):
 
     for name, vmin, vmax in param:
         found, cond_cat, cond_name = _attributes_exists(
-            name, attributes, 'numerical')
+            name, attributes, ['numerical'])
         pt_match = percent_top_pattern.match(cond_name)
         qv_match = qc_vars_pattern.match(cond_name)
         if found > 1:
@@ -223,7 +228,7 @@ def _get_filter_conditions(attributes, param, category, subset):
 
     for name, values in category + subset:
         found, cond_cat, cond_name = _attributes_exists(
-            name, attributes, 'categorical')
+            name, attributes, ['categorical','bool'])
         if found > 1:
             raise click.ClickException(f'Ambiguous attribute "{name}" found in '
                                        'both cell and gene table')
