@@ -70,8 +70,8 @@ def filter_anndata(
         adata, layer=layer, qc_vars=qc_vars, percent_top=pct_top, inplace=True)
     adata.obs['n_counts'] = adata.obs['total_counts']
     adata.obs['n_genes'] = adata.obs['n_genes_by_counts']
-    adata.obs['n_counts'] = adata.obs['total_counts']
-    adata.obs['n_cells'] = adata.obs['n_cells_by_counts']
+    adata.var['n_counts'] = adata.var['total_counts']
+    adata.var['n_cells'] = adata.var['n_cells_by_counts']
 
     k_cell = np.ones(len(adata.obs)).astype(bool)
     for cond in conditions['c']['numerical']:
