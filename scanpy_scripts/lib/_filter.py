@@ -16,6 +16,7 @@ def filter_anndata(
         param=None,
         category=None,
         subset=None,
+        force_recalc=False,
 ):
     """
     Wrapper function for sc.pp.filter_cells() and sc.pp.filter_genes(), mainly
@@ -53,20 +54,24 @@ def filter_anndata(
     conditions, qc_vars, pct_top = _get_filter_conditions(
         attributes, param, category, subset)
 
-    if 'n_genes' not in adata.obs.columns:
-        sc.pp.filter_cells(adata, min_genes=0)
-    if 'n_counts' not in adata.obs.columns:
-        sc.pp.filter_cells(adata, min_counts=0)
-    if 'n_cells' not in adata.var.columns:
-        sc.pp.filter_genes(adata, min_cells=0)
-    if 'n_counts' not in adata.var.columns:
-        sc.pp.filter_genes(adata, min_counts=0)
-
-    if qc_vars or pct_top:
-        if not pct_top:
-            pct_top = [50]
-        sc.pp.calculate_qc_metrics(
-            adata, qc_vars=qc_vars, percent_top=pct_top, inplace=True)
+    layer = 'counts' if 'counts' in adata.layers.keys() else None
+    obs_columns = adata.obs.columns
+    for qv in qc_vars:
+        if f'pct_counts_{qv}' in obs_columns and not force_recalc:
+            logging.warning('`pct_counts_%s` exists, not overwriting '
+                            'without --force-recalc', qv)
+            qc_vars.remove(qv)
+    for pt in pct_top:
+        if f'pct_counts_in_top_{pt}_genes' in obs_columns and not force_recalc:
+            logging.warning('`pct_counts_%s` exists, not overwriting '
+                            'without --force-recalc', pt)
+            pct_top.remove(pt)
+    sc.pp.calculate_qc_metrics(
+        adata, layer=layer, qc_vars=qc_vars, percent_top=pct_top, inplace=True)
+    adata.obs['n_counts'] = adata.obs['total_counts']
+    adata.obs['n_genes'] = adata.obs['n_genes_by_counts']
+    adata.var['n_counts'] = adata.var['total_counts']
+    adata.var['n_cells'] = adata.var['n_cells_by_counts']
 
     k_cell = np.ones(len(adata.obs)).astype(bool)
     for cond in conditions['c']['numerical']:

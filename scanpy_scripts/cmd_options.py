@@ -551,6 +551,13 @@ CMD_OPTIONS = {
             'but the <file> to be a one-column table that provides the values. '
             'Multiple -s entries allowed.',
         ),
+        click.option(
+            '--force-recalc',
+            is_flag=True,
+            default=False,
+            help='When set, re-calculate `pct_counts_<qc_variable>` and '
+            '`pct_counts_in_top_<n>_genes` even if they exist.',
+        ),
     ],
 
     'norm': [
