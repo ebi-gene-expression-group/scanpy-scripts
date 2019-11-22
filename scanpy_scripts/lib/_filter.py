@@ -133,6 +133,7 @@ def _get_attributes(adata):
             attributes['c']['numerical'].append(attr)
         elif typ == 'b':
             attributes['c']['bool'].append(attr)
+            attributes['c']['categorical'].append(attr)
 
     for attr, dtype in adata.var.dtypes.to_dict().items():
         typ = dtype.kind
@@ -144,6 +145,7 @@ def _get_attributes(adata):
             attributes['g']['numerical'].append(attr)
         elif typ == 'b':
             attributes['g']['bool'].append(attr)
+            attributes['g']['categorical'].append(attr)
 
     attributes['c']['numerical'].extend([
         'n_genes',
