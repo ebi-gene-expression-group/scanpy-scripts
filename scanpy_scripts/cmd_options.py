@@ -237,6 +237,17 @@ COMMON_OPTIONS = {
             help='var_names should be a valid subset of adata.var_names.',
     ),
 
+    'gene_symbols': click.option(
+            '--gene-symbols',
+            type=CommaSeparatedText(simplify=True),
+            default=None,
+            show_default=True,
+            help='Column name in .var DataFrame that stores gene symbols. By '
+            'default this is assumed to be the index column of the .var '
+            'DataFrame. Setting this option allows alternative names to be '
+            'used.',
+    ),
+
     'diffexp_plot': [
         click.option(
             '--rgg',
@@ -278,15 +289,6 @@ COMMON_OPTIONS = {
             'between the groupby categories is added. The dendrogram information is '
             'computed using scanpy.tl.dendrogram(). If tl.dendrogram has not been '
             'called previously the function is called with default parameters.',
-        ),
-        click.option(
-            '--gene-symbols',
-            type=CommaSeparatedText(simplify=True),
-            default=None,
-            show_default=True,
-            help='Column name in .var DataFrame that stores gene symbols. By '
-            'default var_names refer to the index column of the .var DataFrame. '
-            'Setting this option allows alternative names to be used.',
         ),
         click.option(
             '--layer',
@@ -1180,6 +1182,7 @@ CMD_OPTIONS = {
             show_default=True,
             help='Point size. Automatically computed if not specified.',
         ),
+        COMMON_OPTIONS['gene_symbols'],
     ],
 
     'plot_paga': [
@@ -1312,6 +1315,7 @@ CMD_OPTIONS = {
         COMMON_OPTIONS['var_names'],
         *COMMON_OPTIONS['rank_genes_groups_plots'],
         *COMMON_OPTIONS['diffexp_plot'],
+        COMMON_OPTIONS['gene_symbols'],
         *COMMON_OPTIONS['sviol'],
         COMMON_OPTIONS['swap_axes'],
     ],
@@ -1323,6 +1327,7 @@ CMD_OPTIONS = {
         COMMON_OPTIONS['var_names'],
         *COMMON_OPTIONS['rank_genes_groups_plots'],
         *COMMON_OPTIONS['diffexp_plot'],
+        COMMON_OPTIONS['gene_symbols'],
         *COMMON_OPTIONS['dot'],
     ],
 
@@ -1333,6 +1338,7 @@ CMD_OPTIONS = {
         COMMON_OPTIONS['var_names'],
         *COMMON_OPTIONS['rank_genes_groups_plots'],
         *COMMON_OPTIONS['diffexp_plot'],
+        COMMON_OPTIONS['gene_symbols'],
     ],
 
     'heat': [
@@ -1342,6 +1348,7 @@ CMD_OPTIONS = {
         COMMON_OPTIONS['var_names'],
         *COMMON_OPTIONS['rank_genes_groups_plots'],
         *COMMON_OPTIONS['diffexp_plot'],
+        COMMON_OPTIONS['gene_symbols'],
         *COMMON_OPTIONS['heat'],
         COMMON_OPTIONS['swap_axes'],
     ],
