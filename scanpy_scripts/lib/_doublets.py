@@ -5,10 +5,9 @@ Remove doublets
 import numpy as np
 from scipy.stats import norm
 import scanpy as sc
-import scrublet as scr
-from statsmodels.stats.multitest import multipletests
 
 def test_outlier(x, upper_mad_only=True):
+    from statsmodels.stats.multitest import multipletests
     med = np.median(x)
     if upper_mad_only:
         mad = np.median(x[x>med] - med) * 1.4826
@@ -20,6 +19,7 @@ def test_outlier(x, upper_mad_only=True):
 
 
 def run_scrublet(adata, resolution_function=None):
+    import scrublet as scr
     old_verbosity = sc.settings.verbosity
     sc.settings.verbosity = 1
     if resolution_function is None:
