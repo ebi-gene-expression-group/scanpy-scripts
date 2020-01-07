@@ -61,5 +61,3 @@ def louvain(
 
     if export_cluster:
         write_cluster(adata, keys, export_cluster)
-
-    return keys

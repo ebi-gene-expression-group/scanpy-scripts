@@ -106,8 +106,6 @@ def filter_anndata(
     adata._inplace_subset_obs(k_cell)
     adata._inplace_subset_var(k_gene)
 
-    return adata
-
 
 def _get_attributes(adata):
     attributes = {

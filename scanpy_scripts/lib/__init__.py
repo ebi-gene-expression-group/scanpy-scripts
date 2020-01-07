@@ -10,7 +10,7 @@ from matplotlib.colors import LinearSegmentedColormap
 import scanpy as sc
 from scanpy.plotting._tools.scatterplots import plot_scatter
 
-from ._read import read_10x
+from ._read import read_10x, read_10x_atac
 from ._filter import filter_anndata
 from ._norm import normalize
 from ._hvg import hvg
@@ -41,7 +41,7 @@ def expression_colormap(background_level=0.01):
     return LinearSegmentedColormap.from_list('expression', palette)
 
 
-def cross_table(adata, x, y, normalise=None, highlight=False, subset=None):
+def cross_table(adata, x, y, normalise=None, highlight=None, subset=None):
     """Make a cross table comparing two categorical annotations
     """
     x_attr = adata.obs[x]
@@ -58,8 +58,18 @@ def cross_table(adata, x, y, normalise=None, highlight=False, subset=None):
     elif normalise == 'y':
         y_sizes = x_attr.groupby(y_attr).size().values
         crs_tbl = (crs_tbl / y_sizes * 100).round(2)
-    if highlight:
-        return crs_tbl.style.background_gradient(cmap='viridis', axis=0)
+    elif normalise == 'xy':
+        x_sizes = x_attr.groupby(x_attr).size().values
+        crs_tbl = (crs_tbl.T / x_sizes * 100).T
+        y_sizes = crs_tbl.sum(axis=0)
+        crs_tbl = (crs_tbl / y_sizes * 100).round(2)
+    elif normalise == 'yx':
+        y_sizes = x_attr.groupby(y_attr).size().values
+        crs_tbl = (crs_tbl / y_sizes * 100).round(2)
+        x_sizes = crs_tbl.sum(axis=1)
+        crs_tbl = (crs_tbl.T / x_sizes * 100).round(2).T
+    if highlight is not None:
+        return crs_tbl.style.background_gradient(cmap='viridis', axis=highlight)
     return crs_tbl
 
 
@@ -106,6 +116,34 @@ def run_harmony(
         adata.obsm[f'{use_rep}_{key_added}'] = hm_embed
     else:
         adata.obsm[use_rep] = hm_embed
+
+
+def run_bbknn(adata, batch, use_rep='X_pca', key_added='bk', **kwargs):
+    if use_rep not in adata.obsm.keys():
+        raise KeyError(f'{use_rep} is not a valid embedding.')
+    if use_rep != 'X_pca':
+        if 'X_pca' in adata.obsm.keys():
+            if 'X_pca_bkup' in adata.uns.keys():
+                print("overwrite existing `.obsm['X_pca_bkup']`")
+            adata.obsm['X_pca_bkup'] = adata.obsm['X_pca']
+        adata.obsm['X_pca'] = adata.obsm[use_rep]
+    import bbknn
+    if 'neighbors' in adata.uns.keys():
+        if 'neighbors_bkup' in adata.uns.keys():
+            print("overwrite existing `.uns['neighbors']`")
+        adata.uns['neighbors_bkup'] = adata.uns['neighbors']
+    bbknn.bbknn(adata, batch_key=batch, **kwargs)
+    if key_added:
+        adata.uns[f'neighbors_{key_added}'] = adata.uns['neighbors']
+        del adata.uns['neighbors']
+        if 'neighbors_bkup' in adata.uns.keys():
+            adata.uns['neighbors'] = adata.uns['neighbors_bkup']
+            del adata.uns['neighbors_bkup']
+    if use_rep != 'X_pca':
+        del adata.obsm['X_pca']
+        if 'X_pca_bkup' in adata.obsm.keys():
+            adata.obsm['X_pca'] = adata.obsm['X_pca_bkup']
+            del adata.obsm['X_pca_bkup']
 
 
 def run_seurat_integration(
@@ -211,6 +249,7 @@ def LR_annotate(
         train_label,
         train_x,
         use_rep='X',
+        highly_variable=True,
         subset=None,
         penalty='l1',
         sparcity=0.2,
@@ -225,7 +264,10 @@ def LR_annotate(
     lr = LogisticRegression(penalty=penalty, C=sparcity)
     lr.fit(train_x, train_label)
     if use_rep == 'X':
-        predict_x = adata.X
+        if highly_variable:
+            predict_x = adata.X[:, adata.var.highly_variable]
+        else:
+            predict_x = adata.X
     elif use_rep in adata.layers.keys():
         predict_x = adata.layers[use_rep]
     elif use_rep in adata.obsm.keys():
@@ -343,6 +385,8 @@ def plot_metric_by_rank(
         adata,
         subject='cell',
         metric='n_counts',
+        kind='rank',
+        nbins=50,
         decreasing=True,
         ax=None,
         title=None,
@@ -350,6 +394,7 @@ def plot_metric_by_rank(
         vpos=None,
         logx=True,
         logy=True,
+        swap_axis=False,
         **kwargs,
 ):
     """Plot metric by rank from top to bottom"""
@@ -365,31 +410,64 @@ def plot_metric_by_rank(
 
     if 'mt_prop' not in adata.obs.columns:
         k_mt = adata.var_names.str.startswith('MT-')
-        adata.obs['mt_prop'] = np.squeeze(
-            np.asarray(adata.X[:, k_mt].sum(axis=1))) / adata.obs['n_counts']
-
-    order_modifier = -1 if decreasing else 1
-
-    if subject == 'cell':
-        x = 1 + np.arange(adata.shape[0])
-        k = np.argsort(order_modifier * adata.obs[metric])
-        y = adata.obs[metric].values[k]
-    else:
-        x = 1 + np.arange(adata.shape[1])
-        k = np.argsort(order_modifier * adata.var[metric])
-        y = adata.var[metric].values[k]
+        if sum(k_mt) > 0:
+            adata.obs['mt_prop'] = np.squeeze(
+                np.asarray(adata.X[:, k_mt].sum(axis=1))) / adata.obs['n_counts']
 
     if not ax:
         fig, ax = plt.subplots()
 
-    if kwargs['c'] is not None and not isinstance(kwargs['c'], str):
-        kwargs_c = kwargs['c'][k]
-        del kwargs['c']
-        for c in np.unique(kwargs_c):
-            k = kwargs_c == c
-            ax.plot(x[k], y[k], c=c, **kwargs)
-    else:
-        ax.plot(x, y, **kwargs)
+    if kind == 'rank':
+        order_modifier = -1 if decreasing else 1
+
+        if subject == 'cell':
+            if swap_axis:
+                x = 1 + np.arange(adata.shape[0])
+                k = np.argsort(order_modifier * adata.obs[metric])
+                y = adata.obs[metric].values[k]
+            else:
+                y = 1 + np.arange(adata.shape[0])
+                k = np.argsort(order_modifier * adata.obs[metric])
+                x = adata.obs[metric].values[k]
+        else:
+            if swap_axis:
+                x = 1 + np.arange(adata.shape[1])
+                k = np.argsort(order_modifier * adata.var[metric])
+                y = adata.var[metric].values[k]
+            else:
+                y = 1 + np.arange(adata.shape[1])
+                k = np.argsort(order_modifier * adata.var[metric])
+                x = adata.var[metric].values[k]
+
+        if kwargs['c'] is not None and not isinstance(kwargs['c'], str):
+            kwargs_c = kwargs['c'][k]
+            del kwargs['c']
+            ax.scatter(x, y, c=kwargs_c, **kwargs)
+        else:
+            ax.plot(x, y, **kwargs)
+
+        if logy:
+            ax.set_yscale('log')
+        if swap_axis:
+            ax.set_xlabel('Rank')
+        else:
+            ax.set_ylabel('Rank')
+
+    elif kind == 'hist':
+        if subject == 'cell':
+            value = adata.obs[metric]
+            logbins = np.logspace(np.log10(np.min(value[value>0])), np.log10(np.max(adata.obs[metric])), nbins)
+            h = ax.hist(value[value>0], logbins)
+            y = h[0]
+            x = h[1]
+        else:
+            value = adata.var[metric]
+            logbins = np.logspace(np.log10(np.min(value[value>0])), np.log10(np.max(adata.var[metric])), nbins)
+            h = ax.hist(value[value>0], logbins)
+            y = h[0]
+            x = h[1]
+
+        ax.set_ylabel('Count')
 
     if hpos is not None:
         ax.hlines(hpos, xmin=x.min(), xmax=x.max(), linewidth=1, colors='red')
@@ -397,10 +475,10 @@ def plot_metric_by_rank(
         ax.vlines(vpos, ymin=y.min(), ymax=y.max(), linewidth=1, colors='green')
     if logx:
         ax.set_xscale('log')
-    if logy:
-        ax.set_yscale('log')
-    ax.set_xlabel('Rank')
-    ax.set_ylabel(metric_names[metric])
+    if swap_axis:
+        ax.set_ylabel(metric_names[metric])
+    else:
+        ax.set_xlabel(metric_names[metric])
     if title:
         ax.set_title(title)
     ax.grid(linestyle='--')
@@ -411,7 +489,7 @@ def plot_metric_by_rank(
 
 
 def plot_embedding(
-        adata, basis, groupby, annot=True, highlight=None, size=None,
+        adata, basis, groupby, color=None, annot=True, highlight=None, size=None,
         save=None, savedpi=300, **kwargs):
     if f'X_{basis}' not in adata.obsm.keys():
         raise KeyError(f'"X_{basis}" not found in `adata.obsm`.')
@@ -435,6 +513,14 @@ def plot_embedding(
     kwargs['frameon'] = True
     kwargs['legend_loc'] = 'right margin'
 
+    color = groupby if color is None else color
+    offset = 0 if 'diffmap' in basis else -1
+    xi, yi = 1, 2
+    if 'components' in kwargs:
+        xi, yi = components
+    xi += offset
+    yi += offset
+
     if highlight:
         k = adata.obs[groupby].isin(highlight).values
         ad = adata[~k, :]
@@ -450,7 +536,7 @@ def plot_embedding(
 
     fig, ax = plt.subplots()
     try:
-        plot_scatter(ad, basis, color=groupby, ax=ax, size=marker_size, **kwargs)
+        plot_scatter(ad, basis, color=color, ax=ax, size=marker_size, **kwargs)
 
         if highlight:
             embed = adata.obsm[f'X_{basis}']
@@ -458,7 +544,7 @@ def plot_embedding(
                 if ct not in highlight:
                     continue
                 k_hl = groups == ct
-                ax.scatter(embed[k_hl, 0], embed[k_hl, 1], marker='D', c=adata.uns[f'{groupby}_colors'][i], s=size/8)
+                ax.scatter(embed[k_hl, xi], embed[k_hl, yi], marker='D', c=adata.uns[f'{groupby}_colors'][i], s=marker_size)
                 ax.scatter([], [], marker='D', c=adata.uns[f'{groupby}_colors'][i], label=adata.obs[groupby].cat.categories[i])
             if annot:
                 ax.legend(frameon=False, loc='center left', bbox_to_anchor=(1, 0.5),
@@ -468,7 +554,7 @@ def plot_embedding(
             adata.obs[groupby].cat.rename_categories(restore_dict, inplace=True)
     if annot:
         centroids = pseudo_bulk(adata, groupby, use_rep=f'X_{basis}', FUN=np.median).T
-        texts = [ax.text(x=row[0], y=row[1], s=f'{i:d}', fontsize=8, fontweight='bold') for i, row in centroids.reset_index(drop=True).iterrows()]
+        texts = [ax.text(x=row[xi], y=row[yi], s=f'{i:d}', fontsize=8, fontweight='bold') for i, row in centroids.reset_index(drop=True).iterrows()]
         from adjustText import adjust_text
         adjust_text(texts, ax=ax, text_from_points=False, autoalign=False)
     if save:
@@ -533,7 +619,7 @@ def simple_default_pipeline(
         scale_params={'max_value': 10},
         pca_params={'n_comps': 50, 'svd_solver': 'arpack', 'use_highly_variable': True},
         harmony_params={'batch': None, 'theta': 2.0},
-        nb_params={'n_neighbors': 15, 'n_pcs': 40},
+        nb_params={'n_neighbors': 15, 'n_pcs': 20},
         umap_params={},
         tsne_params={},
         diffmap_params={'n_comps': 15},
@@ -545,9 +631,12 @@ def simple_default_pipeline(
     Scanpy pipeline
     """
     if qc_only:
-        adata.var['mito'] = adata.var_names.str.startswith('MT-')
-        adata.var['ribo'] = adata.var_names.str.startswith('RPL') | adata.var_names.str.startswith('RPS')
-        adata.var['hb'] = adata.var_names.str.startswith('HB')
+        if 'mito' not in adata.var.columns:
+            adata.var['mito'] = adata.var_names.str.startswith('MT-')
+        if 'ribo' not in adata.var.columns:
+            adata.var['ribo'] = adata.var_names.str.startswith('RPL') | adata.var_names.str.startswith('RPS')
+        if 'hb' not in adata.var.columns:
+            adata.var['hb'] = adata.var_names.str.startswith('HB')
         qc_tbls = sc.pp.calculate_qc_metrics(
             adata, qc_vars=['mito', 'ribo', 'hb'], percent_top=None)
         adata.obs['n_counts'] = qc_tbls[0]['total_counts'].values

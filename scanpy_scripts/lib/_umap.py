@@ -57,4 +57,3 @@ def umap(
                 **kwargs,
             )
     _restore_default_key(adata.uns, 'neighbors', use_graph)
-    return adata

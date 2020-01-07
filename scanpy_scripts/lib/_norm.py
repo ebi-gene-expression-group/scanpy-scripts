@@ -17,5 +17,3 @@ def normalize(adata, save_raw='yes', log_transform=True, **kwargs):
         sc.pp.log1p(adata)
     if save_raw == 'yes':
         adata.raw = adata
-
-    return adata

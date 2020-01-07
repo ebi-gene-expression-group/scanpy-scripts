@@ -39,4 +39,3 @@ def diffmap(
 
     if export_embedding is not None:
         write_embedding(adata, diffmap_key, export_embedding, key_added=key_added)
-    return adata

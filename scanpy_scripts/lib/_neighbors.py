@@ -41,4 +41,3 @@ def neighbors(adata, n_neighbors=15, key_added=None, **kwargs):
                 key_added=graph_key,
                 **kwargs,
             )
-    return adata

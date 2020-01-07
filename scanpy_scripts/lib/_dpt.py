@@ -50,4 +50,3 @@ def dpt(
         _rename_default_key(adata.obs, 'dpt_pseudotime', dpt_key)
     else:
         _delete_backup_key(adata.obs, 'dpt_pseudotime')
-    return adata

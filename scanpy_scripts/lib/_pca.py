@@ -37,4 +37,3 @@ def pca(adata, key_added=None, remove_cc=False, export_embedding=None, **kwargs)
 
     if export_embedding is not None:
         write_embedding(adata, pca_key, export_embedding, key_added=key_added)
-    return adata

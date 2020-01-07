@@ -49,4 +49,3 @@ def hvg(
             subset=subset,
             **kwargs,
         )
-    return adata

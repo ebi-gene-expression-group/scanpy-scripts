@@ -53,4 +53,3 @@ def tsne(
                 random_state=rseed,
                 **kwargs,
             )
-    return adata

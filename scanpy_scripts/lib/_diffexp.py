@@ -18,6 +18,11 @@ def diffexp(
     """
     Wrapper function for sc.tl.rank_genes_groups.
     """
+    if filter_params == 'sc_default':
+        filter_params = {'min_in_group_fraction': 0.4, 'max_out_group_fraction': 0.1, 'min_fold_change': 1.5}
+    elif filter_params == 'bulk_default':
+        filter_params = {'min_in_group_fraction': 0.5, 'max_out_group_fraction': 1, 'min_fold_change': 1}
+
     if adata.raw is None:
         use_raw = False
 
