@@ -19,8 +19,8 @@ def leiden(
     """
     keys = []
     if ('restrict_to' in kwargs
-            and (not isinstance(kwargs['restrict_to'], (list, tuple))
-                or not kwargs['restrict_to'][0])):
+            and not (isinstance(kwargs['restrict_to'], (list, tuple))
+                and len(kwargs['restrict_to']) == 2):
         kwargs['restrict_to'] = None
     adj_mat = None
     if use_graph:
