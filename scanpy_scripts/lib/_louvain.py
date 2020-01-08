@@ -48,7 +48,7 @@ def louvain(
                 graph_key = ('_' + use_graph) if use_graph else ''
                 key = f'louvain{graph_key}_r{res_key}'
             elif not isinstance(key_added, (list, tuple)):
-                key = 'louvain_{key_added}_r{res_key}'
+                key = f'louvain_{key_added}_r{res_key}'
             elif len(key_added) == len(resolution):
                 key = key_added[i]
             else:
@@ -64,3 +64,5 @@ def louvain(
 
     if export_cluster:
         write_cluster(adata, keys, export_cluster)
+
+    return keys
