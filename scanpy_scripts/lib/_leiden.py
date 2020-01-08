@@ -21,7 +21,7 @@ def leiden(
     if ('restrict_to' in kwargs
             and not (isinstance(kwargs['restrict_to'], (list, tuple))
                 and len(kwargs['restrict_to']) == 2
-                and kwargs['restrict_to'])):
+                and kwargs['restrict_to'][0])):
         del kwargs['restrict_to']
     adj_mat = None
     if use_graph:
