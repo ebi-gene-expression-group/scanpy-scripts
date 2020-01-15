@@ -11,6 +11,7 @@ import scanpy as sc
 from scanpy.plotting._tools.scatterplots import plot_scatter
 
 from ._diffexp import extract_de_table
+from ._utils import pseudo_bulk
 
 
 def expression_colormap(background_level=0.01):
