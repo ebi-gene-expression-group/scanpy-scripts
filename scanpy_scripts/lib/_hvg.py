@@ -17,6 +17,12 @@ def hvg(
     Wrapper function for sc.highly_variable_genes(), mainly to support searching
     by batch and pooling.
     """
+
+    # Check for n_top_genes beeing greater than the total genes
+
+    if 'n_top_genes' in kwargs and kwargs['n_top_genes'] is not None:
+        kwargs['n_top_genes'] = min(adata.n_vars, kwargs['n_top_genes'])
+
     if by_batch and isinstance(by_batch, (list, tuple)) and by_batch[0]:
         batch_name = by_batch[0]
         min_n = by_batch[1]
