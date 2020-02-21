@@ -15,8 +15,6 @@ def pca(adata, key_added=None, export_embedding=None, **kwargs):
     if 'use_pc' in kwargs and kwargs['use_pc'] is not None:
         kwargs['use_pc'] = min(math.floor(adata.n_vars/2) -1, kwargs['use_pc'])
 
-# minimum of (<value calculated above>, n_pcs_supplied)
-
     # omit "svd_solver" to let scanpy choose automatically
     if 'svd_solver' in kwargs and kwargs['svd_solver'] == 'auto':
         del kwargs['svd_solver']
