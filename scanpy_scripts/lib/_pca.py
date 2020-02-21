@@ -13,7 +13,7 @@ def pca(adata, key_added=None, export_embedding=None, **kwargs):
 
     # Check the number of components (use_pc) less than floor(number of genes)/2
     if 'use_pc' in kwargs and kwargs['use_pc'] is not None:
-        kwargs['use_pc'] = min(math.floor(adata.n_vars/2), kwargs['use_pc'])
+        kwargs['use_pc'] = min(math.floor(adata.n_vars/2) -1, kwargs['use_pc'])
 
 # minimum of (<value calculated above>, n_pcs_supplied)
 
