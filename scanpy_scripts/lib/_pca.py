@@ -3,12 +3,20 @@ scanpy pca
 """
 
 import scanpy as sc
+import math
 from ..obj_utils import write_embedding
 
 def pca(adata, key_added=None, export_embedding=None, **kwargs):
     """
     Wrapper function for sc.pp.pca, for supporting named slot
     """
+
+    # Check the number of components (use_pc) less than floor(number of genes)/2
+    if 'use_pc' in kwargs and kwargs['use_pc'] is not None:
+        kwargs['use_pc'] = min(math.floor(adata.n_vars/2), kwargs['use_pc'])
+
+# minimum of (<value calculated above>, n_pcs_supplied)
+
     # omit "svd_solver" to let scanpy choose automatically
     if 'svd_solver' in kwargs and kwargs['svd_solver'] == 'auto':
         del kwargs['svd_solver']
