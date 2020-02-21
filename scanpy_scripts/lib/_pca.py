@@ -11,9 +11,9 @@ def pca(adata, key_added=None, export_embedding=None, **kwargs):
     Wrapper function for sc.pp.pca, for supporting named slot
     """
 
-    # Check the number of components (use_pc) less than floor(number of genes)/2
-    if 'use_pc' in kwargs and kwargs['use_pc'] is not None:
-        kwargs['use_pc'] = min(math.floor(adata.n_vars/2) -1, kwargs['use_pc'])
+    # Check the number of components (n_comps) less than floor(number of genes)/2
+    if 'n_comps' in kwargs and kwargs['n_comps'] is not None:
+        kwargs['n_comps'] = min(math.floor(adata.n_vars/2) -1, kwargs['n_comps'])
 
     # omit "svd_solver" to let scanpy choose automatically
     if 'svd_solver' in kwargs and kwargs['svd_solver'] == 'auto':
