@@ -49,7 +49,6 @@ def diffexp(
             **filter_params,
         )
         de_tbl = extract_de_table(adata.uns[key_added + '_filtered'])
-        de_tbl = de_tbl.loc[de_tbl.genes.astype(str) != 'nan', :]
 
     if save:
         de_tbl.to_csv(save, sep='\t', header=True, index=False)
@@ -100,7 +99,9 @@ def extract_de_table(de_dict):
         field: _recarray_to_dataframe(de_dict[field], field)[field]
         for field in requested_fields if field in de_dict
     })
-    return gene_df.merge(de_df, left_index=True, right_index=True)
+    de_tbl = gene_df.merge(de_df, left_index=True, right_index=True)
+    de_tbl = de_tbl.loc[de_tbl.genes.astype(str) != 'nan', :]
+    return de_tbl
 
 
 def _recarray_to_dataframe(array, field_name):
