@@ -41,13 +41,11 @@ from ._plot import (
 from ._utils import (
     run_harmony,
     run_bbknn,
-    run_seurat_integration,
+    run_phate,
     split_by_group,
     regroup,
     subsample,
     pseudo_bulk,
-    LR_annotate,
-    annotate,
     show_obs_categories
 )
 from ..cmd_utils import _read_obj as read_obj
