@@ -628,7 +628,7 @@ CMD_OPTIONS = {
         click.option(
             '--n-top-genes', '-t',
             type=click.INT,
-            default=2000,
+            default=None,
             show_default=True,
             help='Number of highly-variable genes to keep.',
         ),

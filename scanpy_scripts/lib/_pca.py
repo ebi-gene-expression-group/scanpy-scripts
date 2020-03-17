@@ -2,6 +2,7 @@
 scanpy pca
 """
 
+import logging
 import scanpy as sc
 from ..obj_utils import write_embedding
 
@@ -16,6 +17,15 @@ def pca(adata, key_added=None, remove_cc=False, export_embedding=None, **kwargs)
     if remove_cc_from_hvg:
         adata.var['hvg_full'] = adata.var['highly_variable'].copy()
         adata.var['highly_variable'] = adata.var['highly_variable'] & ~adata.var['cc']
+
+    # n_comps may be greater than the number of cells (n_obs), which will
+    # produce an error. Additional logic may be required in future for very
+    # small gene numbers (adata.n_vars).
+    
+    if 'n_comps' in kwargs and kwargs['n_comps'] is not None:
+        if kwargs['n_comps'] > adata.n_obs:
+            logging.warning('n_comps exceeds cell number, resetting to %d', adata.n_obs)
+            kwargs['n_comps'] = adata.n_obs
 
     # omit "svd_solver" to let scanpy choose automatically
     if 'svd_solver' in kwargs and kwargs['svd_solver'] == 'auto':
