@@ -30,6 +30,7 @@ from .cmds import (
     PLOT_DOT_CMD,
     PLOT_MATRIX_CMD,
     PLOT_HEATMAP_CMD,
+    COMBAT_CMD
 )
 
 
@@ -74,7 +75,7 @@ cli.add_command(SCALE_CMD)
 cli.add_command(REGRESS_CMD)
 cli.add_command(PCA_CMD)
 cli.add_command(NEIGHBOR_CMD)
-
+cli.add_command(COMBAT_CMD)
 
 @cli.group(cls=NaturalOrderGroup)
 def embed():

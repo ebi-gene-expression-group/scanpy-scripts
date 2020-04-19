@@ -978,6 +978,30 @@ CMD_OPTIONS = {
         ),
     ],
 
+    'combat': [
+	*COMMON_OPTIONS['input'],
+        *COMMON_OPTIONS['output'],
+	click.option(
+		'--key',
+		type=click.STRING,
+		default='batch',
+		required=False,
+		help='Key to a categorical annotation from obs that will be used for batch effect removal.",
+	),
+	click.option(
+		'--covariates',
+		type=click.STRING,
+		default=None
+		required=False,
+		help='Additional covariates besides the batch variable such as adjustment variables or biological condition.',
+	),
+	click.option(
+		'--inplace',
+		default=True,
+		help='Whether to replace adata.X or to return the corrected data.',
+	),
+    ],
+
     'diffexp': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],

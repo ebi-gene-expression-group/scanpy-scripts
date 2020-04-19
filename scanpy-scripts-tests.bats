@@ -1,6 +1,4 @@
-#!/usr/bin/env bats
-
-# Extract the test data
+ct the test data
 setup() {
     scanpy="scanpy-cli"
     test_dir="post_install_tests"
@@ -20,6 +18,8 @@ setup() {
     hvg_obj="${output_dir}/hvg.h5ad"
     regress_opt="-k n_counts --show-obj stdout"
     regress_obj="${output_dir}/regress.h5ad"
+    combat_opt=""
+    combat_obj="${output_dir}/combat.h5ad"
     scale_opt="-m 10 --show-obj stdout"
     scale_obj="${output_dir}/scale.h5ad"
     pca_embed="${output_dir}/pca.tsv"
@@ -152,6 +152,15 @@ setup() {
 
     [ "$status" -eq 0 ]
     [ -f  "$regress_obj" ]
+}
+
+# Batch correction
+
+@test "Batch regression" {
+    
+    eval "$scanpy regress $combat_opt $hvg_obj $combat_obj"
+
+    [ "$status" -eq 0 ]
 }
 
 # Scale expression values

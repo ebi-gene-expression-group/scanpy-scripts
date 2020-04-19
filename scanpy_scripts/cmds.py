@@ -210,3 +210,10 @@ PLOT_PAGA_CMD = make_subcmd(
     arg_desc=_IP_DESC,
     opt_set='plot_paga'
 )
+
+COMBAT_CMD = make_subcmd(
+	'combat',
+	sc.pp.combat,
+	cmd_desc='ComBat function for batch effect correction',
+	arg_desc=_IO_DESC
+)
