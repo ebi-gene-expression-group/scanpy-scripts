@@ -3,7 +3,7 @@
 # Extract the test data
 
 setup() {
-    scanpy="scanpy"
+    scanpy="scanpy-cli"
     test_dir="post_install_tests"
     data_dir="${test_dir}/data"
     output_dir="${test_dir}/outputs"
