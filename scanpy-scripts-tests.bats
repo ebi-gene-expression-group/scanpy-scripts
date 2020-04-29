@@ -1,6 +1,9 @@
-ct the test data
+#!/usr/bin/env bats
+
+# Extract the test data
+
 setup() {
-    scanpy="scanpy-cli"
+    scanpy="scanpy"
     test_dir="post_install_tests"
     data_dir="${test_dir}/data"
     output_dir="${test_dir}/outputs"
