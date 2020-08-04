@@ -39,7 +39,7 @@ setup(
         'anndata<0.6.20',
         'scipy>=1.2.0,<1.3.0',
         'matplotlib',
-        'pandas==0.25.3',
+        'pandas',
         'h5py<2.10',
         'scanpy==1.4.3',
         'louvain<=0.6.1',
@@ -47,6 +47,6 @@ setup(
         'loompy>=2.0.0,<3.0.0',
         'MulticoreTSNE',
         'Click',
-        'umap-learn==0.3.10'
+        'umap-learn<0.4.0'
     ],
 )
