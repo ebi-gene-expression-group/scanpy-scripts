@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setup(
     name='scanpy-scripts',
-    version='0.2.10',
+    version='0.2.11',
     author='nh3',
     author_email='nh3@users.noreply.github.com',
     description='Scripts for using scanpy from the command line',
@@ -39,13 +39,14 @@ setup(
         'anndata<0.6.20',
         'scipy>=1.2.0,<1.3.0',
         'matplotlib',
-        'pandas',
+        'pandas==0.25.3',
         'h5py<2.10',
-        'scanpy>=1.4.2,<1.4.4',
+        'scanpy==1.4.3',
         'louvain',
         'leidenalg',
         'loompy>=2.0.0,<3.0.0',
         'MulticoreTSNE',
-        'Click'
+        'Click',
+        'umap-learn==0.3.10'
     ],
 )
