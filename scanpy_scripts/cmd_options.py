@@ -565,6 +565,7 @@ CMD_OPTIONS = {
     'norm': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
+        COMMON_OPTIONS['key_added'],
         click.option(
             '--save-raw', '-r',
             type=click.Choice(['yes', 'no', 'counts']),
@@ -587,13 +588,44 @@ CMD_OPTIONS = {
             help='Normalize per cell nUMI to this number.',
         ),
         click.option(
-            '--fraction',
-            type=float,
-            default=0.9,
+            '--exclude-highly-expressed', '-e', 'exclude_highly_expressed',
+            is_flag=True,
+            default=False,
             show_default=True,
-            help='Only use genes that make up less than this fraction of the total '
-            'count in every cell. So only these genes will sum up to the number '
-            'specified by --normalize-to.',
+            help='Exclude (very) highly expressed genes for the computation of '
+            'the normalization factor (size factor) for each cell. A gene is considered '
+            'highly expressed, if it has more than max_fraction of the total counts in at '
+            'least one cell. The not-excluded genes will sum up to the number '
+            'specified by --normalize-to.'
+        ),
+        click.option(
+            '--max-fraction', '-m', 'max_fraction',
+            type=float,
+            default=0.05,
+            show_default=True,
+            help='If exclude_highly_expressed=True, consider cells as highly '
+            'expressed that have more counts than max_fraction of the original total counts '
+            'in at least one cell.'
+        ),
+        click.option(
+            '--layers', '-l',
+            type=CommaSeparatedText(simplify=True),
+            default=None,
+            show_default=True,
+            help="List of layers to normalize. Set to 'all' to normalize all layers."
+        ),
+        click.option(
+            '--layer-norm', '-n', 'layer_norm',
+            type=click.Choice(['after', 'X']),
+            default=None,
+            show_default=True,
+            help="Specifies how to normalize layers: 1) If None, after "
+            "normalization, for each layer in layers each cell has a total count equal to "
+            "the median of the counts_per_cell before normalization of the layer. 2) If "
+            "'after', for each layer in layers each cell has a total count equal to "
+            "target_sum. 3) If 'X', for each layer in layers each cell has a total count "
+            "equal to the median of total counts for observations (cells) of adata.X before "
+            "normalization.'"
         ),
     ],
 

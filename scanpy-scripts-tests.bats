@@ -14,7 +14,7 @@ setup() {
     filter_opt="-p n_genes 200 2500 -p c:n_counts 0 50000 -p n_cells 3 inf -p pct_counts_mito 0 0.2 -c mito '!True' --show-obj stdout"
     filter_obj="${output_dir}/filter.h5ad"
     norm_mtx="${output_dir}/norm"
-    norm_opt="-r yes -t 10000 -X ${norm_mtx} --show-obj stdout"
+    norm_opt="-r yes -t 10000 -l all -n after -X ${norm_mtx} --show-obj stdout"
     norm_obj="${output_dir}/norm.h5ad"
     hvg_opt="-m 0.0125 3 -d 0.5 inf -s --show-obj stdout"
     hvg_obj="${output_dir}/hvg.h5ad"

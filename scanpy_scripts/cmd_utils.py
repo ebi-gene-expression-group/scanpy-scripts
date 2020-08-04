@@ -159,7 +159,7 @@ def make_plot_function(func_name, kind=None):
     # Provide a function translation
 
     plot_funcs = {
-        'scatter': sc.plotting._tools.scatterplots.plot_scatter,
+        'scatter': sc.pl.scatter,
         'sviol': sc.pl.stacked_violin,
         'rgg_sviol': sc.pl.rank_genes_groups_stacked_violin,
         'dot': sc.pl.dotplot,
