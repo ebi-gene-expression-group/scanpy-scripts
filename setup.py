@@ -42,7 +42,7 @@ setup(
         'pandas==0.25.3',
         'h5py<2.10',
         'scanpy==1.4.3',
-        'louvain',
+        'louvain<=0.6.1',
         'leidenalg',
         'loompy>=2.0.0,<3.0.0',
         'MulticoreTSNE',
