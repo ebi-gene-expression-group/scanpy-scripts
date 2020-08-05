@@ -879,6 +879,14 @@ CMD_OPTIONS = {
             help='The number of negative edge samples to use per positive edge '
             'sample in optimizing the low dimensional embedding.',
         ),
+        click.option(
+            '--method',
+            type=click.Choice(['umap', 'rapids']),
+            default='umap',
+            show_default=True,
+            help='Use the original ‘umap’ implementation, or ‘rapids’ '
+            '(experimental, GPU only).'
+        ),
     ],
 
     'tsne': [
