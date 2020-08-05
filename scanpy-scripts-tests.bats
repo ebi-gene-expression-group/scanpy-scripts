@@ -25,7 +25,7 @@ setup() {
     pca_embed="${output_dir}/pca.tsv"
     pca_opt="--n-comps 50 -V auto --show-obj stdout -E ${pca_embed}"
     pca_obj="${output_dir}/pca.h5ad"
-    neighbor_opt="-k 5,10,20 -n 25 -m umap --show-obj stdout"
+    neighbor_opt="-k 5,10,20 -n 25 -m umap -t euclidean --show-obj stdout"
     neighbor_obj="${output_dir}/neighbor.h5ad"
     tsne_embed="${output_dir}/tsne.tsv"
     tsne_opt="-n 25 --use-rep X_pca --learning-rate 200 -E ${tsne_embed}"

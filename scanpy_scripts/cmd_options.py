@@ -700,6 +700,12 @@ CMD_OPTIONS = {
             help='When specified, clip to this value after scaling, otherwise do '
             'not clip',
         ),
+        click.option(
+            '--layer', '-l',
+            type=CommaSeparatedText(simplify=True),
+            default=None,
+            help="If provided, which element of layers to scale."
+        ),
     ],
 
     'regress': [
@@ -788,11 +794,19 @@ CMD_OPTIONS = {
         ),
         click.option(
             '--method', '-m',
-            type=click.Choice(['umap', 'gauss']),
+            type=click.Choice(['umap', 'gauss', 'rapids']),
             default='umap',
             show_default=True,
             help='Use umap or gauss with adaptive width for computing '
-            'connectivities.'
+            'connectivities. Use rapids for the RAPIDS implementation of UMAP '
+            '(experimental, GPU only).'
+        ),
+        click.option(
+            '--metric', '-t',
+            type=click.Choice(['cityblock', 'cosine', 'euclidean', 'l1', 'l2', 'manhattan', 'braycurtis', 'canberra', 'chebyshev', 'correlation', 'dice', 'hamming', 'jaccard', 'kulsinski', 'mahalanobis', 'minkowski', 'rogerstanimoto', 'russellrao', 'seuclidean', 'sokalmichener', 'sokalsneath', 'sqeuclidean', 'yule']),
+            default='euclidean',
+            show_default=True,
+            help='A known metric’s name.'
         ),
     ],
 
