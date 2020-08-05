@@ -456,7 +456,15 @@ COMMON_OPTIONS = {
             show_default=True,
             help='Number of genes to show.'
         ),
-    ]
+    ],
+
+    'root': click.option(
+        '--root',
+        type=click.INT,
+        default=0,
+        show_default=True,
+        help='If choosing a tree layout, this is the index of the root node.',
+    ),
 }
 
 CMD_OPTIONS = {
@@ -946,10 +954,9 @@ CMD_OPTIONS = {
     'fdg': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
-        COMMON_OPTIONS['knn_graph'][0], # --use-graph
         COMMON_OPTIONS['random_state'],
-        COMMON_OPTIONS['key_added'],
         COMMON_OPTIONS['export_embedding'],
+        COMMON_OPTIONS['root'],
         click.option(
             '--init-pos',
             type=click.STRING,
@@ -959,7 +966,7 @@ CMD_OPTIONS = {
         ),
         click.option(
             '--layout',
-            type=click.Choice(['fa', 'fr', 'grid_fr', 'kk', 'lgl', 'drl', 'rt']),
+            type=click.Choice(['fa', 'fr', 'grid_fr', 'kk', 'lgl', 'drl', 'rt', 'rt_circular']),
             default='fa',
             show_default=True,
             help='Name of any valid igraph layout, including "fa" (ForceAtlas2), '
@@ -969,12 +976,37 @@ CMD_OPTIONS = {
             'pretty fast) and "rt" (Reingold Tilford tree layout).',
         ),
         click.option(
+            '--key-added-ext',
+            type=click.STRING,
+            default=None,
+            show_default=True,
+            help="By default, append 'layout'"
+        ),
+        click.option(
             '--init-pos',
             type=click.STRING,
             default=None,
             show_default=True,
             help='How to initialize the low dimensional embedding. Can be "paga", '
             'or any valid key of `.obsm`.',
+        ),
+        click.option(
+            '--neighbors-key',
+            type=click.STRING,
+            default=None,
+            show_default=True,
+            help='If not specified, draw_graph looks .obsp[‘connectivities’] '
+            'for connectivities (default storage place for pp.neighbors). If specified, '
+            'draw_graph looks .obsp[.uns[neighbors_key][‘connectivities_key’]] for '
+            'connectivities.'
+        ),
+        click.option(
+            '--obsp',
+            type=click.STRING,
+            default=None,
+            show_default=True,
+            help='Use .obsp[obsp] as adjacency. You can’t specify both obsp and '
+            'neighbors_key at the same time.'
         ),
     ],
 
@@ -1272,6 +1304,7 @@ CMD_OPTIONS = {
             help='Do not draw edges for weights below this threshold. Set to 0 to '
             'include all edges.',
         ),
+        COMMON_OPTIONS['root'],
         click.option(
             '--root',
             type=click.INT,

@@ -34,7 +34,7 @@ setup() {
     umap_opt="--use-graph neighbors_k10 --min-dist 0.75 --alpha 1 --gamma 1 -E ${umap_embed}"
     umap_obj="${output_dir}/umap.h5ad"
     fdg_embed="${output_dir}/fdg.tsv"
-    fdg_opt="--use-graph neighbors_k10 --layout fr -E ${fdg_embed}"
+    fdg_opt="--neighbors-key neighbors_k10 --layout fr -E ${fdg_embed}"
     fdg_obj="${output_dir}/fdg.h5ad"
     louvain_opt="-r 0.5,1 --use-graph neighbors_k10 --key-added k10"
     louvain_obj="${output_dir}/louvain.h5ad"
