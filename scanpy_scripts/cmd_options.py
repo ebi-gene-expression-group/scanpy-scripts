@@ -1166,7 +1166,7 @@ CMD_OPTIONS = {
     'paga': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
-        COMMON_OPTIONS['knn_graph'][0], # --use-graph
+        COMMON_OPTIONS['knn_graph'][0], # --neighbors-key
         COMMON_OPTIONS['key_added'],
         click.option(
             '--groups',
@@ -1181,6 +1181,16 @@ CMD_OPTIONS = {
             default='v1.2',
             show_default=True,
             help='The PAGA connectivity model.',
+        ),
+        click.option(
+            '--use-rna-velocity',
+            is_flag=True,
+            default=False,
+            show_default=True,
+            help='Use RNA velocity to orient edges in the abstracted graph and '
+            'estimate transitions. Requires that adata.uns contains a directed single-cell '
+            'graph with key velocity_graph. This feature might be subject to change in the '
+            'future.',
         ),
     ],
 

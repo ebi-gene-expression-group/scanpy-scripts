@@ -45,7 +45,7 @@ setup() {
     diffexp_tsv="${output_dir}/diffexp.tsv"
     diffexp_opt="-g leiden_k10_r0_7 --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5 --save ${diffexp_tsv} -f loom"
     diffexp_obj="${output_dir}/diffexp.h5ad"
-    paga_opt="--use-graph neighbors_k10 --key-added k10_r0_7 --groups leiden_k10_r0_7 --model v1.2 -f loom"
+    paga_opt="--neighbors-key neighbors_k10 --key-added louvain_k10_r0_5 --groups louvain_k10_r0_5 --model v1.2"
     paga_obj="${output_dir}/paga.h5ad"
     diffmap_embed="${output_dir}/diffmap.tsv"
     diffmap_opt="--use-graph neighbors_k10 --n-comps 10 -E ${diffmap_embed}"
@@ -279,7 +279,7 @@ setup() {
         skip "$paga_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $paga_obj && eval "$scanpy paga $paga_opt $leiden_obj $paga_obj"
+    run rm -f $paga_obj && eval "$scanpy paga $paga_opt $louvain_obj $paga_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$paga_obj" ]
