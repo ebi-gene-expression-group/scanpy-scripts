@@ -1072,6 +1072,13 @@ CMD_OPTIONS = {
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
         COMMON_OPTIONS['use_raw'],
+        COMMON_OPTIONS['key_added'],
+        click.option(
+            '--layer', '-l',
+            type=click.STRING,
+            default=None,
+            help="Key from adata.layers whose value will be used to perform tests on."
+        ),
         click.option(
             '--groupby', '-g',
             type=click.STRING,
