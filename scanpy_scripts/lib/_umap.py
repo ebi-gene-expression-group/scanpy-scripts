@@ -14,7 +14,6 @@ from ..obj_utils import (
 
 def umap(
         adata,
-        use_graph='neighbors',
         key_added=None,
         random_state=0,
         export_embedding=None,
@@ -23,7 +22,6 @@ def umap(
     """
     Wrapper function for sc.tl.umap, for supporting named slot of umap embeddings
     """
-    _set_default_key(adata.uns, 'neighbors', use_graph)
     if not isinstance(random_state, (list, tuple)):
         _backup_obsm_key(adata, 'X_umap')
 
@@ -51,10 +49,8 @@ def umap(
                                  'iterable of the same length as `random_state`.')
             umap(
                 adata,
-                use_graph='neighbors',
                 key_added=umap_key,
                 random_state=rseed,
                 **kwargs,
             )
-    _restore_default_key(adata.uns, 'neighbors', use_graph)
     return adata

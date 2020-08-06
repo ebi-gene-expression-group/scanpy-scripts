@@ -31,7 +31,7 @@ setup() {
     tsne_opt="-n 25 --use-rep X_pca --learning-rate 200 -E ${tsne_embed}"
     tsne_obj="${output_dir}/tsne.h5ad"
     umap_embed="${output_dir}/umap.tsv"
-    umap_opt="--use-graph neighbors_k10 --min-dist 0.75 --alpha 1 --gamma 1 -E ${umap_embed}"
+    umap_opt="--neighbors-key neighbors_k10 --min-dist 0.75 --alpha 1 --gamma 1 -E ${umap_embed}"
     umap_obj="${output_dir}/umap.h5ad"
     fdg_embed="${output_dir}/fdg.tsv"
     fdg_opt="--neighbors-key neighbors_k10 --layout fr -E ${fdg_embed}"

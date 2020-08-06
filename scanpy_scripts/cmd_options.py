@@ -135,12 +135,25 @@ COMMON_OPTIONS = {
 
     'knn_graph': [
         click.option(
-            '--use-graph',
+            '--neighbors-key',
             type=click.STRING,
-            default='neighbors',
+            default=None,
+            show_default=False,
+            help='If not specified, look in .uns[‘neighbors’] for neighbors '
+            'settings and .obsp[‘connectivities’], .obsp[‘distances’] for connectivities and '
+            'distances respectively (default storage places for pp.neighbors). If specified, '
+            'look in .uns[neighbors_key] for neighbors settings and '
+            '.obsp[.uns[neighbors_key][‘connectivities_key’]], '
+            '.obsp[.uns[neighbors_key][‘distances_key’]] for connectivities and distances '
+            'respectively.'
+        ),
+        click.option(
+            '--obsp',
+            type=click.STRING,
+            default=None,
             show_default=True,
-            help='Slot name under `.uns` that contains the KNN graph of which '
-            'sparse adjacency matrix is used for clustering.',
+            help='Use .obsp[obsp] as adjacency. You can’t specify both obsp and '
+            'neighbors_key at the same time.'
         ),
         click.option(
             '--directed/--undirected', 'directed',
@@ -821,7 +834,7 @@ CMD_OPTIONS = {
     'umap': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
-        COMMON_OPTIONS['knn_graph'][0], # --use-graph
+        COMMON_OPTIONS['knn_graph'][0], # --neighbors-key
         COMMON_OPTIONS['random_state'],
         COMMON_OPTIONS['key_added'],
         COMMON_OPTIONS['export_embedding'],
@@ -990,24 +1003,8 @@ CMD_OPTIONS = {
             help='How to initialize the low dimensional embedding. Can be "paga", '
             'or any valid key of `.obsm`.',
         ),
-        click.option(
-            '--neighbors-key',
-            type=click.STRING,
-            default=None,
-            show_default=True,
-            help='If not specified, draw_graph looks .obsp[‘connectivities’] '
-            'for connectivities (default storage place for pp.neighbors). If specified, '
-            'draw_graph looks .obsp[.uns[neighbors_key][‘connectivities_key’]] for '
-            'connectivities.'
-        ),
-        click.option(
-            '--obsp',
-            type=click.STRING,
-            default=None,
-            show_default=True,
-            help='Use .obsp[obsp] as adjacency. You can’t specify both obsp and '
-            'neighbors_key at the same time.'
-        ),
+        COMMON_OPTIONS['knn_graph'][0], # --neighbors-key
+        COMMON_OPTIONS['knn_graph'][1], # --obsp
     ],
 
     'louvain': [
