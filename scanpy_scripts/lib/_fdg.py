@@ -13,7 +13,6 @@ from ..obj_utils import (
 
 def fdg(
         adata,
-        use_graph='neighbors',
         layout='fa',
         key_added_ext=None,
         random_state=0,
