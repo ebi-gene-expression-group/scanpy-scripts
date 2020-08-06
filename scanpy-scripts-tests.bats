@@ -40,7 +40,7 @@ setup() {
     louvain_opt="-r 0.5,1 --neighbors-key neighbors_k10 --key-added k10 --export-cluster ${louvain_tsv}"
     louvain_obj="${output_dir}/louvain.h5ad"
     leiden_tsv="${output_dir}/leiden.tsv"
-    leiden_opt="-r 0.3,0.7 --use-graph neighbors_k10 --key-added k10 -F loom --export-cluster ${leiden_tsv}"
+    leiden_opt="-r 0.3,0.7 --neighbors-key neighbors_k10 --key-added k10 -F loom --loom-write-obsm-varm --export-cluster ${leiden_tsv}"
     leiden_obj="${output_dir}/leiden.loom"
     diffexp_tsv="${output_dir}/diffexp.tsv"
     diffexp_opt="-g leiden_k10_r0_7 --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5 --save ${diffexp_tsv} -f loom"

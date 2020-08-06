@@ -49,6 +49,13 @@ COMMON_OPTIONS = {
             help='Chunk size for writing output in zarr format.',
         ),
         click.option(
+            '--loom-write-obsm-varm', '-b',
+            is_flag=True,
+            default=False,
+            show_default=True,
+            help='Write obsm and varm to the Loom file?',
+        ),
+        click.option(
             '--export-mtx', '-X',
             type=click.Path(dir_okay=True, writable=True),
             default=None,
