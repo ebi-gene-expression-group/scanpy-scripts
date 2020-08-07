@@ -1197,7 +1197,7 @@ CMD_OPTIONS = {
     'diffmap': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
-        COMMON_OPTIONS['knn_graph'][0], # --use-graph
+        COMMON_OPTIONS['knn_graph'][0], # --neighbors-key
         COMMON_OPTIONS['key_added'],
         COMMON_OPTIONS['export_embedding'],
         COMMON_OPTIONS['n_comps'],
@@ -1206,7 +1206,7 @@ CMD_OPTIONS = {
     'dpt': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
-        COMMON_OPTIONS['knn_graph'][0], # --use-graph
+        COMMON_OPTIONS['knn_graph'][0], # --neighbors-key
         COMMON_OPTIONS['key_added'],
         click.option(
             '--root',
@@ -1238,6 +1238,15 @@ CMD_OPTIONS = {
             help='During recursive splitting of branches for --n-branchings > 1, '
             'do not consider branches/groups that contain fewer than this fraction '
             'of the total number of data points.',
+        ),
+        click.option(
+            '--disallow-kendall-tau-shift', 'allow_kendall_tau_shift',
+            is_flag=True,
+            default=True,
+            show_default=True,
+            help='By default: If a very small branch is detected upon '
+            'splitting, shift away from maximum correlation in Kendall tau criterion of '
+            '[Haghverdi16] to stabilize the splitting. Use flag to disable this.'
         ),
     ],
 
