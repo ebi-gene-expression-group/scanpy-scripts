@@ -42,21 +42,21 @@ setup() {
     leiden_tsv="${output_dir}/leiden.tsv"
     leiden_opt="-r 0.3,0.7 --neighbors-key neighbors_k10 --key-added k10 -F loom --loom-write-obsm-varm --export-cluster ${leiden_tsv}"
     leiden_obj="${output_dir}/leiden.loom"
+    test_clustering='louvain_k10_r0_5'
     diffexp_tsv="${output_dir}/diffexp.tsv"
-    diffexp_opt="-g leiden_k10_r0_7 --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5 --save ${diffexp_tsv} -f loom"
+    diffexp_opt="-g ${test_clustering} --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5 --save ${diffexp_tsv}"
     diffexp_obj="${output_dir}/diffexp.h5ad"
-    paga_opt="--neighbors-key neighbors_k10 --key-added louvain_k10_r0_5 --groups louvain_k10_r0_5 --model v1.2"
+    paga_opt="--neighbors-key neighbors_k10 --key-added ${test_clustering} --groups ${test_clustering} --model v1.2"
     paga_obj="${output_dir}/paga.h5ad"
     diffmap_embed="${output_dir}/diffmap.tsv"
     diffmap_opt="--neighbors-key neighbors_k10 --n-comps 10 -E ${diffmap_embed}"
     diffmap_obj="${output_dir}/diffmap.h5ad"
-    dpt_opt="--neighbors-key neighbors_k10 --key-added k10 --n-dcs 10 --disallow-kendall-tau-shift --root louvain_k10_r0_5 0"
+    dpt_opt="--neighbors-key neighbors_k10 --key-added k10 --n-dcs 10 --disallow-kendall-tau-shift --root ${test_clustering} 0"
     dpt_obj="${output_dir}/dpt.h5ad"
-    plt_embed_opt="--projection 2d --color louvain_k10_r0_5 --title test"
-    plt_embed_pdf="${output_dir}/umap_louvain_k10_r0_5.pdf"
-    plt_paga_opt="--use-key paga_louvain_k10_r0_5 --node-size-scale 2 --edge-width-scale 0.5 --basis diffmap --color dpt_pseudotime_k10 --frameoff"
+    plt_embed_opt="--projection 2d --color ${test_clustering} --title test"
+    plt_embed_pdf="${output_dir}/umap_${test_clustering}.pdf"
+    plt_paga_opt="--use-key paga_${test_clustering} --node-size-scale 2 --edge-width-scale 0.5 --basis diffmap --color dpt_pseudotime_k10 --frameoff"
     plt_paga_pdf="${output_dir}/paga_k10_r0_7.pdf"
-    test_clustering='leiden_k10_r0_3'
     test_markers='LDHB,CD3D,CD3E'
     diffexp_plot_opt="--var-names $test_markers --use-raw --dendrogram --groupby ${test_clustering}"
     plt_stacked_violin_opt="${diffexp_plot_opt} --no-jitter --swap-axes"
@@ -64,7 +64,7 @@ setup() {
     plt_dotplot_pdf="${output_dir}/dot_${test_clustering}_LDHB_CD3D_CD3E.pdf"
     plt_matrixplot_pdf="${output_dir}/matrix_${test_clustering}_LDHB_CD3D_CD3E.pdf"
     plt_heatmap_pdf="${output_dir}/heatmap_${test_clustering}_LDHB_CD3D_CD3E.pdf"
-    plt_rank_genes_groups_opt="--rgg --groups 3,5"
+    plt_rank_genes_groups_opt="--rgg --groups 3,4"
     plt_rank_genes_groups_stacked_violin_pdf="${output_dir}/rggsviolin_${test_clustering}.pdf"
     plt_rank_genes_groups_matrix_pdf="${output_dir}/rggmatrix_${test_clustering}.pdf"
     plt_rank_genes_groups_dot_pdf="${output_dir}/rggdot_${test_clustering}.pdf"
@@ -266,7 +266,7 @@ setup() {
         skip "$diffexp_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $diffexp_obj $diffexp_tsv && eval "$scanpy diffexp $diffexp_opt $leiden_obj $diffexp_obj"
+    run rm -f $diffexp_obj $diffexp_tsv && eval "$scanpy diffexp $diffexp_opt $louvain_obj $diffexp_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$diffexp_obj" ] && [ -f "$diffexp_tsv" ]
