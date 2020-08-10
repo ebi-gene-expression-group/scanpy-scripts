@@ -49,7 +49,7 @@ def plot_paga(
     """Make PAGA plot
     """
     if basis is not None and f'X_{basis}' in adata.obsm.keys():
-        ax = sc.plotting._tools.scatterplots.plot_scatter(
+        ax = sc.pl.embedding(
             adata,
             basis=basis,
             color=color,

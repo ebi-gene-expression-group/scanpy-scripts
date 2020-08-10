@@ -52,9 +52,9 @@ setup() {
     diffmap_obj="${output_dir}/diffmap.h5ad"
     dpt_opt="--neighbors-key neighbors_k10 --key-added k10 --n-dcs 10 --disallow-kendall-tau-shift --root louvain_k10_r0_5 0"
     dpt_obj="${output_dir}/dpt.h5ad"
-    plt_embed_opt="--color leiden_k10_r0_7 -f loom --title test"
-    plt_embed_pdf="${output_dir}/umap_leiden_k10_r0_7.pdf"
-    plt_paga_opt="--use-key paga_k10_r0_7 --node-size-scale 2 --edge-width-scale 0.5 --basis diffmap --color dpt_pseudotime_k10 --frameoff"
+    plt_embed_opt="--projection 2d --color louvain_k10_r0_5 --title test"
+    plt_embed_pdf="${output_dir}/umap_louvain_k10_r0_5.pdf"
+    plt_paga_opt="--use-key paga_louvain_k10_r0_5 --node-size-scale 2 --edge-width-scale 0.5 --basis diffmap --color dpt_pseudotime_k10 --frameoff"
     plt_paga_pdf="${output_dir}/paga_k10_r0_7.pdf"
     test_clustering='leiden_k10_r0_3'
     test_markers='LDHB,CD3D,CD3E'
@@ -318,10 +318,10 @@ setup() {
         skip "$plt_embed_pdf exists and resume is set to 'true'"
     fi
 
-    run rm -f $plt_embed_pdf && eval "$scanpy plot embed $plt_embed_opt $leiden_obj $plt_embed_pdf"
+    run rm -f $plt_embed_pdf && eval "$scanpy plot embed $plt_embed_opt $louvain_obj $plt_embed_pdf"
 
     [ "$status" -eq 0 ]
-    [ -f  "$dpt_obj" ]
+    [ -f  "$plt_embed_pdf" ]
 }
 
 # Run Plot paga

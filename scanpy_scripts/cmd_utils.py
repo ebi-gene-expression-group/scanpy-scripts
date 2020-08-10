@@ -161,6 +161,7 @@ def make_plot_function(func_name, kind=None):
     # Provide a function translation
 
     plot_funcs = {
+        'embedding': sc.pl.embedding,
         'scatter': sc.pl.scatter,
         'sviol': sc.pl.stacked_violin,
         'rgg_sviol': sc.pl.rank_genes_groups_stacked_violin,
@@ -231,7 +232,7 @@ def make_plot_function(func_name, kind=None):
 
         if output_fig:
             prefix=''
-            if func_name == 'scatter':
+            if func_name == 'scatter' or func_name == 'embedding':
                 prefix =  kwargs.get('basis', func.__name__)
             elif kind:
                 prefix = kind

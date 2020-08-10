@@ -170,7 +170,7 @@ DPT_CMD = make_subcmd(
 
 PLOT_EMBED_CMD = make_subcmd(
     'embed',
-    make_plot_function('scatter'),
+    make_plot_function('embedding'),
     cmd_desc='Plot cell embeddings.',
     arg_desc=_IP_DESC,
 )

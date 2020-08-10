@@ -177,6 +177,18 @@ COMMON_OPTIONS = {
         ),
     ],
 
+    
+    'layer':click.option(
+        '--layer',
+        type=CommaSeparatedText(simplify=True),
+        default=None,
+        show_default=True,
+        help='Name of the AnnData object layer that wants to be plotted. By '
+        'default adata.raw.X is plotted. If use_raw=False is set, then adata.X '
+        'is plotted. If layer is set to a valid layer name, then the layer is '
+        'plotted. layer takes precedence over use_raw.',
+    ),
+
     'n_comps': click.option(
         '--n-comps',
         type=click.INT,
@@ -309,16 +321,6 @@ COMMON_OPTIONS = {
             'between the groupby categories is added. The dendrogram information is '
             'computed using scanpy.tl.dendrogram(). If tl.dendrogram has not been '
             'called previously the function is called with default parameters.',
-        ),
-        click.option(
-            '--layer',
-            type=CommaSeparatedText(simplify=True),
-            default=None,
-            show_default=True,
-            help='Name of the AnnData object layer that wants to be plotted. By '
-            'default adata.raw.X is plotted. If use_raw=False is set, then adata.X '
-            'is plotted. If layer is set to a valid layer name, then the layer is '
-            'plotted. layer takes precedence over use_raw.',
         ),
         click.option(
             '--standard-scale',
@@ -485,6 +487,23 @@ COMMON_OPTIONS = {
         show_default=True,
         help='If choosing a tree layout, this is the index of the root node.',
     ),
+
+    'plot_embed': [
+        click.option(
+            '--use-raw/--no-raw',
+            default=None,
+            show_default=True,
+            help='Use `.raw` attribute for coloring with gene expression. If '
+            '`None`, uses `.raw` if present.',
+        ),
+        click.option(
+            '--groups',
+            type=click.STRING,
+            default=None,
+            help='Key for categorical in `.obs`. You can pass your predefined '
+            'groups by choosing any categorical annotation of observations.',
+        ),
+    ]
 }
 
 CMD_OPTIONS = {
@@ -1254,6 +1273,7 @@ CMD_OPTIONS = {
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['plot'],
         *COMMON_OPTIONS['frame_title'],
+        COMMON_OPTIONS['layer'],
         click.option(
             '--basis',
             type=click.STRING,
@@ -1268,13 +1288,6 @@ CMD_OPTIONS = {
             default=None,
             show_default=True,
             help='Keys for annotations of observations/cells or variables/genes.',
-        ),
-        click.option(
-            '--use-raw/--no-raw',
-            default=None,
-            show_default=True,
-            help='Use `.raw` attribute for coloring with gene expression. If '
-            '`None`, uses `.raw` if present.',
         ),
         click.option(
             '--legend-loc',
@@ -1299,12 +1312,60 @@ CMD_OPTIONS = {
             help='Point size. Automatically computed if not specified.',
         ),
         COMMON_OPTIONS['gene_symbols'],
+        click.option(
+            '--edges',
+            is_flag=True,
+            default=False,
+            show_default=True,
+            help='Show edges.',
+        ),
+        click.option(
+            '--edges-width',
+            type=click.FLOAT,
+            default=0.1,
+            show_default=True,
+            help='Width of edges.',
+        ),
+        click.option(
+            '--edges-color',
+            type=click.STRING,
+            default=None,
+            show_default=True,
+            help='Color of edges. See draw_networkx_edges().',
+        ),
+        COMMON_OPTIONS['knn_graph'][0], # --neighbors-key
+        click.option(
+            '--no-sort-order', 'sort_order',
+            is_flag=True,
+            default=True,
+            show_default=True,
+            help='Disable default behaviour: for continuous annotations used as '
+            'color parameter, plot data points with higher values on top of others.',
+        ),
+        *COMMON_OPTIONS['plot_embed'],
+        click.option(
+            '--components',
+            type=click.STRING,
+            default=None,
+            show_default=True,
+            help="For instance, ['1,2', '2,3']. To plot all available components use 'all'.",
+        ),
+        click.option(
+            '--projection',
+            type=click.Choice(['2d', '3d']),
+            default='2d',
+            show_default=True,
+            help="Projection of plot."
+        ),
+         
     ],
 
     'plot_paga': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['plot'],
         *COMMON_OPTIONS['frame_title'],
+        *COMMON_OPTIONS['plot_embed'],
+        COMMON_OPTIONS['random_state'],
         click.option(
             '--use-key',
             type=click.STRING,
@@ -1431,6 +1492,7 @@ CMD_OPTIONS = {
         COMMON_OPTIONS['use_raw'],
         COMMON_OPTIONS['var_names'],
         *COMMON_OPTIONS['rank_genes_groups_plots'],
+        COMMON_OPTIONS['layer'],
         *COMMON_OPTIONS['diffexp_plot'],
         COMMON_OPTIONS['gene_symbols'],
         *COMMON_OPTIONS['sviol'],
@@ -1443,6 +1505,7 @@ CMD_OPTIONS = {
         COMMON_OPTIONS['use_raw'],
         COMMON_OPTIONS['var_names'],
         *COMMON_OPTIONS['rank_genes_groups_plots'],
+        COMMON_OPTIONS['layer'],
         *COMMON_OPTIONS['diffexp_plot'],
         COMMON_OPTIONS['gene_symbols'],
         *COMMON_OPTIONS['dot'],
@@ -1454,6 +1517,7 @@ CMD_OPTIONS = {
         COMMON_OPTIONS['use_raw'],
         COMMON_OPTIONS['var_names'],
         *COMMON_OPTIONS['rank_genes_groups_plots'],
+        COMMON_OPTIONS['layer'],
         *COMMON_OPTIONS['diffexp_plot'],
         COMMON_OPTIONS['gene_symbols'],
     ],
@@ -1464,6 +1528,7 @@ CMD_OPTIONS = {
         COMMON_OPTIONS['use_raw'],
         COMMON_OPTIONS['var_names'],
         *COMMON_OPTIONS['rank_genes_groups_plots'],
+        COMMON_OPTIONS['layer'],
         *COMMON_OPTIONS['diffexp_plot'],
         COMMON_OPTIONS['gene_symbols'],
         *COMMON_OPTIONS['heat'],
