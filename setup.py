@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setup(
     name='scanpy-scripts',
-    version='0.2.10',
+    version='0.2.11',
     author='nh3',
     author_email='nh3@users.noreply.github.com',
     description='Scripts for using scanpy from the command line',
@@ -46,6 +46,7 @@ setup(
         'leidenalg',
         'loompy>=2.0.0,<3.0.0',
         'MulticoreTSNE',
-        'Click'
+        'Click',
+        'umap-learn<0.4.0'
     ],
 )
