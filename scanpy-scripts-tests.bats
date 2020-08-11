@@ -69,6 +69,12 @@ setup() {
     plt_rank_genes_groups_matrix_pdf="${output_dir}/rggmatrix_${test_clustering}.pdf"
     plt_rank_genes_groups_dot_pdf="${output_dir}/rggdot_${test_clustering}.pdf"
     plt_rank_genes_groups_heatmap_pdf="${output_dir}/rggheatmap_${test_clustering}.pdf"
+    harmony_integrate_obj="${output_dir}/harmony_integrate.h5ad"
+    harmony_integrate_opt="--batch-key ${test_clustering}"
+    harmony_plt_embed_opt="--projection 2d --color ${test_clustering} --title 'PCA embeddings after harmony' --basis 'X_pca_harmony'"
+    noharmony_plt_embed_opt="--projection 2d --color ${test_clustering} --title 'PCA embeddings before harmony' --basis 'X_pca'"
+    harmony_integrated_pca_pdf="${output_dir}/harmony_pca_${test_clustering}.pdf"
+    noharmony_integrated_pca_pdf="${output_dir}/pca_${test_clustering}.pdf"
 
     if [ ! -d "$data_dir" ]; then
         mkdir -p $data_dir
@@ -440,6 +446,46 @@ setup() {
 
     [ "$status" -eq 0 ]
     [ -f  "$plt_rank_genes_groups_matrix_pdf" ]
+}
+
+# Do harmony batch correction, using clustering as batch (just for test purposes)
+
+@test "Run Harmony batch integration using clustering as batch" {
+    if [ "$resume" = 'true' ] && [ -f "$harmony_integrate_obj" ]; then
+        skip "$harmony_integrate_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $harmony_integrate_obj && eval "$scanpy integrate harmony_integrate $harmony_integrate_opt $louvain_obj $harmony_integrate_obj"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$plt_rank_genes_groups_matrix_pdf" ]
+
+}
+
+# Run Plot PCA embedding before harmony
+
+@test "Run Plot PCA embedding before Harmony" {
+    if [ "$resume" = 'true' ] && [ -f "$noharmony_integrated_pca_pdf" ]; then
+        skip "$noharmony_integrated_pca_pdf exists and resume is set to 'true'"
+    fi
+
+    run rm -f $noharmony_integrated_pca_pdf && eval "$scanpy plot embed $noharmony_plt_embed_opt $louvain_obj $noharmony_integrated_pca_pdf"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$noharmony_integrated_pca_pdf" ]
+}
+
+# Run Plot PCA embedding after harmony
+
+@test "Run Plot PCA embedding after Harmony" {
+    if [ "$resume" = 'true' ] && [ -f "$harmony_integrated_pca_pdf" ]; then
+        skip "$harmony_integrated_pca_pdf exists and resume is set to 'true'"
+    fi
+
+    run rm -f $harmony_integrated_pca_pdf && eval "$scanpy plot embed $harmony_plt_embed_opt $harmony_integrate_obj $harmony_integrated_pca_pdf"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$harmony_integrated_pca_pdf" ]
 }
 
 # Local Variables:

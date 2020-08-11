@@ -5,6 +5,7 @@ Provides sub-commands
 import os
 import sys
 import scanpy as sc
+import scanpy.external as sce
 
 from .cmd_utils import (
     make_subcmd,
@@ -209,4 +210,11 @@ PLOT_PAGA_CMD = make_subcmd(
     cmd_desc='Plot PAGA trajectories.',
     arg_desc=_IP_DESC,
     opt_set='plot_paga'
+)
+
+HARMONY_INTEGRATE_CMD = make_subcmd(
+    'harmony_integrate',
+    sce.pp.harmony_integrate,
+    cmd_desc='Use harmonypy [Korunsky19] to integrate different experiments.',    
+    arg_desc=_IO_DESC,
 )

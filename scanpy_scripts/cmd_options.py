@@ -1269,6 +1269,35 @@ CMD_OPTIONS = {
         ),
     ],
 
+    'harmony_integrate': [
+        *COMMON_OPTIONS['input'],
+        *COMMON_OPTIONS['output'],
+        click.option(
+            '--basis',
+            type=click.STRING,
+            default='X_pca',
+            show_default=True,
+            help="The name of the field in adata.obsm where the PCA table is "
+            "stored. Defaults to 'X_pca', which is the default for sc.tl.pca()."
+        ),
+        click.option(
+            '--batch-key', 'key',
+            type=click.STRING,
+            required=True,
+            help='The name of the column in adata.obs that differentiates among '
+            'experiments/batches.'
+        ),
+        click.option(
+            '--adjusted-basis',
+            type=click.STRING,
+            default='X_pca_harmony',
+            show_default=True,
+            help='The name of the field in adata.obsm where the adjusted PCA '
+            'table will be stored after running this function.'
+        ),
+        
+    ],
+
     'embed': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['plot'],
