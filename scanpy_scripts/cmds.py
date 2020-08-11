@@ -26,6 +26,7 @@ from .lib._diffexp import diffexp
 from .lib._paga import paga
 from .lib._diffmap import diffmap
 from .lib._dpt import dpt
+from .lib._bbknn import bbknn
 
 LANG = os.environ.get('LANG', None)
 
@@ -216,5 +217,12 @@ HARMONY_INTEGRATE_CMD = make_subcmd(
     'harmony_integrate',
     sce.pp.harmony_integrate,
     cmd_desc='Use harmonypy [Korunsky19] to integrate different experiments.',    
+    arg_desc=_IO_DESC,
+)
+
+BBKNN_CMD = make_subcmd(
+    'bbknn',
+    bbknn,
+    cmd_desc='Batch balanced kNN [Polanski19].',
     arg_desc=_IO_DESC,
 )

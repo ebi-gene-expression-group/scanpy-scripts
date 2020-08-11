@@ -1298,6 +1298,100 @@ CMD_OPTIONS = {
         
     ],
 
+    'bbknn': [
+        *COMMON_OPTIONS['input'],
+        *COMMON_OPTIONS['output'],
+        COMMON_OPTIONS['key_added'],
+        click.option(
+            '--use-rep', '-u',
+            type=click.STRING,
+            default='X_pca',
+            show_default=True,
+            help='The dimensionality reduction in .obsm to use for neighbour '
+            'detection.'
+        ),
+        COMMON_OPTIONS['use_pc'][0], # --n-pcs
+        click.option(
+            '--batch-key', 'batch_key',
+            type=click.STRING,
+            required=True,
+            help='adata.obs column name discriminating between your batches.'
+        ),
+        click.option(
+            '--no-approx', 'approx',
+            is_flag=True,
+            default=True,
+            help='Default behaviour is to use annoy’s approximate neighbour '
+            'finding. This results in a quicker run time for large datasets while also '
+            'potentially increasing the degree of batch correction. Use this flag to disable '
+            'that behaviour.',
+        ),
+        click.option(
+            '--metric', '-t',
+            type=click.Choice(['angular', 'cityblock', 'cosine', 'euclidean', 'l1', 'l2', 'manhattan', 'braycurtis', 'canberra', 'chebyshev', 'correlation', 'dice', 'hamming', 'jaccard', 'kulsinski', 'mahalanobis', 'minkowski', 'rogerstanimoto', 'russellrao', 'seuclidean', 'sokalmichener', 'sokalsneath', 'sqeuclidean', 'yule']),
+            default='angular',
+            show_default=True,
+            help='A known metric’s name.'
+        ),
+        click.option(
+            '--neighbors-within-batch',
+            type=click.INT,
+            default=3,
+            show_default=True,
+            help='How many top neighbours to report for each batch; total '
+            'number of neighbours will be this number times the number of batches.'
+        ),
+        click.option(
+            '--trim',
+            type=click.INT,
+            default=None,
+            show_default=True,
+            help='Trim the neighbours of each cell to these many top '
+            'connectivities. May help with population independence and improve the tidiness '
+            'of clustering. The lower the value the more independent the individual '
+            'populations, at the cost of more conserved batch effect. If None, sets the '
+            'parameter value automatically to 10 times the total number of neighbours for '
+            'each cell. Set to 0 to skip.'
+        ),
+        click.option(
+            '--n-trees',
+            type=click.INT,
+            default=10,
+            show_default=True,
+            help='Only used when approx=True. The number of trees to construct '
+            'in the annoy forest. More trees give higher precision when querying, at the '
+            'cost of increased run time and resource intensity.'
+        ),
+        click.option(
+            '--no-use-faiss', 'use_faiss',
+            is_flag=True,
+            default=True,
+            help='Default behaviour If approx=False and the metric is '
+            '“euclidean”, is to use the faiss package to compute nearest neighbours if '
+            'installed. This improves performance at a minor cost to numerical precision as '
+            'faiss operates on float32. Use this flag to disable that behaviour.'
+        ),
+        click.option(
+            '--set-op-mix-ratio',
+            type=click.FLOAT,
+            default=1,
+            show_default=True,
+            help='UMAP connectivity computation parameter, float between 0 and '
+            '1, controlling the blend between a connectivity matrix formed exclusively from '
+            'mutual nearest neighbour pairs (0) and a union of all observed neighbour '
+            'relationships with the mutual pairs emphasised (1).'
+        ),
+        click.option(
+            '--local-connectivity',
+            type=click.INT,
+            default=1,
+            show_default=True,
+            help='UMAP connectivity computation parameter, how many nearest '
+            'neighbors of each cell are assumed to be fully connected (and given a '
+            'connectivity value of 1)'
+        ),
+    ],
+
     'embed': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['plot'],

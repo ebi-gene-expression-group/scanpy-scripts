@@ -31,6 +31,7 @@ from .cmds import (
     PLOT_MATRIX_CMD,
     PLOT_HEATMAP_CMD,
     HARMONY_INTEGRATE_CMD,
+    BBKNN_CMD,
 )
 
 
@@ -107,6 +108,7 @@ def integrate():
     """Integrate cells from different experimental batches."""
 
 integrate.add_command(HARMONY_INTEGRATE_CMD)
+integrate.add_command(BBKNN_CMD)
 
 
 @cli.group(cls=NaturalOrderGroup)

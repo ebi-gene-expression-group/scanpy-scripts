@@ -75,6 +75,9 @@ setup() {
     noharmony_plt_embed_opt="--projection 2d --color ${test_clustering} --title 'PCA embeddings before harmony' --basis 'X_pca'"
     harmony_integrated_pca_pdf="${output_dir}/harmony_pca_${test_clustering}.pdf"
     noharmony_integrated_pca_pdf="${output_dir}/pca_${test_clustering}.pdf"
+    bbknn_obj="${output_dir}/bbknn.h5ad"
+    bbknn_opt="--batch-key ${test_clustering} --key-added bbknn"
+    
 
     if [ ! -d "$data_dir" ]; then
         mkdir -p $data_dir
@@ -486,6 +489,20 @@ setup() {
 
     [ "$status" -eq 0 ]
     [ -f  "$harmony_integrated_pca_pdf" ]
+}
+
+# Do bbknn batch correction, using clustering as batch (just for test purposes)
+
+@test "Run BBKNN batch integration using clustering as batch" {
+    if [ "$resume" = 'true' ] && [ -f "$bbknn_obj" ]; then
+        skip "$bbknn_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $bbknn_obj && echo "$scanpy integrate bbknn $bbknn_opt $louvain_obj $bbknn_obj" && eval "$scanpy integrate bbknn $bbknn_opt $louvain_obj $bbknn_obj"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$plt_rank_genes_groups_matrix_pdf" ]
+
 }
 
 # Local Variables:
