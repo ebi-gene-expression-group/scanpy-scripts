@@ -1295,7 +1295,89 @@ CMD_OPTIONS = {
             help='The name of the field in adata.obsm where the adjusted PCA '
             'table will be stored after running this function.'
         ),
-        
+        click.option(
+            '--theta',
+            type=click.FLOAT,
+            default=2,
+            show_default=True,
+            help='Diversity clustering penalty parameter. theta=0 does not encourage any '
+            'diversity. Larger values of theta result in more diverse clusters.'
+        ),
+        click.option(
+            '--lambda', 'lamb',
+            type=click.FLOAT,
+            default=1,
+            show_default=True,
+            help='Ridge regression penalty parameter. Lambda must be strictly '
+            'positive.  Smaller values result in more aggressive correction.'
+        ),
+        click.option(
+            '--sigma',
+            type=click.FLOAT,
+            default=0.1,
+            show_default=True,
+            help='Width of soft kmeans clusters. Sigma scales the distance from '
+            'a cell to cluster centroids. Larger values of sigma result in cells assigned to '
+            'more clusters. Smaller values of sigma make soft kmeans cluster approach hard '
+            'clustering.'
+        ),
+        click.option(
+            '--n-clust', 'nclust',
+            type=click.INT,
+            default=None,
+            show_default=False,
+            help='Number of clusters in model. nclust=1 equivalent to simple '
+            'linear regression.'
+        ),
+        click.option(
+            '--tau',
+            type=click.INT,
+            default=0,
+            show_default=True,
+            help='Protection against overclustering small datasets with large ones. '
+            'tau is the expected number of cells per cluster.'
+        ),
+        click.option(
+            '--block-size',
+            type=click.FLOAT,
+            default=0.05,
+            show_default=True,
+            help='What proportion of cells to update during clustering. Between '
+            '0 to 1, default 0.05. Larger values may be faster but less accurate.'
+        ),
+        click.option(
+            '--max-iter-cluster', 'max_iter_kmeans',
+            type=click.INT,
+            default=20,
+            show_default=True,
+            help='Maximum number of rounds to run clustering at each round of '
+            'Harmony.'
+        ),
+        click.option(
+            '--max-iter-harmony',
+            type=click.INT,
+            default=10,
+            show_default=True,
+            help='Maximum number of rounds to run Harmony. One round of Harmony '
+            'involves one clustering and one correction step.'
+        ),
+        click.option(
+            '--epsilon-cluster',
+            type=click.FLOAT,
+            default=1e-5,
+            show_default=True,
+            help='Convergence tolerance for clustering round of Harmony Set to '
+            '-Inf to never stop early.'
+        ),
+        click.option(
+            '--epsilon-harmony',
+            type=click.FLOAT,
+            default=1e-5,
+            show_default=True,
+            help='Convergence tolerance for clustering round of Harmony Set to '
+            '-Inf to never stop early.'
+        ),
+        COMMON_OPTIONS['random_state'],
     ],
 
     'bbknn': [
