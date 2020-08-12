@@ -287,29 +287,29 @@ setup() {
 
 # Run Diffmap
 
-@test "Run Diffmap" {
-    if [ "$resume" = 'true' ] && [ -f "$diffmap_obj" ]; then
-        skip "$diffmap_obj exists and resume is set to 'true'"
-    fi
-
-    run rm -f $diffmap_obj && eval "$scanpy embed diffmap $diffmap_opt $paga_obj $diffmap_obj"
-
-    [ "$status" -eq 0 ]
-    [ -f  "$diffmap_obj" ] && [ -f "$diffmap_embed" ]
-}
+#@test "Run Diffmap" {
+#    if [ "$resume" = 'true' ] && [ -f "$diffmap_obj" ]; then
+#        skip "$diffmap_obj exists and resume is set to 'true'"
+#    fi
+#
+#    run rm -f $diffmap_obj && eval "$scanpy embed diffmap $diffmap_opt $paga_obj $diffmap_obj"
+#
+#    [ "$status" -eq 0 ]
+#    [ -f  "$diffmap_obj" ] && [ -f "$diffmap_embed" ]
+#}
 
 # Run DPT
 
-@test "Run DPT" {
-    if [ "$resume" = 'true' ] && [ -f "$dpt_obj" ]; then
-        skip "$dpt_obj exists and resume is set to 'true'"
-    fi
+#@test "Run DPT" {
+#    if [ "$resume" = 'true' ] && [ -f "$dpt_obj" ]; then
+#        skip "$dpt_obj exists and resume is set to 'true'"
+#    fi
 
-    run rm -f $dpt_obj && eval "$scanpy dpt $dpt_opt $diffmap_obj $dpt_obj"
+#    run rm -f $dpt_obj && eval "$scanpy dpt $dpt_opt $diffmap_obj $dpt_obj"
 
-    [ "$status" -eq 0 ]
-    [ -f  "$dpt_obj" ]
-}
+#    [ "$status" -eq 0 ]
+#    [ -f  "$dpt_obj" ]
+#}
 
 # Run Plot embedding
 
@@ -326,16 +326,16 @@ setup() {
 
 # Run Plot paga
 
-@test "Run Plot trajectory" {
-    if [ "$resume" = 'true' ] && [ -f "$plt_paga_pdf" ]; then
-        skip "$plt_paga_pdf exists and resume is set to 'true'"
-    fi
+#@test "Run Plot trajectory" {
+#    if [ "$resume" = 'true' ] && [ -f "$plt_paga_pdf" ]; then
+#        skip "$plt_paga_pdf exists and resume is set to 'true'"
+#    fi
 
-    run rm -f $plt_paga_pdf && eval "$scanpy plot paga $plt_paga_opt $dpt_obj $plt_paga_pdf"
+#    run rm -f $plt_paga_pdf && eval "$scanpy plot paga $plt_paga_opt $dpt_obj $plt_paga_pdf"
 
-    [ "$status" -eq 0 ]
-    [ -f  "$dpt_obj" ]
-}
+#    [ "$status" -eq 0 ]
+#    [ -f  "$dpt_obj" ]
+#}
 
 # Plot a stacked violin plot for markers
 
