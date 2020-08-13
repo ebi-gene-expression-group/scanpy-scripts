@@ -77,6 +77,8 @@ setup() {
     noharmony_integrated_pca_pdf="${output_dir}/pca_${test_clustering}.pdf"
     bbknn_obj="${output_dir}/bbknn.h5ad"
     bbknn_opt="--batch-key ${test_clustering} --key-added bbknn"
+    mnn_obj="${output_dir}/mnn.h5ad"
+    mnn_opt="--batch-key ${test_clustering}"
     
 
     if [ ! -d "$data_dir" ]; then
@@ -498,10 +500,24 @@ setup() {
         skip "$bbknn_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $bbknn_obj && echo "$scanpy integrate bbknn $bbknn_opt $louvain_obj $bbknn_obj" && eval "$scanpy integrate bbknn $bbknn_opt $louvain_obj $bbknn_obj"
+    run rm -f $bbknn_obj && eval "$scanpy integrate bbknn $bbknn_opt $louvain_obj $bbknn_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$plt_rank_genes_groups_matrix_pdf" ]
+
+}
+
+# Do bbknn batch correction, using clustering as batch (just for test purposes)
+
+@test "Run MNN batch integration using clustering as batch" {
+    if [ "$resume" = 'true' ] && [ -f "$mnn_obj" ]; then
+        skip "$mnn_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $mnn_obj && eval "$scanpy integrate mnn_correct $mnn_opt $louvain_obj $mnn_obj"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$mnn_obj" ]
 
 }
 

@@ -1380,6 +1380,108 @@ CMD_OPTIONS = {
         COMMON_OPTIONS['random_state'],
     ],
 
+    'mnn_correct': [
+        *COMMON_OPTIONS['input'],
+        *COMMON_OPTIONS['output'],
+        click.option(
+            '--layer', '-l',
+            type=click.STRING,
+            default=None,
+            show_default=True,
+            help="Layer to batch correct. By default corrects the contents of .X."
+        ),
+        click.option(
+            '--key-added',
+            type=click.STRING,
+            default=None,
+            show_default=True,
+            help="Key under which to add the computed results. By default a new "
+            "layer will be created called 'mnnnn', 'bbknn_{layer}' or "
+            "'bbknn_layer_{key_added}' where those parameters were specified. A value of 'X' "
+            "causes batch-corrected values to overwrite the original content of .X."
+        ),
+        click.option(
+            '--var-subset',
+            type=(click.STRING, CommaSeparatedText()),
+            multiple=True,
+            help="The subset of vars (list of str) to be used when performing "
+            "MNN correction in the format of '--var-subset <name> <values>'. Typically, use "
+            "the highly variable genes (HVGs) like '--var-subset highly_variable True'. When "
+            "unset, uses all vars."
+        ),
+        click.option(
+            '--batch-key', 'batch_key',
+            type=click.STRING,
+            required=True,
+            help='adata.obs column name discriminating between your batches.'
+        ),
+        click.option(
+            '--n-neighbors', '-k',
+            type=CommaSeparatedText(click.INT, simplify=True),
+            default=20,
+            show_default=True,
+            help='Number of mutual nearest neighbors.'
+        ),
+        click.option(
+            '--sigma',
+            type=click.FLOAT,
+            default=1.0,
+            show_default=True,
+            help='The bandwidth of the Gaussian smoothing kernel used to '
+            'compute the correction vectors.'
+        ),
+        click.option(
+            '--no-cos_norm_in', 'cos_norm_in',
+            is_flag=True,
+            default=True,
+            help='Default behaviour is to perform cosine normalization on the '
+            'input data prior to calculating distances between cells. Use this '
+            'flag to disable that behaviour.'
+        ),
+        click.option(
+            '--no-cos_norm_out', 'cos_norm_out',
+            is_flag=True,
+            default=True,
+            help='Default behaviour is to perform cosine normalization prior to '
+            'computing corrected expression values. Use this flag to disable that '
+            'behaviour.'
+        ),
+        click.option(
+            '--svd-dim',
+            type=click.INT,
+            default=None,
+            show_default=True,
+            help='The number of dimensions to use for summarizing biological '
+            'substructure within each batch. If not set, biological components '
+            'will not be removed from the correction vectors.'
+        ),
+        click.option(
+            '--no-var-adj',
+            is_flag=True,
+            default=True,
+            help='Default behaviour is to adjust variance of the correction '
+            'vectors. Use this flag to disable that behaviour. Note this step takes most '
+            'computing time.'
+        ),
+        click.option(
+            '--compute-angle',
+            is_flag=True,
+            default=False,
+            help='When set, compute the angle between each cell’s correction '
+            'vector and the biological subspace of the reference batch.'
+        ),
+        click.option(
+            '--svd-mode',
+            type=click.Choice(['svd', 'rsvd', 'irlb']),
+            default='rsvd',
+            show_default=True,
+            help="'svd' computes SVD using a non-randomized SVD-via-ID "
+            "algorithm, while 'rsvd' uses a randomized version. 'irlb' performs truncated "
+            "SVD by implicitly restarted Lanczos bidiagonalization (forked from "
+            "https://github.com/airysen/irlbpy)."
+        ),
+    ],
+
     'bbknn': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],

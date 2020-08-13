@@ -27,6 +27,7 @@ from .lib._paga import paga
 from .lib._diffmap import diffmap
 from .lib._dpt import dpt
 from .lib._bbknn import bbknn
+from .lib._mnn import mnn_correct
 
 LANG = os.environ.get('LANG', None)
 
@@ -224,5 +225,12 @@ BBKNN_CMD = make_subcmd(
     'bbknn',
     bbknn,
     cmd_desc='Batch balanced kNN [Polanski19].',
+    arg_desc=_IO_DESC,
+)
+
+MNN_CORRECT_CMD = make_subcmd(
+    'mnn_correct',
+    mnn_correct,
+    cmd_desc='Correct batch effects by matching mutual nearest neighbors [Haghverdi18] [Kang18].',
     arg_desc=_IO_DESC,
 )
