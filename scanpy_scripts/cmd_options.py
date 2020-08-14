@@ -714,6 +714,14 @@ CMD_OPTIONS = {
             'in the format of "-d min max".',
         ),
         click.option(
+            '--span',
+            type=click.FLOAT,
+            default=0.3,
+            show_default=True,
+            help="The fraction of the data (cells) used when estimating the "
+            "variance in the loess model fit if flavor='seurat_v3'."    
+        ),
+        click.option(
             '--n-bins', '-b',
             type=click.INT,
             default=20,
@@ -729,7 +737,7 @@ CMD_OPTIONS = {
         ),
         click.option(
             '--flavor', '-v',
-            type=click.Choice(['seurat', 'cellranger']),
+            type=click.Choice(['seurat', 'cellranger', 'seurat_v3']),
             default='seurat',
             show_default=True,
             help='Choose the flavor for computing normalized dispersion.',
@@ -742,12 +750,16 @@ CMD_OPTIONS = {
             'only flag highly-variable genes.',
         ),
         click.option(
-            '--by-batch', '-B',
-            type=(click.STRING, click.INT),
-            default=(None, None),
-            show_default=True,
-            help='Find highly variable genes within each batch defined by <TEXT> '
-            'then pool and keep those found in at least <INTEGER> batches.',
+            '--batch-key', 'batch_key',
+            type=click.STRING,
+            default=None,
+            help="If specified, highly-variable genes are selected within each "
+            "batch separately and merged. This simple process avoids the selection of "
+            "batch-specific genes and acts as a lightweight batch correction method. For all "
+            "flavors, genes are first sorted by how many batches they are a HVG. For "
+            "dispersion-based flavors ties are broken by normalized dispersion. If flavor = "
+            "'seurat_v3', ties are broken by the median (across batches) rank based on "
+            "within-batch normalized variance."
         ),
     ],
 
