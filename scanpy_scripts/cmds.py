@@ -28,6 +28,7 @@ from .lib._diffmap import diffmap
 from .lib._dpt import dpt
 from .lib._bbknn import bbknn
 from .lib._mnn import mnn_correct
+from .lib._combat import combat
 
 LANG = os.environ.get('LANG', None)
 
@@ -212,6 +213,13 @@ PLOT_PAGA_CMD = make_subcmd(
     cmd_desc='Plot PAGA trajectories.',
     arg_desc=_IP_DESC,
     opt_set='plot_paga'
+)
+
+COMBAT_CMD = make_subcmd(
+    'combat',
+    combat,
+    cmd_desc='ComBat function for batch effect correction',
+    arg_desc=_IO_DESC
 )
 
 HARMONY_INTEGRATE_CMD = make_subcmd(

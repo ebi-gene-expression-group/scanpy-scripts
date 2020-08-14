@@ -33,6 +33,7 @@ from .cmds import (
     HARMONY_INTEGRATE_CMD,
     BBKNN_CMD,
     MNN_CORRECT_CMD,
+    COMBAT_CMD,
 )
 
 
@@ -111,6 +112,7 @@ def integrate():
 integrate.add_command(HARMONY_INTEGRATE_CMD)
 integrate.add_command(BBKNN_CMD)
 integrate.add_command(MNN_CORRECT_CMD)
+integrate.add_command(COMBAT_CMD)
 
 
 @cli.group(cls=NaturalOrderGroup)

@@ -79,6 +79,8 @@ setup() {
     bbknn_opt="--batch-key ${test_clustering} --key-added bbknn"
     mnn_obj="${output_dir}/mnn.h5ad"
     mnn_opt="--batch-key ${test_clustering}"
+    combat_obj="${output_dir}/combat.h5ad"
+    combat_opt="--batch-key ${test_clustering}"
     
 
     if [ ! -d "$data_dir" ]; then
@@ -504,10 +506,9 @@ setup() {
 
     [ "$status" -eq 0 ]
     [ -f  "$plt_rank_genes_groups_matrix_pdf" ]
-
 }
 
-# Do bbknn batch correction, using clustering as batch (just for test purposes)
+# Do MNN batch correction, using clustering as batch (just for test purposes)
 
 @test "Run MNN batch integration using clustering as batch" {
     if [ "$resume" = 'true' ] && [ -f "$mnn_obj" ]; then
@@ -518,7 +519,19 @@ setup() {
 
     [ "$status" -eq 0 ]
     [ -f  "$mnn_obj" ]
+}
 
+# Do ComBat batch correction, using clustering as batch (just for test purposes)
+
+@test "Run Combat batch integration using clustering as batch" {
+    if [ "$resume" = 'true' ] && [ -f "$combat_obj" ]; then
+        skip "$combat_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $combat_obj && eval "$scanpy integrate combat $combat_opt $louvain_obj $combat_obj"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$combat_obj" ]
 }
 
 # Local Variables:

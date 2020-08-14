@@ -503,7 +503,23 @@ COMMON_OPTIONS = {
             help='Key for categorical in `.obs`. You can pass your predefined '
             'groups by choosing any categorical annotation of observations.',
         ),
-    ]
+    ],
+
+    'batch_key': click.option(
+        '--batch-key', 'key',
+        type=click.STRING,
+        required=True,
+        help='The name of the column in adata.obs that differentiates among '
+        'experiments/batches.'
+    ),
+    
+    'batch_layer': click.option(
+        '--layer', '-l',
+        type=click.STRING,
+        default=None,
+        show_default=True,
+        help="Layer to batch correct. By default corrects the contents of .X."
+    ),
 }
 
 CMD_OPTIONS = {
@@ -1269,9 +1285,40 @@ CMD_OPTIONS = {
         ),
     ],
 
+    'combat': [
+        *COMMON_OPTIONS['input'],
+        *COMMON_OPTIONS['output'],
+        COMMON_OPTIONS['batch_key'],
+        COMMON_OPTIONS['batch_layer'],
+        click.option(
+            '--key-added',
+            type=click.STRING,
+            default=None,
+            show_default=True,
+            help="Key under which to add the computed results. By default a new "
+            "layer will be created called 'combat', 'combat_{layer}' or "
+            "'combat_layer_{key_added}' where those parameters were specified. A value of 'X' "
+            "causes batch-corrected values to overwrite the original content of .X."
+        ),
+        click.option(
+            '--covariates',
+            type=(CommaSeparatedText()),
+            default=None,
+            show_default=True,
+            help="Comma-separated list of additional covariates besides the "
+            "batch variable such as adjustment variables or biological condition. This "
+            "parameter refers to the design matrix X in Equation 2.1 in [Johnson07] and to "
+            "the mod argument in the original combat function in the sva R package.  Note "
+            "that not including covariates may introduce bias or lead to the removal of "
+            "biological signal in unbalanced designs."
+        ),
+        
+    ],
+
     'harmony_integrate': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
+        COMMON_OPTIONS['batch_key'],
         click.option(
             '--basis',
             type=click.STRING,
@@ -1279,13 +1326,6 @@ CMD_OPTIONS = {
             show_default=True,
             help="The name of the field in adata.obsm where the PCA table is "
             "stored. Defaults to 'X_pca', which is the default for sc.tl.pca()."
-        ),
-        click.option(
-            '--batch-key', 'key',
-            type=click.STRING,
-            required=True,
-            help='The name of the column in adata.obs that differentiates among '
-            'experiments/batches.'
         ),
         click.option(
             '--adjusted-basis',
@@ -1383,21 +1423,16 @@ CMD_OPTIONS = {
     'mnn_correct': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
-        click.option(
-            '--layer', '-l',
-            type=click.STRING,
-            default=None,
-            show_default=True,
-            help="Layer to batch correct. By default corrects the contents of .X."
-        ),
+        COMMON_OPTIONS['batch_key'],
+        COMMON_OPTIONS['batch_layer'],
         click.option(
             '--key-added',
             type=click.STRING,
             default=None,
             show_default=True,
             help="Key under which to add the computed results. By default a new "
-            "layer will be created called 'mnnnn', 'bbknn_{layer}' or "
-            "'bbknn_layer_{key_added}' where those parameters were specified. A value of 'X' "
+            "layer will be created called 'mnn', 'mnn_{layer}' or "
+            "'mnn_layer_{key_added}' where those parameters were specified. A value of 'X' "
             "causes batch-corrected values to overwrite the original content of .X."
         ),
         click.option(
@@ -1408,12 +1443,6 @@ CMD_OPTIONS = {
             "MNN correction in the format of '--var-subset <name> <values>'. Typically, use "
             "the highly variable genes (HVGs) like '--var-subset highly_variable True'. When "
             "unset, uses all vars."
-        ),
-        click.option(
-            '--batch-key', 'batch_key',
-            type=click.STRING,
-            required=True,
-            help='adata.obs column name discriminating between your batches.'
         ),
         click.option(
             '--n-neighbors', '-k',
@@ -1486,6 +1515,7 @@ CMD_OPTIONS = {
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
         COMMON_OPTIONS['key_added'],
+        COMMON_OPTIONS['batch_key'],
         click.option(
             '--use-rep', '-u',
             type=click.STRING,
@@ -1495,12 +1525,6 @@ CMD_OPTIONS = {
             'detection.'
         ),
         COMMON_OPTIONS['use_pc'][0], # --n-pcs
-        click.option(
-            '--batch-key', 'batch_key',
-            type=click.STRING,
-            required=True,
-            help='adata.obs column name discriminating between your batches.'
-        ),
         click.option(
             '--no-approx', 'approx',
             is_flag=True,

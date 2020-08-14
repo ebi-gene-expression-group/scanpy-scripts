@@ -8,7 +8,7 @@ import click
 
 # Wrapper for mnn allowing use of non-standard slot
 
-def mnn_correct(adata, batch_key=None, key_added=None, var_subset=None, layer=None, **kwargs):
+def mnn_correct(adata, key=None, key_added=None, var_subset=None, layer=None, **kwargs):
     """
     Wrapper function for sce.pp.mnn_correct(), for supporting non-standard neighbors slot
     """
@@ -21,10 +21,10 @@ def mnn_correct(adata, batch_key=None, key_added=None, var_subset=None, layer=No
 
     # mnn_correct() wants batches in separate adatas
 
-    batches = np.unique(adata.obs[batch_key])
+    batches = np.unique(adata.obs[key])
     alldata = []
     for batch in batches:
-        alldata.append( adata[adata.obs[batch_key] == batch,] )
+        alldata.append( adata[adata.obs[key] == batch,] )
 
     # Process var_subset into a list of strings that can be provided to
     # mnn_correct()
