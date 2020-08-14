@@ -1181,6 +1181,21 @@ CMD_OPTIONS = {
             'The returned scores are never the absolute values.',
         ),
         click.option(
+            '--pts',
+            is_flag=True,
+            default=False,
+            show_default=True,
+            help='Compute the fraction of cells expressing the genes.'
+        ),
+        click.option(
+            '--tie-correct',
+            is_flag=True,
+            default=False,
+            show_default=True,
+            help="Use tie correction for 'wilcoxon' scores. Used only for "
+            "'wilcoxon'."
+        ),
+        click.option(
             '--filter-params',
             type=Dictionary(keys=[
                 'min_in_group_fraction',
