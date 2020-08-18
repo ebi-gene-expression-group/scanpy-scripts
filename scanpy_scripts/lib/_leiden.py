@@ -9,7 +9,8 @@ from ..obj_utils import write_cluster
 def leiden(
         adata,
         resolution,
-        use_graph=None,
+        neighbors_key=None,
+        obsp=None,
         key_added=None,
         export_cluster=None,
         **kwargs
@@ -20,11 +21,7 @@ def leiden(
     keys = []
     if kwargs.get('restrict_to', None) and not kwargs['restrict_to'][0]:
         kwargs['restrict_to'] = None
-    adj_mat = None
-    if use_graph:
-        if use_graph not in adata.uns:
-            raise KeyError(f'"{use_graph}" is not a valid key of `.uns`.')
-        adj_mat = adata.uns[use_graph]['connectivities']
+    
     if not isinstance(resolution, (list, tuple)):
         if key_added is not None and not key_added.startswith('leiden_'):
             key_added = f'leiden_{key_added}'
@@ -33,7 +30,8 @@ def leiden(
         sc.tl.leiden(
             adata,
             resolution=resolution,
-            adjacency=adj_mat,
+            neighbors_key=neighbors_key,
+            obsp=obsp,
             key_added=key_added,
             **kwargs
         )
@@ -42,7 +40,7 @@ def leiden(
         for i, res in enumerate(resolution):
             res_key = str(res).replace('.', '_')
             if key_added is None:
-                graph_key = ('_' + use_graph) if use_graph else ''
+                graph_key = ('_' + f'{neighbors_key or obsp}') if neighbors or obsp else ''
                 key = f'leiden{graph_key}_r{res_key}'
             elif not isinstance(key_added, (list, tuple)):
                 key = f'leiden_{key_added}_r{res_key}'
@@ -54,7 +52,8 @@ def leiden(
             keys.extend(leiden(
                 adata,
                 resolution=res,
-                use_graph=use_graph,
+                neighbors_key=neighbors_key,
+                obsp=obsp,
                 key_added=key,
                 **kwargs,
             ))

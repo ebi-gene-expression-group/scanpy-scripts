@@ -14,7 +14,7 @@ setup() {
     filter_opt="-p n_genes 200 2500 -p c:n_counts 0 50000 -p n_cells 3 inf -p pct_counts_mito 0 0.2 -c mito '!True' --show-obj stdout"
     filter_obj="${output_dir}/filter.h5ad"
     norm_mtx="${output_dir}/norm"
-    norm_opt="-r yes -t 10000 -X ${norm_mtx} --show-obj stdout"
+    norm_opt="-r yes -t 10000 -l all -n after -X ${norm_mtx} --show-obj stdout"
     norm_obj="${output_dir}/norm.h5ad"
     hvg_opt="-m 0.0125 3 -d 0.5 inf -s --show-obj stdout"
     hvg_obj="${output_dir}/hvg.h5ad"
@@ -25,37 +25,38 @@ setup() {
     pca_embed="${output_dir}/pca.tsv"
     pca_opt="--n-comps 50 -V auto --show-obj stdout -E ${pca_embed}"
     pca_obj="${output_dir}/pca.h5ad"
-    neighbor_opt="-k 5,10,20 -n 25 -m umap --show-obj stdout"
+    neighbor_opt="-k 5,10,20 -n 25 -m umap -t euclidean --show-obj stdout"
     neighbor_obj="${output_dir}/neighbor.h5ad"
     tsne_embed="${output_dir}/tsne.tsv"
     tsne_opt="-n 25 --use-rep X_pca --learning-rate 200 -E ${tsne_embed}"
     tsne_obj="${output_dir}/tsne.h5ad"
     umap_embed="${output_dir}/umap.tsv"
-    umap_opt="--use-graph neighbors_k10 --min-dist 0.75 --alpha 1 --gamma 1 -E ${umap_embed}"
+    umap_opt="--neighbors-key neighbors_k10 --min-dist 0.75 --alpha 1 --gamma 1 -E ${umap_embed}"
     umap_obj="${output_dir}/umap.h5ad"
     fdg_embed="${output_dir}/fdg.tsv"
-    fdg_opt="--use-graph neighbors_k10 --layout fr -E ${fdg_embed}"
+    fdg_opt="--neighbors-key neighbors_k10 --layout fr -E ${fdg_embed}"
     fdg_obj="${output_dir}/fdg.h5ad"
-    louvain_opt="-r 0.5,1 --use-graph neighbors_k10 --key-added k10"
+    louvain_tsv="${output_dir}/louvain.tsv"
+    louvain_opt="-r 0.5,1 --neighbors-key neighbors_k10 --key-added k10 --export-cluster ${louvain_tsv}"
     louvain_obj="${output_dir}/louvain.h5ad"
     leiden_tsv="${output_dir}/leiden.tsv"
-    leiden_opt="-r 0.3,0.7 --use-graph neighbors_k10 --key-added k10 -F loom --export-cluster ${leiden_tsv}"
+    leiden_opt="-r 0.3,0.7 --neighbors-key neighbors_k10 --key-added k10 -F loom --loom-write-obsm-varm --export-cluster ${leiden_tsv}"
     leiden_obj="${output_dir}/leiden.loom"
+    test_clustering='louvain_k10_r0_5'
     diffexp_tsv="${output_dir}/diffexp.tsv"
-    diffexp_opt="-g leiden_k10_r0_7 --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5 --save ${diffexp_tsv} -f loom"
+    diffexp_opt="-g ${test_clustering} --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5 --save ${diffexp_tsv}"
     diffexp_obj="${output_dir}/diffexp.h5ad"
-    paga_opt="--use-graph neighbors_k10 --key-added k10_r0_7 --groups leiden_k10_r0_7 --model v1.2 -f loom"
+    paga_opt="--neighbors-key neighbors_k10 --key-added ${test_clustering} --groups ${test_clustering} --model v1.2"
     paga_obj="${output_dir}/paga.h5ad"
     diffmap_embed="${output_dir}/diffmap.tsv"
-    diffmap_opt="--use-graph neighbors_k10 --n-comps 10 -E ${diffmap_embed}"
+    diffmap_opt="--neighbors-key neighbors_k10 --n-comps 10 -E ${diffmap_embed}"
     diffmap_obj="${output_dir}/diffmap.h5ad"
-    dpt_opt="--use-graph neighbors_k10 --key-added k10 --n-dcs 10 --root leiden_k10_r0_7 0"
+    dpt_opt="--neighbors-key neighbors_k10 --key-added k10 --n-dcs 10 --disallow-kendall-tau-shift --root ${test_clustering} 0"
     dpt_obj="${output_dir}/dpt.h5ad"
-    plt_embed_opt="--color leiden_k10_r0_7 -f loom --title test"
-    plt_embed_pdf="${output_dir}/umap_leiden_k10_r0_7.pdf"
-    plt_paga_opt="--use-key paga_k10_r0_7 --node-size-scale 2 --edge-width-scale 0.5 --basis diffmap --color dpt_pseudotime_k10 --frameoff"
+    plt_embed_opt="--projection 2d --color ${test_clustering} --title test"
+    plt_embed_pdf="${output_dir}/umap_${test_clustering}.pdf"
+    plt_paga_opt="--use-key paga_${test_clustering} --node-size-scale 2 --edge-width-scale 0.5 --basis diffmap --color dpt_pseudotime_k10 --frameoff"
     plt_paga_pdf="${output_dir}/paga_k10_r0_7.pdf"
-    test_clustering='leiden_k10_r0_3'
     test_markers='LDHB,CD3D,CD3E'
     diffexp_plot_opt="--var-names $test_markers --use-raw --dendrogram --groupby ${test_clustering}"
     plt_stacked_violin_opt="${diffexp_plot_opt} --no-jitter --swap-axes"
@@ -63,7 +64,7 @@ setup() {
     plt_dotplot_pdf="${output_dir}/dot_${test_clustering}_LDHB_CD3D_CD3E.pdf"
     plt_matrixplot_pdf="${output_dir}/matrix_${test_clustering}_LDHB_CD3D_CD3E.pdf"
     plt_heatmap_pdf="${output_dir}/heatmap_${test_clustering}_LDHB_CD3D_CD3E.pdf"
-    plt_rank_genes_groups_opt="--rgg --groups 3,5"
+    plt_rank_genes_groups_opt="--rgg --groups 3,4"
     plt_rank_genes_groups_stacked_violin_pdf="${output_dir}/rggsviolin_${test_clustering}.pdf"
     plt_rank_genes_groups_matrix_pdf="${output_dir}/rggmatrix_${test_clustering}.pdf"
     plt_rank_genes_groups_dot_pdf="${output_dir}/rggdot_${test_clustering}.pdf"
@@ -265,7 +266,7 @@ setup() {
         skip "$diffexp_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $diffexp_obj $diffexp_tsv && eval "$scanpy diffexp $diffexp_opt $leiden_obj $diffexp_obj"
+    run rm -f $diffexp_obj $diffexp_tsv && eval "$scanpy diffexp $diffexp_opt $louvain_obj $diffexp_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$diffexp_obj" ] && [ -f "$diffexp_tsv" ]
@@ -278,7 +279,7 @@ setup() {
         skip "$paga_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $paga_obj && eval "$scanpy paga $paga_opt $leiden_obj $paga_obj"
+    run rm -f $paga_obj && eval "$scanpy paga $paga_opt $louvain_obj $paga_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$paga_obj" ]
@@ -286,29 +287,29 @@ setup() {
 
 # Run Diffmap
 
-@test "Run Diffmap" {
-    if [ "$resume" = 'true' ] && [ -f "$diffmap_obj" ]; then
-        skip "$diffmap_obj exists and resume is set to 'true'"
-    fi
-
-    run rm -f $diffmap_obj && eval "$scanpy embed diffmap $diffmap_opt $paga_obj $diffmap_obj"
-
-    [ "$status" -eq 0 ]
-    [ -f  "$diffmap_obj" ] && [ -f "$diffmap_embed" ]
-}
+#@test "Run Diffmap" {
+#    if [ "$resume" = 'true' ] && [ -f "$diffmap_obj" ]; then
+#        skip "$diffmap_obj exists and resume is set to 'true'"
+#    fi
+#
+#    run rm -f $diffmap_obj && eval "$scanpy embed diffmap $diffmap_opt $paga_obj $diffmap_obj"
+#
+#    [ "$status" -eq 0 ]
+#    [ -f  "$diffmap_obj" ] && [ -f "$diffmap_embed" ]
+#}
 
 # Run DPT
 
-@test "Run DPT" {
-    if [ "$resume" = 'true' ] && [ -f "$dpt_obj" ]; then
-        skip "$dpt_obj exists and resume is set to 'true'"
-    fi
+#@test "Run DPT" {
+#    if [ "$resume" = 'true' ] && [ -f "$dpt_obj" ]; then
+#        skip "$dpt_obj exists and resume is set to 'true'"
+#    fi
 
-    run rm -f $dpt_obj && eval "$scanpy dpt $dpt_opt $diffmap_obj $dpt_obj"
+#    run rm -f $dpt_obj && eval "$scanpy dpt $dpt_opt $diffmap_obj $dpt_obj"
 
-    [ "$status" -eq 0 ]
-    [ -f  "$dpt_obj" ]
-}
+#    [ "$status" -eq 0 ]
+#    [ -f  "$dpt_obj" ]
+#}
 
 # Run Plot embedding
 
@@ -317,24 +318,24 @@ setup() {
         skip "$plt_embed_pdf exists and resume is set to 'true'"
     fi
 
-    run rm -f $plt_embed_pdf && eval "$scanpy plot embed $plt_embed_opt $leiden_obj $plt_embed_pdf"
+    run rm -f $plt_embed_pdf && eval "$scanpy plot embed $plt_embed_opt $louvain_obj $plt_embed_pdf"
 
     [ "$status" -eq 0 ]
-    [ -f  "$dpt_obj" ]
+    [ -f  "$plt_embed_pdf" ]
 }
 
 # Run Plot paga
 
-@test "Run Plot trajectory" {
-    if [ "$resume" = 'true' ] && [ -f "$plt_paga_pdf" ]; then
-        skip "$plt_paga_pdf exists and resume is set to 'true'"
-    fi
+#@test "Run Plot trajectory" {
+#    if [ "$resume" = 'true' ] && [ -f "$plt_paga_pdf" ]; then
+#        skip "$plt_paga_pdf exists and resume is set to 'true'"
+#    fi
 
-    run rm -f $plt_paga_pdf && eval "$scanpy plot paga $plt_paga_opt $dpt_obj $plt_paga_pdf"
+#    run rm -f $plt_paga_pdf && eval "$scanpy plot paga $plt_paga_opt $dpt_obj $plt_paga_pdf"
 
-    [ "$status" -eq 0 ]
-    [ -f  "$dpt_obj" ]
-}
+#    [ "$status" -eq 0 ]
+#    [ -f  "$dpt_obj" ]
+#}
 
 # Plot a stacked violin plot for markers
 

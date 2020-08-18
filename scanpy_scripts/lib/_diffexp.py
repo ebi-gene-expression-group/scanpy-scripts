@@ -10,7 +10,8 @@ def diffexp(
         adata,
         use_raw=True,
         n_genes=None,
-        key_added=None,
+        key_added='rank_genes_groups',
+        layer=None,
         logreg_param=None,
         filter_params=None,
         save=None,
@@ -29,23 +30,24 @@ def diffexp(
         for key, val in logreg_param:
             kwargs[key] = val
 
-    sc.tl.rank_genes_groups(
-        adata, use_raw=use_raw, n_genes=n_genes, key_added=key_added, **kwargs)
-
     key_added = key_added if key_added else 'rank_genes_groups'
+    diff_key = (key_added + f'_{layer}') if layer else key_added
 
-    de_tbl = extract_de_table(adata.uns[key_added])
+    sc.tl.rank_genes_groups(
+        adata, use_raw=use_raw, n_genes=n_genes, key_added=diff_key, **kwargs)
+
+    de_tbl = extract_de_table(adata.uns[diff_key])
 
     if isinstance(filter_params, dict):
         sc.tl.filter_rank_genes_groups(
             adata,
-            key=key_added,
-            key_added=key_added + '_filtered',
+            key=diff_key,
+            key_added=diff_key + '_filtered',
             use_raw=use_raw,
             **filter_params,
         )
 
-        de_tbl = extract_de_table(adata.uns[key_added + '_filtered'])
+        de_tbl = extract_de_table(adata.uns[diff_key + '_filtered'])
         de_tbl = de_tbl.loc[de_tbl.genes.astype(str) != 'nan', :]
 
     if save:

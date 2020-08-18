@@ -49,6 +49,13 @@ COMMON_OPTIONS = {
             help='Chunk size for writing output in zarr format.',
         ),
         click.option(
+            '--loom-write-obsm-varm', '-b',
+            is_flag=True,
+            default=False,
+            show_default=True,
+            help='Write obsm and varm to the Loom file?',
+        ),
+        click.option(
             '--export-mtx', '-X',
             type=click.Path(dir_okay=True, writable=True),
             default=None,
@@ -135,12 +142,25 @@ COMMON_OPTIONS = {
 
     'knn_graph': [
         click.option(
-            '--use-graph',
+            '--neighbors-key',
             type=click.STRING,
-            default='neighbors',
+            default=None,
+            show_default=False,
+            help='If not specified, look in .uns[‘neighbors’] for neighbors '
+            'settings and .obsp[‘connectivities’], .obsp[‘distances’] for connectivities and '
+            'distances respectively (default storage places for pp.neighbors). If specified, '
+            'look in .uns[neighbors_key] for neighbors settings and '
+            '.obsp[.uns[neighbors_key][‘connectivities_key’]], '
+            '.obsp[.uns[neighbors_key][‘distances_key’]] for connectivities and distances '
+            'respectively.'
+        ),
+        click.option(
+            '--obsp',
+            type=click.STRING,
+            default=None,
             show_default=True,
-            help='Slot name under `.uns` that contains the KNN graph of which '
-            'sparse adjacency matrix is used for clustering.',
+            help='Use .obsp[obsp] as adjacency. You can’t specify both obsp and '
+            'neighbors_key at the same time.'
         ),
         click.option(
             '--directed/--undirected', 'directed',
@@ -156,6 +176,18 @@ COMMON_OPTIONS = {
             help='Use weights from KNN graph.',
         ),
     ],
+
+    
+    'layer':click.option(
+        '--layer',
+        type=CommaSeparatedText(simplify=True),
+        default=None,
+        show_default=True,
+        help='Name of the AnnData object layer that wants to be plotted. By '
+        'default adata.raw.X is plotted. If use_raw=False is set, then adata.X '
+        'is plotted. If layer is set to a valid layer name, then the layer is '
+        'plotted. layer takes precedence over use_raw.',
+    ),
 
     'n_comps': click.option(
         '--n-comps',
@@ -289,16 +321,6 @@ COMMON_OPTIONS = {
             'between the groupby categories is added. The dendrogram information is '
             'computed using scanpy.tl.dendrogram(). If tl.dendrogram has not been '
             'called previously the function is called with default parameters.',
-        ),
-        click.option(
-            '--layer',
-            type=CommaSeparatedText(simplify=True),
-            default=None,
-            show_default=True,
-            help='Name of the AnnData object layer that wants to be plotted. By '
-            'default adata.raw.X is plotted. If use_raw=False is set, then adata.X '
-            'is plotted. If layer is set to a valid layer name, then the layer is '
-            'plotted. layer takes precedence over use_raw.',
         ),
         click.option(
             '--standard-scale',
@@ -456,6 +478,31 @@ COMMON_OPTIONS = {
             show_default=True,
             help='Number of genes to show.'
         ),
+    ],
+
+    'root': click.option(
+        '--root',
+        type=click.INT,
+        default=0,
+        show_default=True,
+        help='If choosing a tree layout, this is the index of the root node.',
+    ),
+
+    'plot_embed': [
+        click.option(
+            '--use-raw/--no-raw',
+            default=None,
+            show_default=True,
+            help='Use `.raw` attribute for coloring with gene expression. If '
+            '`None`, uses `.raw` if present.',
+        ),
+        click.option(
+            '--groups',
+            type=click.STRING,
+            default=None,
+            help='Key for categorical in `.obs`. You can pass your predefined '
+            'groups by choosing any categorical annotation of observations.',
+        ),
     ]
 }
 
@@ -565,6 +612,7 @@ CMD_OPTIONS = {
     'norm': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
+        COMMON_OPTIONS['key_added'],
         click.option(
             '--save-raw', '-r',
             type=click.Choice(['yes', 'no', 'counts']),
@@ -587,13 +635,44 @@ CMD_OPTIONS = {
             help='Normalize per cell nUMI to this number.',
         ),
         click.option(
-            '--fraction',
-            type=float,
-            default=0.9,
+            '--exclude-highly-expressed', '-e', 'exclude_highly_expressed',
+            is_flag=True,
+            default=False,
             show_default=True,
-            help='Only use genes that make up less than this fraction of the total '
-            'count in every cell. So only these genes will sum up to the number '
-            'specified by --normalize-to.',
+            help='Exclude (very) highly expressed genes for the computation of '
+            'the normalization factor (size factor) for each cell. A gene is considered '
+            'highly expressed, if it has more than max_fraction of the total counts in at '
+            'least one cell. The not-excluded genes will sum up to the number '
+            'specified by --normalize-to.'
+        ),
+        click.option(
+            '--max-fraction', '-m', 'max_fraction',
+            type=float,
+            default=0.05,
+            show_default=True,
+            help='If exclude_highly_expressed=True, consider cells as highly '
+            'expressed that have more counts than max_fraction of the original total counts '
+            'in at least one cell.'
+        ),
+        click.option(
+            '--layers', '-l',
+            type=CommaSeparatedText(simplify=True),
+            default=None,
+            show_default=True,
+            help="List of layers to normalize. Set to 'all' to normalize all layers."
+        ),
+        click.option(
+            '--layer-norm', '-n', 'layer_norm',
+            type=click.Choice(['after', 'X']),
+            default=None,
+            show_default=True,
+            help="Specifies how to normalize layers: 1) If None, after "
+            "normalization, for each layer in layers each cell has a total count equal to "
+            "the median of the counts_per_cell before normalization of the layer. 2) If "
+            "'after', for each layer in layers each cell has a total count equal to "
+            "target_sum. 3) If 'X', for each layer in layers each cell has a total count "
+            "equal to the median of total counts for observations (cells) of adata.X before "
+            "normalization.'"
         ),
     ],
 
@@ -667,6 +746,12 @@ CMD_OPTIONS = {
             show_default=True,
             help='When specified, clip to this value after scaling, otherwise do '
             'not clip',
+        ),
+        click.option(
+            '--layer', '-l',
+            type=CommaSeparatedText(simplify=True),
+            default=None,
+            help="If provided, which element of layers to scale."
         ),
     ],
 
@@ -756,18 +841,26 @@ CMD_OPTIONS = {
         ),
         click.option(
             '--method', '-m',
-            type=click.Choice(['umap', 'gauss']),
+            type=click.Choice(['umap', 'gauss', 'rapids']),
             default='umap',
             show_default=True,
             help='Use umap or gauss with adaptive width for computing '
-            'connectivities.'
+            'connectivities. Use rapids for the RAPIDS implementation of UMAP '
+            '(experimental, GPU only).'
+        ),
+        click.option(
+            '--metric', '-t',
+            type=click.Choice(['cityblock', 'cosine', 'euclidean', 'l1', 'l2', 'manhattan', 'braycurtis', 'canberra', 'chebyshev', 'correlation', 'dice', 'hamming', 'jaccard', 'kulsinski', 'mahalanobis', 'minkowski', 'rogerstanimoto', 'russellrao', 'seuclidean', 'sokalmichener', 'sokalsneath', 'sqeuclidean', 'yule']),
+            default='euclidean',
+            show_default=True,
+            help='A known metric’s name.'
         ),
     ],
 
     'umap': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
-        COMMON_OPTIONS['knn_graph'][0], # --use-graph
+        COMMON_OPTIONS['knn_graph'][0], # --neighbors-key
         COMMON_OPTIONS['random_state'],
         COMMON_OPTIONS['key_added'],
         COMMON_OPTIONS['export_embedding'],
@@ -833,6 +926,14 @@ CMD_OPTIONS = {
             help='The number of negative edge samples to use per positive edge '
             'sample in optimizing the low dimensional embedding.',
         ),
+        click.option(
+            '--method',
+            type=click.Choice(['umap', 'rapids']),
+            default='umap',
+            show_default=True,
+            help='Use the original ‘umap’ implementation, or ‘rapids’ '
+            '(experimental, GPU only).'
+        ),
     ],
 
     'tsne': [
@@ -892,10 +993,9 @@ CMD_OPTIONS = {
     'fdg': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
-        COMMON_OPTIONS['knn_graph'][0], # --use-graph
         COMMON_OPTIONS['random_state'],
-        COMMON_OPTIONS['key_added'],
         COMMON_OPTIONS['export_embedding'],
+        COMMON_OPTIONS['root'],
         click.option(
             '--init-pos',
             type=click.STRING,
@@ -905,7 +1005,7 @@ CMD_OPTIONS = {
         ),
         click.option(
             '--layout',
-            type=click.Choice(['fa', 'fr', 'grid_fr', 'kk', 'lgl', 'drl', 'rt']),
+            type=click.Choice(['fa', 'fr', 'grid_fr', 'kk', 'lgl', 'drl', 'rt', 'rt_circular']),
             default='fa',
             show_default=True,
             help='Name of any valid igraph layout, including "fa" (ForceAtlas2), '
@@ -915,6 +1015,13 @@ CMD_OPTIONS = {
             'pretty fast) and "rt" (Reingold Tilford tree layout).',
         ),
         click.option(
+            '--key-added-ext',
+            type=click.STRING,
+            default=None,
+            show_default=True,
+            help="By default, append 'layout'"
+        ),
+        click.option(
             '--init-pos',
             type=click.STRING,
             default=None,
@@ -922,6 +1029,8 @@ CMD_OPTIONS = {
             help='How to initialize the low dimensional embedding. Can be "paga", '
             'or any valid key of `.obsm`.',
         ),
+        COMMON_OPTIONS['knn_graph'][0], # --neighbors-key
+        COMMON_OPTIONS['knn_graph'][1], # --obsp
     ],
 
     'louvain': [
@@ -982,6 +1091,13 @@ CMD_OPTIONS = {
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
         COMMON_OPTIONS['use_raw'],
+        COMMON_OPTIONS['key_added'],
+        click.option(
+            '--layer', '-l',
+            type=click.STRING,
+            default=None,
+            help="Key from adata.layers whose value will be used to perform tests on."
+        ),
         click.option(
             '--groupby', '-g',
             type=click.STRING,
@@ -1069,7 +1185,7 @@ CMD_OPTIONS = {
     'paga': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
-        COMMON_OPTIONS['knn_graph'][0], # --use-graph
+        COMMON_OPTIONS['knn_graph'][0], # --neighbors-key
         COMMON_OPTIONS['key_added'],
         click.option(
             '--groups',
@@ -1085,12 +1201,22 @@ CMD_OPTIONS = {
             show_default=True,
             help='The PAGA connectivity model.',
         ),
+        click.option(
+            '--use-rna-velocity',
+            is_flag=True,
+            default=False,
+            show_default=True,
+            help='Use RNA velocity to orient edges in the abstracted graph and '
+            'estimate transitions. Requires that adata.uns contains a directed single-cell '
+            'graph with key velocity_graph. This feature might be subject to change in the '
+            'future.',
+        ),
     ],
 
     'diffmap': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
-        COMMON_OPTIONS['knn_graph'][0], # --use-graph
+        COMMON_OPTIONS['knn_graph'][0], # --neighbors-key
         COMMON_OPTIONS['key_added'],
         COMMON_OPTIONS['export_embedding'],
         COMMON_OPTIONS['n_comps'],
@@ -1099,7 +1225,7 @@ CMD_OPTIONS = {
     'dpt': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
-        COMMON_OPTIONS['knn_graph'][0], # --use-graph
+        COMMON_OPTIONS['knn_graph'][0], # --neighbors-key
         COMMON_OPTIONS['key_added'],
         click.option(
             '--root',
@@ -1132,12 +1258,22 @@ CMD_OPTIONS = {
             'do not consider branches/groups that contain fewer than this fraction '
             'of the total number of data points.',
         ),
+        click.option(
+            '--disallow-kendall-tau-shift', 'allow_kendall_tau_shift',
+            is_flag=True,
+            default=True,
+            show_default=True,
+            help='By default: If a very small branch is detected upon '
+            'splitting, shift away from maximum correlation in Kendall tau criterion of '
+            '[Haghverdi16] to stabilize the splitting. Use flag to disable this.'
+        ),
     ],
 
     'embed': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['plot'],
         *COMMON_OPTIONS['frame_title'],
+        COMMON_OPTIONS['layer'],
         click.option(
             '--basis',
             type=click.STRING,
@@ -1152,13 +1288,6 @@ CMD_OPTIONS = {
             default=None,
             show_default=True,
             help='Keys for annotations of observations/cells or variables/genes.',
-        ),
-        click.option(
-            '--use-raw/--no-raw',
-            default=None,
-            show_default=True,
-            help='Use `.raw` attribute for coloring with gene expression. If '
-            '`None`, uses `.raw` if present.',
         ),
         click.option(
             '--legend-loc',
@@ -1183,12 +1312,60 @@ CMD_OPTIONS = {
             help='Point size. Automatically computed if not specified.',
         ),
         COMMON_OPTIONS['gene_symbols'],
+        click.option(
+            '--edges',
+            is_flag=True,
+            default=False,
+            show_default=True,
+            help='Show edges.',
+        ),
+        click.option(
+            '--edges-width',
+            type=click.FLOAT,
+            default=0.1,
+            show_default=True,
+            help='Width of edges.',
+        ),
+        click.option(
+            '--edges-color',
+            type=click.STRING,
+            default=None,
+            show_default=True,
+            help='Color of edges. See draw_networkx_edges().',
+        ),
+        COMMON_OPTIONS['knn_graph'][0], # --neighbors-key
+        click.option(
+            '--no-sort-order', 'sort_order',
+            is_flag=True,
+            default=True,
+            show_default=True,
+            help='Disable default behaviour: for continuous annotations used as '
+            'color parameter, plot data points with higher values on top of others.',
+        ),
+        *COMMON_OPTIONS['plot_embed'],
+        click.option(
+            '--components',
+            type=click.STRING,
+            default=None,
+            show_default=True,
+            help="For instance, ['1,2', '2,3']. To plot all available components use 'all'.",
+        ),
+        click.option(
+            '--projection',
+            type=click.Choice(['2d', '3d']),
+            default='2d',
+            show_default=True,
+            help="Projection of plot."
+        ),
+         
     ],
 
     'plot_paga': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['plot'],
         *COMMON_OPTIONS['frame_title'],
+        *COMMON_OPTIONS['plot_embed'],
+        COMMON_OPTIONS['random_state'],
         click.option(
             '--use-key',
             type=click.STRING,
@@ -1218,6 +1395,7 @@ CMD_OPTIONS = {
             help='Do not draw edges for weights below this threshold. Set to 0 to '
             'include all edges.',
         ),
+        COMMON_OPTIONS['root'],
         click.option(
             '--root',
             type=click.INT,
@@ -1314,6 +1492,7 @@ CMD_OPTIONS = {
         COMMON_OPTIONS['use_raw'],
         COMMON_OPTIONS['var_names'],
         *COMMON_OPTIONS['rank_genes_groups_plots'],
+        COMMON_OPTIONS['layer'],
         *COMMON_OPTIONS['diffexp_plot'],
         COMMON_OPTIONS['gene_symbols'],
         *COMMON_OPTIONS['sviol'],
@@ -1326,6 +1505,7 @@ CMD_OPTIONS = {
         COMMON_OPTIONS['use_raw'],
         COMMON_OPTIONS['var_names'],
         *COMMON_OPTIONS['rank_genes_groups_plots'],
+        COMMON_OPTIONS['layer'],
         *COMMON_OPTIONS['diffexp_plot'],
         COMMON_OPTIONS['gene_symbols'],
         *COMMON_OPTIONS['dot'],
@@ -1337,6 +1517,7 @@ CMD_OPTIONS = {
         COMMON_OPTIONS['use_raw'],
         COMMON_OPTIONS['var_names'],
         *COMMON_OPTIONS['rank_genes_groups_plots'],
+        COMMON_OPTIONS['layer'],
         *COMMON_OPTIONS['diffexp_plot'],
         COMMON_OPTIONS['gene_symbols'],
     ],
@@ -1347,6 +1528,7 @@ CMD_OPTIONS = {
         COMMON_OPTIONS['use_raw'],
         COMMON_OPTIONS['var_names'],
         *COMMON_OPTIONS['rank_genes_groups_plots'],
+        COMMON_OPTIONS['layer'],
         *COMMON_OPTIONS['diffexp_plot'],
         COMMON_OPTIONS['gene_symbols'],
         *COMMON_OPTIONS['heat'],

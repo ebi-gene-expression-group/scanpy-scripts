@@ -5,7 +5,6 @@ Provide helper functions for constructing sub-commands
 import click
 import pandas as pd
 import scanpy as sc
-from .exchangeable_loom import read_exchangeable_loom, write_exchangeable_loom
 from .cmd_options import CMD_OPTIONS
 from .lib._paga import plot_paga
 
@@ -33,6 +32,7 @@ def make_subcmd(cmd_name, func, cmd_desc, arg_desc, opt_set = None):
             input_format=None,
             output_format=None,
             zarr_chunk_size=None,
+            loom_write_obsm_varm=False,
             export_mtx=None,
             show_obj=None,
             **kwargs
@@ -50,6 +50,7 @@ def make_subcmd(cmd_name, func, cmd_desc, arg_desc, opt_set = None):
                 output_obj,
                 output_format=output_format,
                 chunk_size=zarr_chunk_size,
+                write_obsm_varm=loom_write_obsm_varm,
                 export_mtx=export_mtx,
                 show_obj=show_obj,
             )
@@ -73,7 +74,7 @@ def _read_obj(input_obj, input_format='anndata', **kwargs):
     if input_format == 'anndata':
         adata = sc.read(input_obj, **kwargs)
     elif input_format == 'loom':
-        adata = read_exchangeable_loom(input_obj, **kwargs)
+        adata = sc.read_loom(input_obj, **kwargs)
     else:
         raise NotImplementedError(
             'Unsupported input format: {}'.format(input_format))
@@ -87,12 +88,13 @@ def _write_obj(
         chunk_size=None,
         export_mtx=None,
         show_obj=None,
+        write_obsm_varm=False,
         **kwargs
 ):
     if output_format == 'anndata':
         adata.write(output_obj, compression='gzip')
     elif output_format == 'loom':
-        write_exchangeable_loom(adata, output_obj, **kwargs)
+        adata.write_loom(output_obj, write_obsm_varm=write_obsm_varm )
     elif output_format == 'zarr':
         adata.write_zarr(output_obj, chunk_size=chunk_size, **kwargs)
     else:
@@ -159,7 +161,8 @@ def make_plot_function(func_name, kind=None):
     # Provide a function translation
 
     plot_funcs = {
-        'scatter': sc.plotting._tools.scatterplots.plot_scatter,
+        'embedding': sc.pl.embedding,
+        'scatter': sc.pl.scatter,
         'sviol': sc.pl.stacked_violin,
         'rgg_sviol': sc.pl.rank_genes_groups_stacked_violin,
         'dot': sc.pl.dotplot,
@@ -229,7 +232,7 @@ def make_plot_function(func_name, kind=None):
 
         if output_fig:
             prefix=''
-            if func_name == 'scatter':
+            if func_name == 'scatter' or func_name == 'embedding':
                 prefix =  kwargs.get('basis', func.__name__)
             elif kind:
                 prefix = kind
