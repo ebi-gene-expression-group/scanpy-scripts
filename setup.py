@@ -41,7 +41,7 @@ setup(
         'matplotlib',
         'pandas',
         'h5py',
-        'scanpy>=1.5.1',
+        'scanpy>=1.5.1,<1.6.0',
         'louvain',
         'leidenalg',
         'loompy>=2.0.0,<3.0.0',
