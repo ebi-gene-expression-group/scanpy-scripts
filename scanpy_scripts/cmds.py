@@ -223,7 +223,7 @@ COMBAT_CMD = make_subcmd(
 )
 
 HARMONY_INTEGRATE_CMD = make_subcmd(
-    'harmony_integrate',
+    'harmony',
     sce.pp.harmony_integrate,
     cmd_desc='Use harmonypy [Korunsky19] to integrate different experiments.',    
     arg_desc=_IO_DESC,
@@ -237,7 +237,7 @@ BBKNN_CMD = make_subcmd(
 )
 
 MNN_CORRECT_CMD = make_subcmd(
-    'mnn_correct',
+    'mnn',
     mnn_correct,
     cmd_desc='Correct batch effects by matching mutual nearest neighbors [Haghverdi18] [Kang18].',
     arg_desc=_IO_DESC,

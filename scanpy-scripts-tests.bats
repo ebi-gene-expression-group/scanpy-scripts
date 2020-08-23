@@ -462,7 +462,7 @@ setup() {
         skip "$harmony_integrate_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $harmony_integrate_obj && eval "$scanpy integrate harmony_integrate $harmony_integrate_opt $louvain_obj $harmony_integrate_obj"
+    run rm -f $harmony_integrate_obj && eval "$scanpy integrate harmony $harmony_integrate_opt $louvain_obj $harmony_integrate_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$plt_rank_genes_groups_matrix_pdf" ]
@@ -515,7 +515,7 @@ setup() {
         skip "$mnn_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $mnn_obj && eval "$scanpy integrate mnn_correct $mnn_opt $louvain_obj $mnn_obj"
+    run rm -f $mnn_obj && eval "$scanpy integrate mnn $mnn_opt $louvain_obj $mnn_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$mnn_obj" ]
