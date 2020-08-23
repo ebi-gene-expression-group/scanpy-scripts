@@ -69,6 +69,19 @@ setup() {
     plt_rank_genes_groups_matrix_pdf="${output_dir}/rggmatrix_${test_clustering}.pdf"
     plt_rank_genes_groups_dot_pdf="${output_dir}/rggdot_${test_clustering}.pdf"
     plt_rank_genes_groups_heatmap_pdf="${output_dir}/rggheatmap_${test_clustering}.pdf"
+    harmony_integrate_obj="${output_dir}/harmony_integrate.h5ad"
+    harmony_integrate_opt="--batch-key ${test_clustering}"
+    harmony_plt_embed_opt="--projection 2d --color ${test_clustering} --title 'PCA embeddings after harmony' --basis 'X_pca_harmony'"
+    noharmony_plt_embed_opt="--projection 2d --color ${test_clustering} --title 'PCA embeddings before harmony' --basis 'X_pca'"
+    harmony_integrated_pca_pdf="${output_dir}/harmony_pca_${test_clustering}.pdf"
+    noharmony_integrated_pca_pdf="${output_dir}/pca_${test_clustering}.pdf"
+    bbknn_obj="${output_dir}/bbknn.h5ad"
+    bbknn_opt="--batch-key ${test_clustering} --key-added bbknn"
+    mnn_obj="${output_dir}/mnn.h5ad"
+    mnn_opt="--batch-key ${test_clustering}"
+    combat_obj="${output_dir}/combat.h5ad"
+    combat_opt="--batch-key ${test_clustering}"
+    
 
     if [ ! -d "$data_dir" ]; then
         mkdir -p $data_dir
@@ -440,6 +453,85 @@ setup() {
 
     [ "$status" -eq 0 ]
     [ -f  "$plt_rank_genes_groups_matrix_pdf" ]
+}
+
+# Do harmony batch correction, using clustering as batch (just for test purposes)
+
+@test "Run Harmony batch integration using clustering as batch" {
+    if [ "$resume" = 'true' ] && [ -f "$harmony_integrate_obj" ]; then
+        skip "$harmony_integrate_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $harmony_integrate_obj && eval "$scanpy integrate harmony $harmony_integrate_opt $louvain_obj $harmony_integrate_obj"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$plt_rank_genes_groups_matrix_pdf" ]
+
+}
+
+# Run Plot PCA embedding before harmony
+
+@test "Run Plot PCA embedding before Harmony" {
+    if [ "$resume" = 'true' ] && [ -f "$noharmony_integrated_pca_pdf" ]; then
+        skip "$noharmony_integrated_pca_pdf exists and resume is set to 'true'"
+    fi
+
+    run rm -f $noharmony_integrated_pca_pdf && eval "$scanpy plot embed $noharmony_plt_embed_opt $louvain_obj $noharmony_integrated_pca_pdf"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$noharmony_integrated_pca_pdf" ]
+}
+
+# Run Plot PCA embedding after harmony
+
+@test "Run Plot PCA embedding after Harmony" {
+    if [ "$resume" = 'true' ] && [ -f "$harmony_integrated_pca_pdf" ]; then
+        skip "$harmony_integrated_pca_pdf exists and resume is set to 'true'"
+    fi
+
+    run rm -f $harmony_integrated_pca_pdf && eval "$scanpy plot embed $harmony_plt_embed_opt $harmony_integrate_obj $harmony_integrated_pca_pdf"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$harmony_integrated_pca_pdf" ]
+}
+
+# Do bbknn batch correction, using clustering as batch (just for test purposes)
+
+@test "Run BBKNN batch integration using clustering as batch" {
+    if [ "$resume" = 'true' ] && [ -f "$bbknn_obj" ]; then
+        skip "$bbknn_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $bbknn_obj && eval "$scanpy integrate bbknn $bbknn_opt $louvain_obj $bbknn_obj"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$plt_rank_genes_groups_matrix_pdf" ]
+}
+
+# Do MNN batch correction, using clustering as batch (just for test purposes)
+
+@test "Run MNN batch integration using clustering as batch" {
+    if [ "$resume" = 'true' ] && [ -f "$mnn_obj" ]; then
+        skip "$mnn_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $mnn_obj && eval "$scanpy integrate mnn $mnn_opt $louvain_obj $mnn_obj"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$mnn_obj" ]
+}
+
+# Do ComBat batch correction, using clustering as batch (just for test purposes)
+
+@test "Run Combat batch integration using clustering as batch" {
+    if [ "$resume" = 'true' ] && [ -f "$combat_obj" ]; then
+        skip "$combat_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $combat_obj && eval "$scanpy integrate combat $combat_opt $louvain_obj $combat_obj"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$combat_obj" ]
 }
 
 # Local Variables:

@@ -5,6 +5,7 @@ Provides sub-commands
 import os
 import sys
 import scanpy as sc
+import scanpy.external as sce
 
 from .cmd_utils import (
     make_subcmd,
@@ -25,6 +26,9 @@ from .lib._diffexp import diffexp
 from .lib._paga import paga
 from .lib._diffmap import diffmap
 from .lib._dpt import dpt
+from .lib._bbknn import bbknn
+from .lib._mnn import mnn_correct
+from .lib._combat import combat
 
 LANG = os.environ.get('LANG', None)
 
@@ -209,4 +213,32 @@ PLOT_PAGA_CMD = make_subcmd(
     cmd_desc='Plot PAGA trajectories.',
     arg_desc=_IP_DESC,
     opt_set='plot_paga'
+)
+
+COMBAT_CMD = make_subcmd(
+    'combat',
+    combat,
+    cmd_desc='ComBat function for batch effect correction',
+    arg_desc=_IO_DESC
+)
+
+HARMONY_INTEGRATE_CMD = make_subcmd(
+    'harmony',
+    sce.pp.harmony_integrate,
+    cmd_desc='Use harmonypy [Korunsky19] to integrate different experiments.',    
+    arg_desc=_IO_DESC,
+)
+
+BBKNN_CMD = make_subcmd(
+    'bbknn',
+    bbknn,
+    cmd_desc='Batch balanced kNN [Polanski19].',
+    arg_desc=_IO_DESC,
+)
+
+MNN_CORRECT_CMD = make_subcmd(
+    'mnn',
+    mnn_correct,
+    cmd_desc='Correct batch effects by matching mutual nearest neighbors [Haghverdi18] [Kang18].',
+    arg_desc=_IO_DESC,
 )

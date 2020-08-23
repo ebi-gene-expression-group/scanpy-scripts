@@ -30,6 +30,10 @@ from .cmds import (
     PLOT_DOT_CMD,
     PLOT_MATRIX_CMD,
     PLOT_HEATMAP_CMD,
+    HARMONY_INTEGRATE_CMD,
+    BBKNN_CMD,
+    MNN_CORRECT_CMD,
+    COMBAT_CMD,
 )
 
 
@@ -99,6 +103,16 @@ cluster.add_command(LEIDEN_CMD)
 cli.add_command(DIFFEXP_CMD)
 cli.add_command(PAGA_CMD)
 cli.add_command(DPT_CMD)
+
+
+@cli.group(cls=NaturalOrderGroup)
+def integrate():
+    """Integrate cells from different experimental batches."""
+
+integrate.add_command(HARMONY_INTEGRATE_CMD)
+integrate.add_command(BBKNN_CMD)
+integrate.add_command(MNN_CORRECT_CMD)
+integrate.add_command(COMBAT_CMD)
 
 
 @cli.group(cls=NaturalOrderGroup)
