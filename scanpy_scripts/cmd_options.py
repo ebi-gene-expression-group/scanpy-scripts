@@ -1342,7 +1342,7 @@ CMD_OPTIONS = {
         
     ],
 
-    'harmony_integrate': [
+    'harmony': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
         COMMON_OPTIONS['batch_key'],
@@ -1447,7 +1447,7 @@ CMD_OPTIONS = {
         COMMON_OPTIONS['random_state'],
     ],
 
-    'mnn_correct': [
+    'mnn': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
         COMMON_OPTIONS['batch_key'],
