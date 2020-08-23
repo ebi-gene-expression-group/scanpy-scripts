@@ -503,7 +503,23 @@ COMMON_OPTIONS = {
             help='Key for categorical in `.obs`. You can pass your predefined '
             'groups by choosing any categorical annotation of observations.',
         ),
-    ]
+    ],
+
+    'batch_key': click.option(
+        '--batch-key', 'key',
+        type=click.STRING,
+        required=True,
+        help='The name of the column in adata.obs that differentiates among '
+        'experiments/batches.'
+    ),
+    
+    'batch_layer': click.option(
+        '--layer', '-l',
+        type=click.STRING,
+        default=None,
+        show_default=True,
+        help="Layer to batch correct. By default corrects the contents of .X."
+    ),
 }
 
 CMD_OPTIONS = {
@@ -698,6 +714,14 @@ CMD_OPTIONS = {
             'in the format of "-d min max".',
         ),
         click.option(
+            '--span',
+            type=click.FLOAT,
+            default=0.3,
+            show_default=True,
+            help="The fraction of the data (cells) used when estimating the "
+            "variance in the loess model fit if flavor='seurat_v3'."    
+        ),
+        click.option(
             '--n-bins', '-b',
             type=click.INT,
             default=20,
@@ -713,7 +737,7 @@ CMD_OPTIONS = {
         ),
         click.option(
             '--flavor', '-v',
-            type=click.Choice(['seurat', 'cellranger']),
+            type=click.Choice(['seurat', 'cellranger', 'seurat_v3']),
             default='seurat',
             show_default=True,
             help='Choose the flavor for computing normalized dispersion.',
@@ -726,12 +750,16 @@ CMD_OPTIONS = {
             'only flag highly-variable genes.',
         ),
         click.option(
-            '--by-batch', '-B',
-            type=(click.STRING, click.INT),
-            default=(None, None),
-            show_default=True,
-            help='Find highly variable genes within each batch defined by <TEXT> '
-            'then pool and keep those found in at least <INTEGER> batches.',
+            '--batch-key', 'batch_key',
+            type=click.STRING,
+            default=None,
+            help="If specified, highly-variable genes are selected within each "
+            "batch separately and merged. This simple process avoids the selection of "
+            "batch-specific genes and acts as a lightweight batch correction method. For all "
+            "flavors, genes are first sorted by how many batches they are a HVG. For "
+            "dispersion-based flavors ties are broken by normalized dispersion. If flavor = "
+            "'seurat_v3', ties are broken by the median (across batches) rank based on "
+            "within-batch normalized variance."
         ),
     ],
 
@@ -1153,6 +1181,21 @@ CMD_OPTIONS = {
             'The returned scores are never the absolute values.',
         ),
         click.option(
+            '--pts',
+            is_flag=True,
+            default=False,
+            show_default=True,
+            help='Compute the fraction of cells expressing the genes.'
+        ),
+        click.option(
+            '--tie-correct',
+            is_flag=True,
+            default=False,
+            show_default=True,
+            help="Use tie correction for 'wilcoxon' scores. Used only for "
+            "'wilcoxon'."
+        ),
+        click.option(
             '--filter-params',
             type=Dictionary(keys=[
                 'min_in_group_fraction',
@@ -1266,6 +1309,321 @@ CMD_OPTIONS = {
             help='By default: If a very small branch is detected upon '
             'splitting, shift away from maximum correlation in Kendall tau criterion of '
             '[Haghverdi16] to stabilize the splitting. Use flag to disable this.'
+        ),
+    ],
+
+    'combat': [
+        *COMMON_OPTIONS['input'],
+        *COMMON_OPTIONS['output'],
+        COMMON_OPTIONS['batch_key'],
+        COMMON_OPTIONS['batch_layer'],
+        click.option(
+            '--key-added',
+            type=click.STRING,
+            default=None,
+            show_default=True,
+            help="Key under which to add the computed results. By default a new "
+            "layer will be created called 'combat', 'combat_{layer}' or "
+            "'combat_layer_{key_added}' where those parameters were specified. A value of 'X' "
+            "causes batch-corrected values to overwrite the original content of .X."
+        ),
+        click.option(
+            '--covariates',
+            type=(CommaSeparatedText()),
+            default=None,
+            show_default=True,
+            help="Comma-separated list of additional covariates besides the "
+            "batch variable such as adjustment variables or biological condition. This "
+            "parameter refers to the design matrix X in Equation 2.1 in [Johnson07] and to "
+            "the mod argument in the original combat function in the sva R package.  Note "
+            "that not including covariates may introduce bias or lead to the removal of "
+            "biological signal in unbalanced designs."
+        ),
+        
+    ],
+
+    'harmony': [
+        *COMMON_OPTIONS['input'],
+        *COMMON_OPTIONS['output'],
+        COMMON_OPTIONS['batch_key'],
+        click.option(
+            '--basis',
+            type=click.STRING,
+            default='X_pca',
+            show_default=True,
+            help="The name of the field in adata.obsm where the PCA table is "
+            "stored. Defaults to 'X_pca', which is the default for sc.tl.pca()."
+        ),
+        click.option(
+            '--adjusted-basis',
+            type=click.STRING,
+            default='X_pca_harmony',
+            show_default=True,
+            help='The name of the field in adata.obsm where the adjusted PCA '
+            'table will be stored after running this function.'
+        ),
+        click.option(
+            '--theta',
+            type=click.FLOAT,
+            default=2,
+            show_default=True,
+            help='Diversity clustering penalty parameter. theta=0 does not encourage any '
+            'diversity. Larger values of theta result in more diverse clusters.'
+        ),
+        click.option(
+            '--lambda', 'lamb',
+            type=click.FLOAT,
+            default=1,
+            show_default=True,
+            help='Ridge regression penalty parameter. Lambda must be strictly '
+            'positive.  Smaller values result in more aggressive correction.'
+        ),
+        click.option(
+            '--sigma',
+            type=click.FLOAT,
+            default=0.1,
+            show_default=True,
+            help='Width of soft kmeans clusters. Sigma scales the distance from '
+            'a cell to cluster centroids. Larger values of sigma result in cells assigned to '
+            'more clusters. Smaller values of sigma make soft kmeans cluster approach hard '
+            'clustering.'
+        ),
+        click.option(
+            '--n-clust', 'nclust',
+            type=click.INT,
+            default=None,
+            show_default=False,
+            help='Number of clusters in model. nclust=1 equivalent to simple '
+            'linear regression.'
+        ),
+        click.option(
+            '--tau',
+            type=click.INT,
+            default=0,
+            show_default=True,
+            help='Protection against overclustering small datasets with large ones. '
+            'tau is the expected number of cells per cluster.'
+        ),
+        click.option(
+            '--block-size',
+            type=click.FLOAT,
+            default=0.05,
+            show_default=True,
+            help='What proportion of cells to update during clustering. Between '
+            '0 to 1, default 0.05. Larger values may be faster but less accurate.'
+        ),
+        click.option(
+            '--max-iter-cluster', 'max_iter_kmeans',
+            type=click.INT,
+            default=20,
+            show_default=True,
+            help='Maximum number of rounds to run clustering at each round of '
+            'Harmony.'
+        ),
+        click.option(
+            '--max-iter-harmony',
+            type=click.INT,
+            default=10,
+            show_default=True,
+            help='Maximum number of rounds to run Harmony. One round of Harmony '
+            'involves one clustering and one correction step.'
+        ),
+        click.option(
+            '--epsilon-cluster',
+            type=click.FLOAT,
+            default=1e-5,
+            show_default=True,
+            help='Convergence tolerance for clustering round of Harmony Set to '
+            '-Inf to never stop early.'
+        ),
+        click.option(
+            '--epsilon-harmony',
+            type=click.FLOAT,
+            default=1e-5,
+            show_default=True,
+            help='Convergence tolerance for clustering round of Harmony Set to '
+            '-Inf to never stop early.'
+        ),
+        COMMON_OPTIONS['random_state'],
+    ],
+
+    'mnn': [
+        *COMMON_OPTIONS['input'],
+        *COMMON_OPTIONS['output'],
+        COMMON_OPTIONS['batch_key'],
+        COMMON_OPTIONS['batch_layer'],
+        click.option(
+            '--key-added',
+            type=click.STRING,
+            default=None,
+            show_default=True,
+            help="Key under which to add the computed results. By default a new "
+            "layer will be created called 'mnn', 'mnn_{layer}' or "
+            "'mnn_layer_{key_added}' where those parameters were specified. A value of 'X' "
+            "causes batch-corrected values to overwrite the original content of .X."
+        ),
+        click.option(
+            '--var-subset',
+            type=(click.STRING, CommaSeparatedText()),
+            multiple=True,
+            help="The subset of vars (list of str) to be used when performing "
+            "MNN correction in the format of '--var-subset <name> <values>'. Typically, use "
+            "the highly variable genes (HVGs) like '--var-subset highly_variable True'. When "
+            "unset, uses all vars."
+        ),
+        click.option(
+            '--n-neighbors', '-k',
+            type=CommaSeparatedText(click.INT, simplify=True),
+            default=20,
+            show_default=True,
+            help='Number of mutual nearest neighbors.'
+        ),
+        click.option(
+            '--sigma',
+            type=click.FLOAT,
+            default=1.0,
+            show_default=True,
+            help='The bandwidth of the Gaussian smoothing kernel used to '
+            'compute the correction vectors.'
+        ),
+        click.option(
+            '--no-cos_norm_in', 'cos_norm_in',
+            is_flag=True,
+            default=True,
+            help='Default behaviour is to perform cosine normalization on the '
+            'input data prior to calculating distances between cells. Use this '
+            'flag to disable that behaviour.'
+        ),
+        click.option(
+            '--no-cos_norm_out', 'cos_norm_out',
+            is_flag=True,
+            default=True,
+            help='Default behaviour is to perform cosine normalization prior to '
+            'computing corrected expression values. Use this flag to disable that '
+            'behaviour.'
+        ),
+        click.option(
+            '--svd-dim',
+            type=click.INT,
+            default=None,
+            show_default=True,
+            help='The number of dimensions to use for summarizing biological '
+            'substructure within each batch. If not set, biological components '
+            'will not be removed from the correction vectors.'
+        ),
+        click.option(
+            '--no-var-adj',
+            is_flag=True,
+            default=True,
+            help='Default behaviour is to adjust variance of the correction '
+            'vectors. Use this flag to disable that behaviour. Note this step takes most '
+            'computing time.'
+        ),
+        click.option(
+            '--compute-angle',
+            is_flag=True,
+            default=False,
+            help='When set, compute the angle between each cell’s correction '
+            'vector and the biological subspace of the reference batch.'
+        ),
+        click.option(
+            '--svd-mode',
+            type=click.Choice(['svd', 'rsvd', 'irlb']),
+            default='rsvd',
+            show_default=True,
+            help="'svd' computes SVD using a non-randomized SVD-via-ID "
+            "algorithm, while 'rsvd' uses a randomized version. 'irlb' performs truncated "
+            "SVD by implicitly restarted Lanczos bidiagonalization (forked from "
+            "https://github.com/airysen/irlbpy)."
+        ),
+    ],
+
+    'bbknn': [
+        *COMMON_OPTIONS['input'],
+        *COMMON_OPTIONS['output'],
+        COMMON_OPTIONS['key_added'],
+        COMMON_OPTIONS['batch_key'],
+        click.option(
+            '--use-rep', '-u',
+            type=click.STRING,
+            default='X_pca',
+            show_default=True,
+            help='The dimensionality reduction in .obsm to use for neighbour '
+            'detection.'
+        ),
+        COMMON_OPTIONS['use_pc'][0], # --n-pcs
+        click.option(
+            '--no-approx', 'approx',
+            is_flag=True,
+            default=True,
+            help='Default behaviour is to use annoy’s approximate neighbour '
+            'finding. This results in a quicker run time for large datasets while also '
+            'potentially increasing the degree of batch correction. Use this flag to disable '
+            'that behaviour.',
+        ),
+        click.option(
+            '--metric', '-t',
+            type=click.Choice(['angular', 'cityblock', 'cosine', 'euclidean', 'l1', 'l2', 'manhattan', 'braycurtis', 'canberra', 'chebyshev', 'correlation', 'dice', 'hamming', 'jaccard', 'kulsinski', 'mahalanobis', 'minkowski', 'rogerstanimoto', 'russellrao', 'seuclidean', 'sokalmichener', 'sokalsneath', 'sqeuclidean', 'yule']),
+            default='angular',
+            show_default=True,
+            help='A known metric’s name.'
+        ),
+        click.option(
+            '--neighbors-within-batch',
+            type=click.INT,
+            default=3,
+            show_default=True,
+            help='How many top neighbours to report for each batch; total '
+            'number of neighbours will be this number times the number of batches.'
+        ),
+        click.option(
+            '--trim',
+            type=click.INT,
+            default=None,
+            show_default=True,
+            help='Trim the neighbours of each cell to these many top '
+            'connectivities. May help with population independence and improve the tidiness '
+            'of clustering. The lower the value the more independent the individual '
+            'populations, at the cost of more conserved batch effect. If None, sets the '
+            'parameter value automatically to 10 times the total number of neighbours for '
+            'each cell. Set to 0 to skip.'
+        ),
+        click.option(
+            '--n-trees',
+            type=click.INT,
+            default=10,
+            show_default=True,
+            help='Only used when approx=True. The number of trees to construct '
+            'in the annoy forest. More trees give higher precision when querying, at the '
+            'cost of increased run time and resource intensity.'
+        ),
+        click.option(
+            '--no-use-faiss', 'use_faiss',
+            is_flag=True,
+            default=True,
+            help='Default behaviour If approx=False and the metric is '
+            '“euclidean”, is to use the faiss package to compute nearest neighbours if '
+            'installed. This improves performance at a minor cost to numerical precision as '
+            'faiss operates on float32. Use this flag to disable that behaviour.'
+        ),
+        click.option(
+            '--set-op-mix-ratio',
+            type=click.FLOAT,
+            default=1,
+            show_default=True,
+            help='UMAP connectivity computation parameter, float between 0 and '
+            '1, controlling the blend between a connectivity matrix formed exclusively from '
+            'mutual nearest neighbour pairs (0) and a union of all observed neighbour '
+            'relationships with the mutual pairs emphasised (1).'
+        ),
+        click.option(
+            '--local-connectivity',
+            type=click.INT,
+            default=1,
+            show_default=True,
+            help='UMAP connectivity computation parameter, how many nearest '
+            'neighbors of each cell are assumed to be fully connected (and given a '
+            'connectivity value of 1)'
         ),
     ],
 

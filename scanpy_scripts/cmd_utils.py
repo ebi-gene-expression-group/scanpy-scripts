@@ -235,9 +235,11 @@ def make_plot_function(func_name, kind=None):
             if func_name == 'scatter' or func_name == 'embedding':
                 prefix =  kwargs.get('basis', func.__name__)
             elif kind:
-                prefix = kind
+                prefix = kind 
             elif func_name in plot_funcs:
                 prefix = plot_funcs[ func_name ].__name__.split('.')[-1]
+                if func_name in [ 'sviol', 'rgg_sviol', 'dot', 'rgg_dot', 'matrix', 'rgg_matrix' ]:
+                    prefix = prefix + '_'
 
             os.rename(
                 os.path.join(sc.settings.figdir, prefix + figname), output_fig)
