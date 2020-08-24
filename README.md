@@ -1,7 +1,6 @@
 # scanpy-scripts
-Scripts for using scanpy from the command line
 
-In order to wrap scanpy's internal workflow in any given workflow language, it's important to have scripts to call each of those steps. These scripts are being written here, and will improve in completeness as time progresses. 
+A command-line interface for functions of the Scanpy suite, to facilitate flexible constrution of workflows, for example in Galaxy, Nextflow, Snakemake etc.
 
 ## Install
 
@@ -16,10 +15,10 @@ pip3 install scanpy-scripts
 There is an example script included:
 
 ```bash
-scanpy-scripts-tests.sh
+scanpy-scripts-tests.bats
 ```
 
-This downloads [a well-known test 10X dataset]('https://s3-us-west-2.amazonaws.com/10x.files/samples/cell/pbmc3k/pbmc3k_filtered_gene_bc_matrices.tar.gz) and executes all of the scripts described below.
+This requires the [bats](https://github.com/sstephenson/bats) testing framework to run. The script downloads [a well-known test 10X dataset]('https://s3-us-west-2.amazonaws.com/10x.files/samples/cell/pbmc3k/pbmc3k_filtered_gene_bc_matrices.tar.gz) and executes all of the scripts described below.
 
 ## Commands
 
