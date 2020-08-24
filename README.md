@@ -1,4 +1,4 @@
-# scanpy-scripts
+# scanpy-scripts [![Anaconda-Server Badge](https://anaconda.org/bioconda/scanpy-scripts/badges/installer/conda.svg)](https://conda.anaconda.org/bioconda) 
 
 A command-line interface for functions of the Scanpy suite, to facilitate flexible constrution of workflows, for example in Galaxy, Nextflow, Snakemake etc.
 
@@ -18,7 +18,7 @@ There is an example script included:
 scanpy-scripts-tests.bats
 ```
 
-This requires the [bats](https://github.com/sstephenson/bats) testing framework to run. The script downloads [a well-known test 10X dataset]('https://s3-us-west-2.amazonaws.com/10x.files/samples/cell/pbmc3k/pbmc3k_filtered_gene_bc_matrices.tar.gz) and executes all of the scripts described below.
+This requires the [bats](https://github.com/sstephenson/bats) testing framework to run. The script downloads [a well-known test 10X dataset]('https://s3-us-west-2.amazonaws.com/10x.files/samples/cell/pbmc3k/pbmc3k_filtered_gene_bc_matrices.tar.gz) and executes all of the commands described below.
 
 ## Commands
 
