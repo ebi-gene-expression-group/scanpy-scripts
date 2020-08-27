@@ -29,6 +29,6 @@ def bbknn(adata, key=None, key_added=None, **kwargs):
     else:
         _delete_backup_key(adata.uns, 'neighbors')
         _delete_backup_key(adata.obsp, 'distances')
-        _delete_backup_key(adata.uns, 'connectivities')
+        _delete_backup_key(adata.obsp, 'connectivities')
     
     return adata
