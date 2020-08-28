@@ -737,7 +737,7 @@ CMD_OPTIONS = {
         ),
         click.option(
             '--flavor', '-v',
-            type=click.Choice(['seurat', 'cellranger', 'seurat_v3']),
+            type=click.Choice(['seurat', 'cell_ranger', 'seurat_v3']),
             default='seurat',
             show_default=True,
             help='Choose the flavor for computing normalized dispersion.',

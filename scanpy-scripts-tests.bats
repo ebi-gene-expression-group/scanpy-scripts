@@ -31,27 +31,27 @@ setup() {
     tsne_opt="-n 25 --use-rep X_pca --learning-rate 200 -E ${tsne_embed}"
     tsne_obj="${output_dir}/tsne.h5ad"
     umap_embed="${output_dir}/umap.tsv"
-    umap_opt="--neighbors-key neighbors_k10 --min-dist 0.75 --alpha 1 --gamma 1 -E ${umap_embed}"
+    umap_opt="--neighbors-key k10 --min-dist 0.75 --alpha 1 --gamma 1 -E ${umap_embed}"
     umap_obj="${output_dir}/umap.h5ad"
     fdg_embed="${output_dir}/fdg.tsv"
-    fdg_opt="--neighbors-key neighbors_k10 --layout fr -E ${fdg_embed}"
+    fdg_opt="--neighbors-key k10 --layout fr -E ${fdg_embed}"
     fdg_obj="${output_dir}/fdg.h5ad"
     louvain_tsv="${output_dir}/louvain.tsv"
-    louvain_opt="-r 0.5,1 --neighbors-key neighbors_k10 --key-added k10 --export-cluster ${louvain_tsv}"
+    louvain_opt="-r 0.5,1 --neighbors-key k10 --key-added k10 --export-cluster ${louvain_tsv}"
     louvain_obj="${output_dir}/louvain.h5ad"
     leiden_tsv="${output_dir}/leiden.tsv"
-    leiden_opt="-r 0.3,0.7 --neighbors-key neighbors_k10 --key-added k10 -F loom --loom-write-obsm-varm --export-cluster ${leiden_tsv}"
+    leiden_opt="-r 0.3,0.7 --neighbors-key k10 --key-added k10 -F loom --loom-write-obsm-varm --export-cluster ${leiden_tsv}"
     leiden_obj="${output_dir}/leiden.loom"
     test_clustering='louvain_k10_r0_5'
     diffexp_tsv="${output_dir}/diffexp.tsv"
     diffexp_opt="-g ${test_clustering} --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5 --save ${diffexp_tsv}"
     diffexp_obj="${output_dir}/diffexp.h5ad"
-    paga_opt="--neighbors-key neighbors_k10 --key-added ${test_clustering} --groups ${test_clustering} --model v1.2"
+    paga_opt="--neighbors-key k10 --key-added ${test_clustering} --groups ${test_clustering} --model v1.2"
     paga_obj="${output_dir}/paga.h5ad"
     diffmap_embed="${output_dir}/diffmap.tsv"
-    diffmap_opt="--neighbors-key neighbors_k10 --n-comps 10 -E ${diffmap_embed}"
+    diffmap_opt="--neighbors-key k10 --n-comps 10 -E ${diffmap_embed}"
     diffmap_obj="${output_dir}/diffmap.h5ad"
-    dpt_opt="--neighbors-key neighbors_k10 --key-added k10 --n-dcs 10 --disallow-kendall-tau-shift --root ${test_clustering} 0"
+    dpt_opt="--neighbors-key k10 --key-added k10 --n-dcs 10 --disallow-kendall-tau-shift --root ${test_clustering} 0"
     dpt_obj="${output_dir}/dpt.h5ad"
     plt_embed_opt="--projection 2d --color ${test_clustering} --title test"
     plt_embed_pdf="${output_dir}/umap_${test_clustering}.pdf"
@@ -300,29 +300,29 @@ setup() {
 
 # Run Diffmap
 
-#@test "Run Diffmap" {
-#    if [ "$resume" = 'true' ] && [ -f "$diffmap_obj" ]; then
-#        skip "$diffmap_obj exists and resume is set to 'true'"
-#    fi
-#
-#    run rm -f $diffmap_obj && eval "$scanpy embed diffmap $diffmap_opt $paga_obj $diffmap_obj"
-#
-#    [ "$status" -eq 0 ]
-#    [ -f  "$diffmap_obj" ] && [ -f "$diffmap_embed" ]
-#}
+@test "Run Diffmap" {
+    if [ "$resume" = 'true' ] && [ -f "$diffmap_obj" ]; then
+        skip "$diffmap_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $diffmap_obj && eval "$scanpy embed diffmap $diffmap_opt $paga_obj $diffmap_obj"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$diffmap_obj" ] && [ -f "$diffmap_embed" ]
+}
 
 # Run DPT
 
-#@test "Run DPT" {
-#    if [ "$resume" = 'true' ] && [ -f "$dpt_obj" ]; then
-#        skip "$dpt_obj exists and resume is set to 'true'"
-#    fi
+@test "Run DPT" {
+    if [ "$resume" = 'true' ] && [ -f "$dpt_obj" ]; then
+        skip "$dpt_obj exists and resume is set to 'true'"
+    fi
 
-#    run rm -f $dpt_obj && eval "$scanpy dpt $dpt_opt $diffmap_obj $dpt_obj"
+    run rm -f $dpt_obj && eval "$scanpy dpt $dpt_opt $diffmap_obj $dpt_obj"
 
-#    [ "$status" -eq 0 ]
-#    [ -f  "$dpt_obj" ]
-#}
+    [ "$status" -eq 0 ]
+    [ -f  "$dpt_obj" ]
+}
 
 # Run Plot embedding
 
@@ -339,16 +339,16 @@ setup() {
 
 # Run Plot paga
 
-#@test "Run Plot trajectory" {
-#    if [ "$resume" = 'true' ] && [ -f "$plt_paga_pdf" ]; then
-#        skip "$plt_paga_pdf exists and resume is set to 'true'"
-#    fi
+@test "Run Plot trajectory" {
+    if [ "$resume" = 'true' ] && [ -f "$plt_paga_pdf" ]; then
+        skip "$plt_paga_pdf exists and resume is set to 'true'"
+    fi
 
-#    run rm -f $plt_paga_pdf && eval "$scanpy plot paga $plt_paga_opt $dpt_obj $plt_paga_pdf"
+    run rm -f $plt_paga_pdf && eval "$scanpy plot paga $plt_paga_opt $dpt_obj $plt_paga_pdf"
 
-#    [ "$status" -eq 0 ]
-#    [ -f  "$dpt_obj" ]
-#}
+    [ "$status" -eq 0 ]
+    [ -f  "$dpt_obj" ]
+}
 
 # Plot a stacked violin plot for markers
 
