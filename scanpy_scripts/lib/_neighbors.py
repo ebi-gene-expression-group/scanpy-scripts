@@ -15,15 +15,7 @@ def neighbors(adata, n_neighbors=15, key_added=None, **kwargs):
     Wrapper function for sc.pp.neighbors(), for supporting multiple n_neighbors
     """
     if not isinstance(n_neighbors, (list, tuple)):
-        _backup_default_key(adata.uns, 'neighbors')
-
-        sc.pp.neighbors(adata, n_neighbors=n_neighbors, **kwargs)
-
-        if key_added:
-            nb_key = f'neighbors_{key_added}'
-            _rename_default_key(adata.uns, 'neighbors', nb_key)
-        else:
-            _delete_backup_key(adata.uns, 'neighbors')
+        sc.pp.neighbors(adata, n_neighbors=n_neighbors, key_added=key_added, **kwargs)
     else:
         for i, n_nb in enumerate(n_neighbors):
             if key_added is None:

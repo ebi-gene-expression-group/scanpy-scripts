@@ -18,11 +18,17 @@ def bbknn(adata, key=None, key_added=None, **kwargs):
     """
 
     _backup_default_key(adata.uns, 'neighbors')
+    _backup_default_key(adata.obsp, 'distances')
+    _backup_default_key(adata.obsp, 'connectivities')
     sce.pp.bbknn(adata, batch_key = key, **kwargs)    
 
     if key_added:
-        _rename_default_key(adata.uns, 'neighbors',  f'neighbors_{key_added}')
+        _rename_default_key(adata.uns, 'neighbors',  f'{key_added}')
+        _rename_default_key(adata.obsp, 'distances',  f'{key_added}_distances')
+        _rename_default_key(adata.obsp, 'connectivities',  f'{key_added}_connectivities')
     else:
         _delete_backup_key(adata.uns, 'neighbors')
+        _delete_backup_key(adata.obsp, 'distances')
+        _delete_backup_key(adata.obsp, 'connectivities')
     
     return adata
