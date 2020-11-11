@@ -9,7 +9,7 @@ install:
 script: ./scanpy-scripts-tests.bats
 
 cache:
-  pip: false
+  pip: true
   directories:
     - post_install_tests
 
