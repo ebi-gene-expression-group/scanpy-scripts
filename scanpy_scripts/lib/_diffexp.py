@@ -39,11 +39,11 @@ def diffexp(
     # https://github.com/theislab/scanpy/pull/1490
     
     saved_groups = adata.obs[groupby].copy()
-    groups_counts = adata.obs[key].value_counts()
+    groups_counts = adata.obs[groupby].value_counts()
     adata.obs[groupby][[ item in groups_counts.index[groups_counts < 2] for item in list(saved_groups) ]] = None
 
     sc.tl.rank_genes_groups(
-        adata, use_raw=use_raw, n_genes=n_genes, key_added=diff_key, **kwargs)
+        adata, use_raw=use_raw, n_genes=n_genes, key_added=diff_key, groupby=groupby, **kwargs)
 
     de_tbl = extract_de_table(adata.uns[diff_key])
 
