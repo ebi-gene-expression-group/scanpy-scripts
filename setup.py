@@ -40,7 +40,7 @@ setup(
         'scipy',
         'matplotlib',
         'pandas',
-        'h5py',
+        'h5py<3.1.0',
         'scanpy>=1.6.0',
         'louvain',
         'leidenalg',
