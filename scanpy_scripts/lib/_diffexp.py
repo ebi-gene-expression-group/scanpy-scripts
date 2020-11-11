@@ -15,6 +15,7 @@ def diffexp(
         logreg_param=None,
         filter_params=None,
         save=None,
+        groupby=None,
         **kwargs,
 ):
     """
@@ -32,6 +33,14 @@ def diffexp(
 
     key_added = key_added if key_added else 'rank_genes_groups'
     diff_key = (key_added + f'_{layer}') if layer else key_added
+
+    # Marker detection will fail for singlet clusters, so remove them. Better
+    # fix proposed in Scanpy code at
+    # https://github.com/theislab/scanpy/pull/1490
+    
+    saved_groups = adata.obs[groupby].copy()
+    groups_counts = adata.obs[key].value_counts()
+    adata.obs[groupby][[ item in groups_counts.index[groups_counts < 2] for item in list(saved_groups) ]] = None
 
     sc.tl.rank_genes_groups(
         adata, use_raw=use_raw, n_genes=n_genes, key_added=diff_key, **kwargs)
@@ -52,6 +61,9 @@ def diffexp(
 
     if save:
         de_tbl.to_csv(save, sep='\t', header=True, index=False)
+
+    # Restore original grouping values
+    adata.obs[groupby] = saved_groups
 
     return de_tbl
 
