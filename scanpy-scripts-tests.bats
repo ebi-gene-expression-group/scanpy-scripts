@@ -262,7 +262,7 @@ setup() {
     run rm -f $louvain_obj && eval "$scanpy cluster louvain $louvain_opt $umap_obj $louvain_obj"
 
     [ "$status" -eq 0 ]
-    [ -f  "$louvain_obj" ]
+    [ -f  "$louvain_obj" ] && [ -f "$louvain_tsv" ] && [ $(sed '1d' "$louvain_tsv" | cut -f3 | sort | uniq -c | sort -k1,1n | awk 'NR==1 {print $1}') -eq 1 ]
 }
 
 # Find clusters Leiden
