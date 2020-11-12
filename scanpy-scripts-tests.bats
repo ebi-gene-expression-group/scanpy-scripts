@@ -46,7 +46,7 @@ setup() {
     diffexp_tsv="${output_dir}/diffexp.tsv"
     diffexp_opt="-g ${test_clustering} --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5 --save ${diffexp_tsv}"
     diffexp_obj="${output_dir}/diffexp.h5ad"
-    test_hires_clustering='louvain_k10_r10_0'
+    test_hires_clustering='louvain_k10_r30_0'
     diffexp_hires_tsv="${output_dir}/diffexp_hires.tsv"
     diffexp_hires_opt="-g ${test_hires_clustering} --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5 --save ${diffexp_hires_tsv}"
     diffexp_hires_obj="${output_dir}/diffexp_hires.h5ad"
