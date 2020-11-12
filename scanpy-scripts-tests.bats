@@ -37,7 +37,7 @@ setup() {
     fdg_opt="--neighbors-key k10 --layout fr -E ${fdg_embed}"
     fdg_obj="${output_dir}/fdg.h5ad"
     louvain_tsv="${output_dir}/louvain.tsv"
-    louvain_opt="-r 0.5,10.0 --neighbors-key k10 --key-added k10 --export-cluster ${louvain_tsv}"
+    louvain_opt="-r 0.5,30.0 --neighbors-key k10 --key-added k10 --export-cluster ${louvain_tsv}"
     louvain_obj="${output_dir}/louvain.h5ad"
     leiden_tsv="${output_dir}/leiden.tsv"
     leiden_opt="-r 0.3,0.7 --neighbors-key k10 --key-added k10 -F loom --loom-write-obsm-varm --export-cluster ${leiden_tsv}"
