@@ -116,7 +116,7 @@ setup() {
         skip "$singlet_obs exists"
     fi
 
-    run rm -rf $singlet_obs && eval "echo -e \"index\tgroupby_with_singlet\" > $singlet_obs && head -n 1 $data_dir/barcodes.tsv | while read -r b; do echo -e \"\$b\tcluster1\"; done >> $singlet_obs && sed -n '2,100p;101q' $data_dir/barcodes.tsv | awk -v cluster='cluster3' '{print \$1\"\t\"cluster}' >> $singlet_obs && tail -n +101 $data_dir/barcodes.tsv | while read -r b; do echo -e \"\$b\tcluster2\"; done >> $singlet_obs"
+    run rm -rf $singlet_obs && eval "echo -e \"index\tgroupby_with_singlet\" > $singlet_obs && head -n 1 $data_dir/barcodes.tsv | awk -v cluster='cluster1' '{print \$1\"\t\"cluster}' >> $singlet_obs && sed -n '2,100p;101q' $data_dir/barcodes.tsv | awk -v cluster='cluster3' '{print \$1\"\t\"cluster}' >> $singlet_obs && tail -n +101 $data_dir/barcodes.tsv | awk -v cluster='cluster2' '{print \$1\"\t\"cluster}' >> $singlet_obs"
 
     [ "$status" -eq 0 ]
     [ -f "$singlet_obs" ]

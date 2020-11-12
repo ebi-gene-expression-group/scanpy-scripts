@@ -47,7 +47,7 @@ def diffexp(
             .index
         )
 
-        if len(groups) < len(adata.obs[groupby].cat.categories):
+        if len(groups_to_test) < len(adata.obs[groupby].cat.categories):
             groups = groups_to_test
             logging.warning('Singlet groups removed before passing to rank_genes_groups()')
 
