@@ -40,7 +40,7 @@ def diffexp(
     
     saved_groups = adata.obs[groupby].copy()
     groups_counts = adata.obs[groupby].value_counts()
-    adata.obs[groupby][[ item in groups_counts.index[groups_counts < 2] for item in list(saved_groups) ]] = None
+    adata.obs[groupby][saved_groups.isin(groups_counts.index[groups_counts < 2])] = None
 
     sc.tl.rank_genes_groups(
         adata, use_raw=use_raw, n_genes=n_genes, key_added=diff_key, groupby=groupby, **kwargs)
