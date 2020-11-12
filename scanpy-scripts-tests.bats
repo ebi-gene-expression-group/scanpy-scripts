@@ -37,7 +37,7 @@ setup() {
     fdg_opt="--neighbors-key k10 --layout fr -E ${fdg_embed}"
     fdg_obj="${output_dir}/fdg.h5ad"
     louvain_tsv="${output_dir}/louvain.tsv"
-    louvain_opt="-r 0.5,5.0 --neighbors-key k10 --key-added k10 --export-cluster ${louvain_tsv}"
+    louvain_opt="-r 0.5,10.0 --neighbors-key k10 --key-added k10 --export-cluster ${louvain_tsv}"
     louvain_obj="${output_dir}/louvain.h5ad"
     leiden_tsv="${output_dir}/leiden.tsv"
     leiden_opt="-r 0.3,0.7 --neighbors-key k10 --key-added k10 -F loom --loom-write-obsm-varm --export-cluster ${leiden_tsv}"
@@ -46,7 +46,7 @@ setup() {
     diffexp_tsv="${output_dir}/diffexp.tsv"
     diffexp_opt="-g ${test_clustering} --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5 --save ${diffexp_tsv}"
     diffexp_obj="${output_dir}/diffexp.h5ad"
-    test_hires_clustering='louvain_k10_r5_0'
+    test_hires_clustering='louvain_k10_r10_0'
     diffexp_hires_tsv="${output_dir}/diffexp_hires.tsv"
     diffexp_hires_opt="-g ${test_hires_clustering} --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5 --save ${diffexp_hires_tsv}"
     diffexp_hires_obj="${output_dir}/diffexp_hires.h5ad"
