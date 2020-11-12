@@ -37,7 +37,7 @@ setup() {
     fdg_opt="--neighbors-key k10 --layout fr -E ${fdg_embed}"
     fdg_obj="${output_dir}/fdg.h5ad"
     louvain_tsv="${output_dir}/louvain.tsv"
-    louvain_opt="-r 0.5,1 --neighbors-key k10 --key-added k10 --export-cluster ${louvain_tsv}"
+    louvain_opt="-r 0.5,5.0 --neighbors-key k10 --key-added k10 --export-cluster ${louvain_tsv}"
     louvain_obj="${output_dir}/louvain.h5ad"
     leiden_tsv="${output_dir}/leiden.tsv"
     leiden_opt="-r 0.3,0.7 --neighbors-key k10 --key-added k10 -F loom --loom-write-obsm-varm --export-cluster ${leiden_tsv}"
@@ -46,6 +46,10 @@ setup() {
     diffexp_tsv="${output_dir}/diffexp.tsv"
     diffexp_opt="-g ${test_clustering} --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5 --save ${diffexp_tsv}"
     diffexp_obj="${output_dir}/diffexp.h5ad"
+    test_hires_clustering='louvain_k10_r5_0'
+    diffexp_hires_tsv="${output_dir}/diffexp_hires.tsv"
+    diffexp_hires_opt="-g ${test_hires_clustering} --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5 --save ${diffexp_hires_tsv}"
+    diffexp_hires_obj="${output_dir}/diffexp_hires.h5ad"
     paga_opt="--neighbors-key k10 --key-added ${test_clustering} --groups ${test_clustering} --model v1.2"
     paga_obj="${output_dir}/paga.h5ad"
     diffmap_embed="${output_dir}/diffmap.tsv"
@@ -65,9 +69,11 @@ setup() {
     plt_matrixplot_pdf="${output_dir}/matrix_${test_clustering}_LDHB_CD3D_CD3E.pdf"
     plt_heatmap_pdf="${output_dir}/heatmap_${test_clustering}_LDHB_CD3D_CD3E.pdf"
     plt_rank_genes_groups_opt="--rgg --groups 3,4"
+    plt_rank_genes_groups_hires_opt="--rgg"
     plt_rank_genes_groups_stacked_violin_pdf="${output_dir}/rggsviolin_${test_clustering}.pdf"
     plt_rank_genes_groups_matrix_pdf="${output_dir}/rggmatrix_${test_clustering}.pdf"
     plt_rank_genes_groups_dot_pdf="${output_dir}/rggdot_${test_clustering}.pdf"
+    plt_rank_genes_groups_dot_hires_pdf="${output_dir}/rggdot_${test_hires_clustering}.pdf"
     plt_rank_genes_groups_heatmap_pdf="${output_dir}/rggheatmap_${test_clustering}.pdf"
     harmony_integrate_obj="${output_dir}/harmony_integrate.h5ad"
     harmony_integrate_opt="--batch-key ${test_clustering}"
@@ -285,6 +291,19 @@ setup() {
     [ -f  "$diffexp_obj" ] && [ -f "$diffexp_tsv" ]
 }
 
+# Find markers, high resolution
+
+@test "Run find markers, high resolution" {
+    if [ "$resume" = 'true' ] && [ -f "$diffexp_hires_obj" ]; then
+        skip "$diffexp_hires_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $diffexp_hires_obj $diffexp_hires_tsv && eval "$scanpy diffexp $diffexp_hires_opt $louvain_obj $diffexp_hires_obj"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$diffexp_hires_obj" ] && [ -f "$diffexp_hires_tsv" ]
+}
+
 # Run PAGA
 
 @test "Run PAGA" {
@@ -389,7 +408,7 @@ setup() {
     [ -f  "$plt_dotplot_pdf" ]
 }
 
-# Plot ranking of genes using a matrix plot for markers
+# Plot ranking of genes using a dot plot for markers
 
 @test "Run Plot ranking of genes using a dot plot" {
     if [ "$resume" = 'true' ] && [ -f "$plt_rank_genes_groups_dot_pdf" ]; then
@@ -402,6 +421,18 @@ setup() {
     [ -f  "$plt_rank_genes_groups_dot_pdf" ]
 }
 
+# Plot ranking of genes using a dot plot for markers, high resolution clustering
+
+@test "Run Plot ranking of genes using a dot plot, high resolution clustering" {
+    if [ "$resume" = 'true' ] && [ -f "$plt_rank_genes_groups_dot_hires_pdf" ]; then
+        skip "$plt_rank_genes_groups_dot_hires_pdf exists and resume is set to 'true'"
+    fi
+
+    run rm -f $plt_rank_genes_groups_dot_hires_pdf && eval "$scanpy plot dot $plt_rank_genes_groups_hires_opt $diffexp_hires_obj $plt_rank_genes_groups_dot_hires_pdf"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$plt_rank_genes_groups_dot_hires_pdf" ]
+}
 
 # Plot a matrix plot for markers
 
