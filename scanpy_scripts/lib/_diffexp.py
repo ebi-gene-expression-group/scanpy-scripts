@@ -4,7 +4,7 @@ scanpy diffexp
 
 import pandas as pd
 import scanpy as sc
-
+import logging
 
 def diffexp(
         adata,
@@ -16,6 +16,7 @@ def diffexp(
         filter_params=None,
         save=None,
         groupby=None,
+        groups=None,
         **kwargs,
 ):
     """
@@ -34,17 +35,24 @@ def diffexp(
     key_added = key_added if key_added else 'rank_genes_groups'
     diff_key = (key_added + f'_{layer}') if layer else key_added
 
-    # Marker detection will fail for singlet clusters, so remove them. Better
-    # fix proposed in Scanpy code at
-    # https://github.com/theislab/scanpy/pull/1490
-    
-    saved_groups = adata.obs[groupby].copy()
-    groups_counts = adata.obs[groupby].value_counts()
-    adata.obs[groupby][saved_groups.isin(groups_counts.index[groups_counts < 2])] = None
-    adata.obs[groupby].cat.remove_unused_categories(inplace=True)
+    if groups == 'all':
+
+        # Avoid divisions by zeros for singlet groups. See 
+        # https://github.com/theislab/scanpy/pull/1490#issuecomment-726031442.
+        
+        groups_to_test = list(
+            adata.obs[groupby]
+            .value_counts()
+            .loc[lambda x: x > 1]
+            .index
+        )
+
+        if len(groups) < len(adata.obs[groupby].cat.categories):
+            groups = groups_to_test
+            logging.warning('Singlet groups removed before passing to rank_genes_groups()')
 
     sc.tl.rank_genes_groups(
-        adata, use_raw=use_raw, n_genes=n_genes, key_added=diff_key, groupby=groupby, **kwargs)
+        adata, use_raw=use_raw, n_genes=n_genes, key_added=diff_key, groupby=groupby, groups = groups, **kwargs)
 
     de_tbl = extract_de_table(adata.uns[diff_key])
 
@@ -62,9 +70,6 @@ def diffexp(
 
     if save:
         de_tbl.to_csv(save, sep='\t', header=True, index=False)
-
-    # Restore original grouping values
-    adata.obs[groupby] = saved_groups
 
     return de_tbl
 

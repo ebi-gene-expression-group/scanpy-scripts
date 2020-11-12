@@ -9,6 +9,7 @@ setup() {
     test_data_url='https://s3-us-west-2.amazonaws.com/10x.files/samples/cell/pbmc3k/pbmc3k_filtered_gene_bc_matrices.tar.gz'
     test_data_archive="${test_dir}/$(basename $test_data_url)"
     raw_matrix="${data_dir}/matrix.mtx"
+    singlet_obs="${data_dir}/singlet_obs.txt"
     read_opt="-x $data_dir --show-obj stdout"
     read_obj="${output_dir}/read.h5ad"
     filter_opt="-p n_genes 200 2500 -p c:n_counts 0 50000 -p n_cells 3 inf -p pct_counts_mito 0 0.2 -c mito '!True' --show-obj stdout"
@@ -37,7 +38,7 @@ setup() {
     fdg_opt="--neighbors-key k10 --layout fr -E ${fdg_embed}"
     fdg_obj="${output_dir}/fdg.h5ad"
     louvain_tsv="${output_dir}/louvain.tsv"
-    louvain_opt="-r 0.5,30.0 --neighbors-key k10 --key-added k10 --export-cluster ${louvain_tsv}"
+    louvain_opt="-r 0.5,1 --neighbors-key k10 --key-added k10 --export-cluster ${louvain_tsv}"
     louvain_obj="${output_dir}/louvain.h5ad"
     leiden_tsv="${output_dir}/leiden.tsv"
     leiden_opt="-r 0.3,0.7 --neighbors-key k10 --key-added k10 -F loom --loom-write-obsm-varm --export-cluster ${leiden_tsv}"
@@ -46,10 +47,10 @@ setup() {
     diffexp_tsv="${output_dir}/diffexp.tsv"
     diffexp_opt="-g ${test_clustering} --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5 --save ${diffexp_tsv}"
     diffexp_obj="${output_dir}/diffexp.h5ad"
-    test_hires_clustering='louvain_k10_r30_0'
-    diffexp_hires_tsv="${output_dir}/diffexp_hires.tsv"
-    diffexp_hires_opt="-g ${test_hires_clustering} --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5 --save ${diffexp_hires_tsv}"
-    diffexp_hires_obj="${output_dir}/diffexp_hires.h5ad"
+    test_singlet_clustering='groupby_with_singlet'
+    diffexp_singlet_tsv="${output_dir}/diffexp_singlet.tsv"
+    diffexp_singlet_opt="-g ${test_singlet_clustering} --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5 --save ${diffexp_singlet_tsv}"
+    diffexp_singlet_obj="${output_dir}/diffexp_singlet.h5ad"
     paga_opt="--neighbors-key k10 --key-added ${test_clustering} --groups ${test_clustering} --model v1.2"
     paga_obj="${output_dir}/paga.h5ad"
     diffmap_embed="${output_dir}/diffmap.tsv"
@@ -69,11 +70,11 @@ setup() {
     plt_matrixplot_pdf="${output_dir}/matrix_${test_clustering}_LDHB_CD3D_CD3E.pdf"
     plt_heatmap_pdf="${output_dir}/heatmap_${test_clustering}_LDHB_CD3D_CD3E.pdf"
     plt_rank_genes_groups_opt="--rgg --groups 3,4"
-    plt_rank_genes_groups_hires_opt="--rgg"
+    plt_rank_genes_groups_singlet_opt="--rgg"
     plt_rank_genes_groups_stacked_violin_pdf="${output_dir}/rggsviolin_${test_clustering}.pdf"
     plt_rank_genes_groups_matrix_pdf="${output_dir}/rggmatrix_${test_clustering}.pdf"
     plt_rank_genes_groups_dot_pdf="${output_dir}/rggdot_${test_clustering}.pdf"
-    plt_rank_genes_groups_dot_hires_pdf="${output_dir}/rggdot_${test_hires_clustering}.pdf"
+    plt_rank_genes_groups_dot_singlet_pdf="${output_dir}/rggdot_${test_singlet_clustering}.pdf"
     plt_rank_genes_groups_heatmap_pdf="${output_dir}/rggheatmap_${test_clustering}.pdf"
     harmony_integrate_obj="${output_dir}/harmony_integrate.h5ad"
     harmony_integrate_opt="--batch-key ${test_clustering}"
@@ -109,6 +110,18 @@ setup() {
     [ -f "$raw_matrix" ]
 }
 
+@test "Make .obs with a singlet cell group" {
+
+    if [ -f "$singlet_obs" ]; then
+        skip "$singlet_obs exists"
+    fi
+
+    run rm -rf $singlet_obs && eval "echo -e \"index\tgroupby_with_singlet\" > $singlet_obs && head -n 1 $data_dir/barcodes.tsv | while read -r b; do echo -e \"\$b\tcluster1\"; done >> $singlet_obs && sed -n '2,100p;101q' $data_dir/barcodes.tsv | awk -v cluster='cluster3' '{print \$1\"\t\"cluster}' >> $singlet_obs && tail -n +101 $data_dir/barcodes.tsv | while read -r b; do echo -e \"\$b\tcluster2\"; done >> $singlet_obs"
+
+    [ "$status" -eq 0 ]
+    [ -f "$singlet_obs" ]
+}
+
 # Read 10x dataset
 
 @test "Scanpy object creation from 10x" {
@@ -116,7 +129,7 @@ setup() {
         skip "$read_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $read_obj && eval "$scanpy read $read_opt $read_obj"
+    run rm -f $read_obj && eval "$scanpy read --extra-obs $singlet_obs $read_opt $read_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$read_obj" ]
@@ -262,7 +275,7 @@ setup() {
     run rm -f $louvain_obj && eval "$scanpy cluster louvain $louvain_opt $umap_obj $louvain_obj"
 
     [ "$status" -eq 0 ]
-    [ -f  "$louvain_obj" ] && [ -f "$louvain_tsv" ] && [ $(sed '1d' "$louvain_tsv" | cut -f3 | sort | uniq -c | sort -k1,1n | awk 'NR==1 {print $1}') -eq 1 ]
+    [ -f  "$louvain_obj" ] && [ -f "$louvain_tsv" ]
 }
 
 # Find clusters Leiden
@@ -291,17 +304,17 @@ setup() {
     [ -f  "$diffexp_obj" ] && [ -f "$diffexp_tsv" ]
 }
 
-# Find markers, high resolution
+# Find markers, with singlet group
 
-@test "Run find markers, high resolution" {
-    if [ "$resume" = 'true' ] && [ -f "$diffexp_hires_obj" ]; then
-        skip "$diffexp_hires_obj exists and resume is set to 'true'"
+@test "Run find markers, with singlet group ignored" {
+    if [ "$resume" = 'true' ] && [ -f "$diffexp_singlet_obj" ]; then
+        skip "$diffexp_singlet_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $diffexp_hires_obj $diffexp_hires_tsv && eval "$scanpy diffexp $diffexp_hires_opt $louvain_obj $diffexp_hires_obj"
+    run rm -f $diffexp_singlet_obj $diffexp_singlet_tsv && eval "$scanpy diffexp $diffexp_singlet_opt $louvain_obj $diffexp_singlet_obj"
 
     [ "$status" -eq 0 ]
-    [ -f  "$diffexp_hires_obj" ] && [ -f "$diffexp_hires_tsv" ]
+    [ -f  "$diffexp_singlet_obj" ] && [ -f "$diffexp_singlet_tsv" ]
 }
 
 # Run PAGA
@@ -424,14 +437,14 @@ setup() {
 # Plot ranking of genes using a dot plot for markers, high resolution clustering
 
 @test "Run Plot ranking of genes using a dot plot, high resolution clustering" {
-    if [ "$resume" = 'true' ] && [ -f "$plt_rank_genes_groups_dot_hires_pdf" ]; then
-        skip "$plt_rank_genes_groups_dot_hires_pdf exists and resume is set to 'true'"
+    if [ "$resume" = 'true' ] && [ -f "$plt_rank_genes_groups_dot_singlet_pdf" ]; then
+        skip "$plt_rank_genes_groups_dot_singlet_pdf exists and resume is set to 'true'"
     fi
 
-    run rm -f $plt_rank_genes_groups_dot_hires_pdf && eval "$scanpy plot dot $plt_rank_genes_groups_hires_opt $diffexp_hires_obj $plt_rank_genes_groups_dot_hires_pdf"
+    run rm -f $plt_rank_genes_groups_dot_singlet_pdf && eval "$scanpy plot dot $plt_rank_genes_groups_singlet_opt $diffexp_singlet_obj $plt_rank_genes_groups_dot_singlet_pdf"
 
     [ "$status" -eq 0 ]
-    [ -f  "$plt_rank_genes_groups_dot_hires_pdf" ]
+    [ -f  "$plt_rank_genes_groups_dot_singlet_pdf" ]
 }
 
 # Plot a matrix plot for markers
