@@ -4,7 +4,7 @@ scanpy diffexp
 
 import pandas as pd
 import scanpy as sc
-
+import logging
 
 def diffexp(
         adata,
@@ -15,6 +15,8 @@ def diffexp(
         logreg_param=None,
         filter_params=None,
         save=None,
+        groupby=None,
+        groups=None,
         **kwargs,
 ):
     """
@@ -33,8 +35,24 @@ def diffexp(
     key_added = key_added if key_added else 'rank_genes_groups'
     diff_key = (key_added + f'_{layer}') if layer else key_added
 
+    if groups == 'all':
+
+        # Avoid divisions by zeros for singlet groups. See 
+        # https://github.com/theislab/scanpy/pull/1490#issuecomment-726031442.
+        
+        groups_to_test = list(
+            adata.obs[groupby]
+            .value_counts()
+            .loc[lambda x: x > 1]
+            .index
+        )
+
+        if len(groups_to_test) < len(adata.obs[groupby].cat.categories):
+            groups = groups_to_test
+            logging.warning('Singlet groups removed before passing to rank_genes_groups()')
+
     sc.tl.rank_genes_groups(
-        adata, use_raw=use_raw, n_genes=n_genes, key_added=diff_key, **kwargs)
+        adata, use_raw=use_raw, n_genes=n_genes, key_added=diff_key, groupby=groupby, groups = groups, **kwargs)
 
     de_tbl = extract_de_table(adata.uns[diff_key])
 
