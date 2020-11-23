@@ -192,7 +192,7 @@ COMMON_OPTIONS = {
     'n_comps': click.option(
         '--n-comps',
         type=click.INT,
-        default=50,
+        default=None,
         show_default=True,
         help='Number of components to compute',
     ),
