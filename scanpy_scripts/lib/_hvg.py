@@ -3,6 +3,7 @@ scanpy hvg
 """
 
 import numpy as np
+import pandas as pd
 import scanpy as sc
 
 def hvg(
@@ -11,6 +12,7 @@ def hvg(
         disp_limits=(0.5, float('inf')),
         subset=False,
         by_batch=None,
+        n_hvg=None,
         **kwargs,
 ):
     """
@@ -29,10 +31,12 @@ def hvg(
         k_hvg = np.zeros(adata.shape[1], dtype=int)
         for batch_value in adata.obs[batch_name].unique():
             k_v = adata.obs[batch_name] == batch_value
-            ad = adata[k_v, :]
+            ad = adata[k_v, :].copy()
             k_f, _ = sc.pp.filter_genes(ad, min_cells=3, inplace=False)
+            ad1 = ad[:, k_f].copy()
+            del ad
             hvg = sc.pp.highly_variable_genes(
-                ad[:, k_f],
+                ad1,
                 min_mean=mean_limits[0],
                 max_mean=mean_limits[1],
                 min_disp=disp_limits[0],
@@ -41,10 +45,19 @@ def hvg(
                 **kwargs,
             )['highly_variable']
             k_hvg[k_f] += hvg
+            del ad1
+        if n_hvg is not None and isinstance(n_hvg, int):
+            n_cum = pd.Series(k_hvg).value_counts().sort_index(ascending=False).cumsum()
+            if np.all(n_cum < n_hvg):
+                min_n = 1
+            else:
+                min_n = n_cum[n_cum > n_hvg].index[0]
+        sc.logging.warn(f'n_hvg = {(k_hvg >= min_n).sum()} found in at least {min_n} batches')
         if subset:
             adata = adata[:, k_hvg >= min_n]
         else:
             adata.var['highly_variable'] = k_hvg >= min_n
+            adata.var['highly_variable_nbatches'] = k_hvg
     else:
         sc.pp.highly_variable_genes(
             adata,
