@@ -27,21 +27,24 @@ def expression_colormap(background_level=0.01):
     return LinearSegmentedColormap.from_list('expression', palette)
 
 
-def make_palette(n, cmap=None, hide_last=False):
+def make_palette(n, cmap=None, hide_first=False, hide_last=False, hide_color='#E9E9E910'):
     """Returns a color palette with specified number of colors
     """
-    i = int(hide_last)
+    i = int(hide_first)
+    j = int(hide_last)
     if cmap is None:
-        palette = (sc_default_10[0:(n-i)] if n <= 10 + i else
-                sc_default_26[0:(n-i)] if n <= 26 + i else
-                sc_default_64[0:(n-i)] if n<= 64 + i else
+        palette = (sc_default_10[0:(n-i-j)] if n <= 10 + i + j else
+                sc_default_10 + sc_default_26[0:(n-i-j)] if n <= 36 + i + j else
+                sc_default_10 + sc_default_26 + sc_default_64[0:(n-i-j)] if n<= 100 + i + j else
                 ['grey'] * n)
     else:
         color_map = plt.get_cmap(cmap)
-        palette = [to_hex(color_map(j)) for j in range(n-i)]
+        palette = [to_hex(color_map(k)) for k in range(n-i-j)]
 
+    if hide_first:
+        palette.insert(0, hide_color)
     if hide_last:
-        palette.append('#E9E9E9')
+        palette.append(hide_color)
     return palette
 
 
@@ -61,11 +64,14 @@ def _is_numeric(x):
     return x.dtype.kind in ('i', 'f')
 
 
-def cross_table(adata, x, y, normalise=None, highlight=None, subset=None):
+def cross_table(adata, x, y, normalise=None, highlight=None, subset=None, sort_index=False, include_nan=False):
     """Make a cross table comparing two categorical annotations
     """
     x_attr = adata.obs[x]
     y_attr = adata.obs[y]
+    if include_nan:
+        x_attr = x_attr.astype(str).astype('category')
+        y_attr = y_attr.astype(str).astype('category')
     if subset is not None:
         x_attr = x_attr[subset]
         y_attr = y_attr[subset]
@@ -88,6 +94,8 @@ def cross_table(adata, x, y, normalise=None, highlight=None, subset=None):
         crs_tbl = (crs_tbl / y_sizes * 100).round(2)
         x_sizes = crs_tbl.sum(axis=1)
         crs_tbl = (crs_tbl.T / x_sizes * 100).round(2).T
+    if sort_index:
+        crs_tbl = crs_tbl.sort_index()
     if highlight is not None:
         return crs_tbl.style.background_gradient(cmap='viridis', axis=highlight)
     return crs_tbl
@@ -154,10 +162,10 @@ def _log_hist(x, bins=50, min_x=None, max_x=None, xlim=None, ax=None):
 
 def dotplot2(
         adata, keys, groupby=None, min_group_size=0, min_presence=0, use_raw=None,
-        mean_only_expressed=False, second_key_dependent_fraction=False,
+        mean_only_expressed=False, second_key_dependent_fraction=False, coexpression=False,
         vmin=0, vmax=1, dot_min=None, dot_max=None, color_map='Reds', swap_axis=False,
-        legend_loc='right', title='', title_loc='top', omit_xlab=False, omit_ylab=False,
-        ax=None, save=None, save_dpi=80, **kwargs):
+        legend_loc='right', title='', title_loc='top', title_size=None, omit_xlab=False, omit_ylab=False,
+        xtickslabels=None, ytickslabels=None, ax=None, save=None, save_dpi=80, **kwargs):
     if isinstance(keys, str):
         keys = [keys]
     if not isinstance(keys, (list, tuple)):
@@ -214,6 +222,15 @@ def dotplot2(
         avg1 = df.groupby('group')[[keys[0]]].apply(lambda g: g.sum(axis=0) / (g>0).sum(axis=0)).fillna(0).values
         avg = avg1 if mean_only_expressed else avg0
         n_key = 1
+    elif coexpression:
+        exp_cnt = df.groupby('group')[keys].apply(lambda g: ((g>0).sum(axis=1)==2).sum()).values
+        frac = df.groupby('group')[keys].apply(lambda g: ((g>0).sum(axis=1)==2).mean())
+        group_label = frac.index.values
+        frac = frac.values
+        avg0 = df.groupby('group')[keys].apply(lambda g: g.min(axis=1).mean()).values
+        avg1 = df.groupby('group')[keys].apply(lambda g: g.min(axis=1).sum() / (((g>0).sum(axis=1)==2)).sum()).fillna(0).values
+        avg = avg1 if mean_only_expressed else avg0
+        n_key = 1
     else:
         exp_cnt = df.groupby('group')[keys].apply(lambda g: (g>0).sum(axis=0)).values
         frac = df.groupby('group')[keys].apply(lambda g: (g>0).mean(axis=0))
@@ -251,8 +268,8 @@ def dotplot2(
     dot_colors = cmap(normalize(avg))
 
     legend_loc = 'none' if ax else legend_loc
-    fig_width = 0.5 + (n_key if swap_axis else n_group) * 0.25 + 0.25 * int(legend_loc == 'right')
-    fig_height = 0.5 + (n_group if swap_axis else n_key) * 0.2 + 0.25 * int(legend_loc == 'bottom')
+    fig_width = 0.4 + (n_key if swap_axis else n_group) * 0.25 + 0.25 * int(legend_loc == 'right')
+    fig_height = 0.4 + (n_group if swap_axis else n_key) * 0.2 + 0.25 * int(legend_loc == 'bottom')
 
     rcParams.update({'figure.figsize': (fig_width, fig_height)})
     if legend_loc == 'right':
@@ -271,18 +288,26 @@ def dotplot2(
     if swap_axis:
         main.scatter(y=np.tile(range(n_group), n_key), x=np.repeat(np.arange(n_key)[::-1], n_group), color=dot_colors[::-1], s=dot_sizes[::-1], cmap=cmap, norm=None, edgecolor='none', **kwargs)
         main.set_xticks(range(n_key))
-        main.set_xticklabels(keys, rotation=270)
+        if xtickslabels is None:
+            xtickslabels = ['+'.join(keys)] if coexpression or second_key_dependent_fraction else keys
+        main.set_xticklabels(xtickslabels, rotation=270)
         main.set_xlim(-0.5, n_key - 0.5)
         main.set_yticks(range(n_group))
-        main.set_yticklabels(group_label[::-1])
+        if ytickslabels is None:
+            ytickslabels = group_label[::-1]
+        main.set_yticklabels(ytickslabels)
         main.set_ylim(-0.5, n_group - 0.5)
     else:
         main.scatter(x=np.tile(range(n_group), n_key), y=np.repeat(np.arange(n_key), n_group), color=dot_colors, s=dot_sizes, cmap=cmap, norm=None, edgecolor='none', **kwargs)
         main.set_yticks(range(n_key))
-        main.set_yticklabels(keys)
+        if ytickslabels is None:
+            ytickslabels = ['+'.join(keys)] if coexpression or second_key_dependent_fraction else keys
+        main.set_yticklabels(ytickslabels)
         main.set_ylim(-0.5, n_key - 0.5)
         main.set_xticks(range(n_group))
-        main.set_xticklabels(group_label, rotation=270)
+        if xtickslabels is None:
+            xtickslabels = group_label
+        main.set_xticklabels(xtickslabels, rotation=270)
         main.set_xlim(-0.5, n_group - 0.5)
     if title:
         if title_loc == 'top':
@@ -292,7 +317,8 @@ def dotplot2(
             ylab_position = 'left' if legend_loc == 'right' else 'right'
             ylab_pad = 0 if legend_loc == 'right' else 20
             title_ax.yaxis.set_label_position(ylab_position)
-            title_size = min(15, 100*fig_height/len(title))
+            if title_size is None:
+                title_size = min(15, 100*fig_height/len(title))
             title_ax.set_ylabel(title, rotation=270, labelpad=ylab_pad, fontsize=title_size)
     if omit_xlab:
         main.tick_params(axis='x', bottom=False, labelbottom=False)
@@ -319,7 +345,8 @@ def dotplot2(
         else:
             fracs_values = fracs_legends
         size = (fracs_values * 10) ** 2
-        color = [cmap(normalize(value)) for value in np.repeat(vmax, len(size))]
+        #color = [cmap(normalize(value)) for value in np.linspace(vmin+(vmax-vmin)*0.1, vmin+(vmax-vmin)*0.9, len(size))]
+        color = [cmap(normalize(value)) for value in np.repeat(vmin+(vmax-vmin)*0.8, len(size))]
 
         # plot size bar
         size_legend = axs[1]
@@ -328,7 +355,7 @@ def dotplot2(
             labels[-1] = ">=" + labels[-1]
 
         if legend_loc == 'bottom':
-            size_legend.scatter(y=np.repeat(0, len(size)), x=range(len(size)), s=size, color=color)
+            size_legend.scatter(y=np.repeat(0, len(size)), x=range(len(size)), s=size, color='grey')
             size_legend.set_xticks(range(len(size)))
             #size_legend.set_xticklabels(labels, rotation=270)
             size_legend.set_xticklabels(["{:.0%}".format(x) for x in fracs_legends], rotation=270)
@@ -338,7 +365,7 @@ def dotplot2(
             xmin, xmax = size_legend.get_xlim()
             size_legend.set_xlim(xmin-((n_key if swap_axis else n_group)-1)*0.75, xmax+0.5)
         else:
-            size_legend.scatter(np.repeat(0, len(size)), range(len(size)), s=size, color=color)
+            size_legend.scatter(np.repeat(0, len(size)), range(len(size)), s=size, color='grey')
             size_legend.set_yticks(range(len(size)))
             #size_legend.set_yticklabels(labels)
             size_legend.set_yticklabels(["{:.0%}".format(x) for x in fracs_legends])
@@ -364,9 +391,45 @@ def dotplot2(
 
     return main
 
+def dotplot_combined_coexpression(
+    ad, genes, groupby, groups=None, merge=False, title='', save=None, save_dpi=200, **kwargs
+):
+    print(save)
+    n_gene = len(genes)
+    assert n_gene == 2, 'genes must be '
+
+    fig, ax = plt.subplots(ncols=n_gene + 1, gridspec_kw={'wspace': 0 if merge else 0.05})
+    fW, fH = 0, 0
+    if groups is not None and len(groups) != len(ad.obs[groupby].unique()):
+        ad = ad[ad.obs[groupby].isin(groups), :]
+    for i, gene in enumerate(genes):
+        w, h = dotplot2(
+            ad, gene, groupby=groupby, swap_axis=True, ax=ax[i], omit_xlab=False, omit_ylab=i>0, title='', **kwargs
+        )
+        if merge:
+            if i < n_gene - 1:
+                ax[i].spines['right'].set_visible(False)
+            else:
+                ax[i].spines['left'].set_visible(False)
+        fW += w
+        fH = max(fH, h)
+    i += 1
+    w,h = dotplot2(
+        ad, genes, groupby=groupby, coexpression=True, ax=ax[i], swap_axis=True,
+        title=title, title_loc='right', omit_xlab=False, omit_ylab=True, **kwargs
+    )
+    fW += w
+    fH = max(fH, h)
+
+    fig.set_figwidth(fW)
+    fig.set_figheight(fH)
+    if save:
+        fig.savefig(save, bbox_inches='tight', dpi=save_dpi)
+        plt.close()
+
 
 def plot_qc(adata, groupby=None, groupby_only=False):
-    qc_metrics = ('n_counts', 'n_genes', 'percent_mito', 'percent_ribo', 'percent_hb', 'percent_top50')
+    qc_metrics = ['n_counts', 'n_genes'] + adata.obs.columns[adata.obs.columns.str.startswith('percent_')].to_list()
     for qmt in qc_metrics:
         if qmt not in adata.obs.columns:
             raise ValueError(f'{qmt} not found.')
@@ -377,8 +440,8 @@ def plot_qc(adata, groupby=None, groupby_only=False):
         old_figsize = rcParams.get('figure.figsize')
         rcParams.update({'figure.figsize': (15,3)})
         fig, ax = plt.subplots(ncols=4, nrows=1)
-        sc.pl.scatter(adata, x='n_counts', y='percent_mito', alpha=0.5, ax=ax[0], show=False)
-        sc.pl.scatter(adata, x='n_counts', y='percent_top50', alpha=0.5, ax=ax[1], show=False)
+        sc.pl.scatter(adata, x='log1p_n_counts', y='percent_mito', alpha=0.5, ax=ax[0], show=False)
+        sc.pl.scatter(adata, x='log1p_n_counts', y='percent_top50', alpha=0.5, ax=ax[1], show=False)
         sc.pl.scatter(adata, x='percent_mito', y='percent_ribo', alpha=0.5, ax=ax[2], show=False)
         sc.pl.scatter(adata, x='log1p_n_counts', y='log1p_n_genes', alpha=0.5, ax=ax[3], color=groupby, show=False)
         rcParams.update({'figure.figsize': old_figsize})
@@ -514,7 +577,7 @@ def plot_metric_by_rank(
 
 
 def plot_embedding(
-        adata, basis, groupby, color=None, annot='full', highlight=None, size=None,
+        adata, basis, groupby, color=None, annot=True, highlight=None, size=None,
         save=None, savedpi=300, figsize=(4,4), **kwargs):
     set_figsize(figsize)
     if f'X_{basis}' not in adata.obsm.keys():
@@ -524,11 +587,16 @@ def plot_embedding(
     if groupby not in adata.obs.columns:
         raise KeyError(f'"{groupby}" not found in `adata.obs`.')
     if adata.obs[groupby].dtype.name != 'category':
-        raise ValueError(f'"{groupby}" is not categorical.')
+        if isinstance(adata.obs[groupby][0], (str, bool, np.bool_)) and adata.obs[groupby].unique().size < 100:
+            adata.obs[groupby] = adata.obs[groupby].astype(str).astype('category')
+        else:
+            raise ValueError(f'"{groupby}" is not categorical.')
     groups = adata.obs[groupby].copy()
     categories = list(adata.obs[groupby].cat.categories)
-    rename_dict = {ct: f'{i}: {ct} (n={(adata.obs[groupby]==ct).sum()})' for i, ct in enumerate(categories)}
-    restore_dict = {f'{i}: {ct} (n={(adata.obs[groupby]==ct).sum()})': ct for i, ct in enumerate(categories)}
+    rename_dict1 = {ct: f'{i:^5d} {ct} (n={(adata.obs[groupby]==ct).sum()})' for i, ct in enumerate(categories)}
+    restore_dict1 = {f'{i:^5d} {ct} (n={(adata.obs[groupby]==ct).sum()})': ct for i, ct in enumerate(categories)}
+    rename_dict2 = {ct: f'{i:^5d} {ct}' for i, ct in enumerate(categories)}
+    restore_dict2 = {f'{i:^5d} {ct}': ct for i, ct in enumerate(categories)}
 
     size_ratio = 1.2
 
@@ -547,55 +615,61 @@ def plot_embedding(
     xi += offset
     yi += offset
 
+    adata.uns[f'{color}_colors'] = make_palette(adata.obs[color].cat.categories.size, kwargs.get('palette', None))
+
     if highlight:
-        k = adata.obs[groupby].isin(highlight).values
-        ad = adata[~k, :]
-        marker_size = size / size_ratio if size else None
-    if annot not in (None, False, 'none'):
-        adata.obs[groupby].cat.rename_categories(rename_dict, inplace=True)
+        k_nohl = np.where(~adata.obs[groupby].cat.categories.isin(highlight))[0]
+        for k in k_nohl:
+            ad.uns[f'{color}_colors'][k] = ad.uns[f'{color}_colors'][k] + '05'
+
+    if annot == 'full':
+        adata.obs[groupby].cat.rename_categories(rename_dict1, inplace=True)
         if highlight:
-            ad.obs[groupby].cat.rename_categories(rename_dict, inplace=True)
-    else:
-        kwargs['frameon'] = False
+            ad.obs[groupby].cat.rename_categories(rename_dict1, inplace=True)
+    elif annot in (None, False, 'none'):
+        #kwargs['frameon'] = False
         kwargs['title'] = ''
         kwargs['legend_loc'] = None
-
-    fig, ax = plt.subplots()
-    try:
-        plot_scatter(ad, basis, color=color, ax=ax, size=marker_size, **kwargs)
-
+    else:
+        adata.obs[groupby].cat.rename_categories(rename_dict2, inplace=True)
         if highlight:
-            embed = adata.obsm[f'X_{basis}']
-            for i, ct in enumerate(categories):
-                if ct not in highlight:
-                    continue
-                k_hl = groups == ct
-                ax.scatter(embed[k_hl, xi], embed[k_hl, yi], marker='D', c=adata.uns[f'{groupby}_colors'][i], s=marker_size)
-                ax.scatter([], [], marker='D', c=adata.uns[f'{groupby}_colors'][i], label=adata.obs[groupby].cat.categories[i])
-            if annot not in (None, False, 'none'):
-                ax.legend(frameon=False, loc='center left', bbox_to_anchor=(1, 0.5),
-                          ncol=(1 if len(categories) <= 14 else 2 if len(categories) <= 30 else 3))
+            ad.obs[groupby].cat.rename_categories(rename_dict2, inplace=True)
+
+    try:
+        ax = plot_scatter(ad, basis, color=color, size=marker_size, **kwargs)
     finally:
-        if annot not in (None, False, 'none'):
-            adata.obs[groupby].cat.rename_categories(restore_dict, inplace=True)
-    if annot == 'full':
+        if annot == 'full':
+            adata.obs[groupby].cat.rename_categories(restore_dict1, inplace=True)
+        elif annot not in (None, False, 'none'):
+            adata.obs[groupby].cat.rename_categories(restore_dict2, inplace=True)
+    if annot not in (None, False, 'none'):
         centroids = pseudo_bulk(adata, groupby, use_rep=f'X_{basis}', FUN=np.median).T
-        texts = [ax.text(x=row[xi], y=row[yi], s=f'{i:d}', fontsize=8, fontweight='bold') for i, row in centroids.reset_index(drop=True).iterrows()]
+        fontsize = kwargs['legend_fontsize'] if 'legend_fontsize' in kwargs else 9
+        texts = [ax.text(x=row[xi], y=row[yi], s=f'{i:d}', fontsize=fontsize, fontweight='bold') for i, row in centroids.reset_index(drop=True).iterrows() if row[0].astype(str) != 'nan']
         from adjustText import adjust_text
         adjust_text(texts, ax=ax, text_from_points=False, autoalign=False)
+        ax.legend(
+            loc='center left', bbox_to_anchor=(1, 0.5), frameon=False, ncol=int(np.ceil(len(categories)/int(figsize[1]*3)/8*fontsize)),
+            fontsize=fontsize*1.1, markerscale=3*(fontsize/11), handletextpad=-1.9, labelspacing=9/fontsize
+        )
     if save:
         plt.savefig(fname=save, dpi=savedpi, bbox_inches='tight', pad_inches=0.1)
+    if 'ax' not in kwargs.keys():
+        return ax
 
 
-def highlight(adata, basis, groupby, groups, hide_rest=False, figsize=(4, 4), **kwargs):
+def highlight(adata, basis, groupby, groups=None, hide_rest=False, figsize=(4, 4), hide_color='#E9E9E910', **kwargs):
     set_figsize(figsize)
     old_obs = adata.obs.copy()
+    if groups is None:
+        groups = list(adata.obs[groupby].cat.categories)
     if isinstance(groups, (list, tuple)):
-        new_obs = pd.get_dummies(adata.obs[groupby])[groups].astype(bool).astype('category')
+        new_obs = pd.get_dummies(adata.obs[groupby])[groups].astype(int).astype('category')
         adata.obs = new_obs
         try:
-            kwargs['palette'] = ['lightgrey', 'red']
-            plot_scatter(adata, basis, color=groups, **kwargs)
+            kwargs['palette'] = [hide_color, 'darkred']
+            kwargs['color_map'] = expression_colormap(0.01)
+            plot_scatter(adata, basis, color=groups, legend_loc=None, **kwargs)
         finally:
             adata.obs = old_obs
             clear_colors(adata)
@@ -604,8 +678,8 @@ def highlight(adata, basis, groupby, groups, hide_rest=False, figsize=(4, 4), **
         for grp_name, grp in groups.items():
             new_obs[grp_name] = new_obs[groupby].astype(str)
             new_obs.loc[~new_obs[groupby].isin(grp), grp_name] = 'others'
-            new_obs[grp_name] = new_obs[grp_name].astype('category').cat.reorder_categories(grp + ['others'])
-            adata.uns[f'{grp_name}_colors'] = make_palette(len(grp)+1, kwargs.get('palette', None), hide_last=True)
+            new_obs[grp_name] = new_obs[grp_name].astype('category').cat.reorder_categories(['others'] + grp)
+            adata.uns[f'{grp_name}_colors'] = make_palette(len(grp)+1, kwargs.get('palette', None), hide_first=True, hide_color=hide_color)
         adata.obs = new_obs
         try:
             if 'palette' in kwargs:
@@ -617,6 +691,31 @@ def highlight(adata, basis, groupby, groups, hide_rest=False, figsize=(4, 4), **
             clear_colors(adata)
 
 
+def plot_genes(adata, basis, genes, gene_symbols=None, figsize=(2,2), xlim=None, ylim=None, save=None, **kwargs):
+    var_df = adata.var if adata.raw is None else adata.raw.var
+    var_names = var_df[gene_symbols].values if gene_symbols in var_df.columns else var_df.index
+    not_found = [g for g in genes if g not in var_names]
+    found = [var_df.index.values[var_names==g][0] for g in genes if g in var_names]
+    n = len(found)
+    sc.logging.warn(f'{n} genes found')
+    sc.logging.warn(f'{",".join(not_found)} not found')
+    set_figsize(figsize)
+    axs = plot_scatter(adata, basis=basis, color=found, ncols=int(24/figsize[0]), wspace=0, hspace=0.2, show=False, **kwargs)
+    if n < 2:
+        axs = [axs]
+    for i, ax in enumerate(axs):
+        ax.tick_params(which='both', bottom=False, top=False, left=False, right=False)
+        ax.set_xlabel('')
+        ax.set_ylabel('')
+        if xlim:
+            ax.set_xlim(xlim)
+        if ylim:
+            ax.set_ylim(xlim)
+        plt.gcf().axes[-(i+1)].remove()
+    if save:
+        plt.savefig(fname=save, bbox_inches='tight', pad_inches=0.1)
+
+
 def plot_diffexp(
     adata,
     basis='umap',
@@ -626,6 +725,7 @@ def plot_diffexp(
     figsize1=(4,4),
     figsize2=(2.5, 2.5),
     dotsize=None,
+    dotplot=True,
     **kwargs
 ):
     grouping = adata.uns[key]['params']['groupby']
@@ -638,9 +738,10 @@ def plot_diffexp(
         de_clusters.extend(['known'] * len(extra_genes))
 
     rcParams.update({'figure.figsize': figsize1})
-    sc.pl.rank_genes_groups(adata, key=key, show=False)
+    #sc.pl.rank_genes_groups(adata, key=key, show=False)
 
-    sc.pl.dotplot(adata, var_names=de_genes, groupby=grouping, show=False)
+    if dotplot:
+        sc.pl.dotplot(adata, var_names=de_genes, groupby=grouping, show=False)
 
     expr_cmap = expression_colormap(0.01)
     rcParams.update({'figure.figsize':figsize2})
@@ -659,5 +760,3 @@ def plot_diffexp(
     rcParams.update({'figure.figsize':figsize1})
     plot_embedding(
         adata, basis=basis, groupby=grouping, size=dotsize, show=False)
-
-    return de_tbl
