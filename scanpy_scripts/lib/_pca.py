@@ -6,17 +6,21 @@ import logging
 import scanpy as sc
 from ..obj_utils import write_embedding
 
-def pca(adata, key_added=None, remove_cc=False, export_embedding=None, **kwargs):
+def pca(adata, key_added=None, remove_genes=None, export_embedding=None, **kwargs):
     """
     Wrapper function for sc.pp.pca, for supporting named slot
     """
-    remove_cc_from_hvg = (
-        remove_cc and 'cc' in adata.var.columns
-        and (adata.var['cc'].dtype.kind == 'b' or isinstance(adata.var['cc'][0], bool))
-    )
-    if remove_cc_from_hvg:
+    if isinstance(remove_genes, (tuple, list)):
+        pass
+    elif isinstance(remove_genes, str):
+        remove_genes = [remove_genes]
+    else:
+        remove_genes = []
+    if remove_genes:
         adata.var['hvg_full'] = adata.var['highly_variable'].copy()
-        adata.var['highly_variable'] = adata.var['highly_variable'] & ~adata.var['cc']
+        for g in remove_genes:
+            if g in adata.var.columns and (adata.var[g].dtype.kind == 'b' or isinstance(adata.var[g][0], bool)):
+                adata.var['highly_variable'] = adata.var['highly_variable'] & ~adata.var[g]
 
     # n_comps may be greater than the number of cells (n_obs), which will
     # produce an error. Additional logic may be required in future for very
