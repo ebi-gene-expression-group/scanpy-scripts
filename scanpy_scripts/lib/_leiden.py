@@ -2,6 +2,7 @@
 scanpy leiden
 """
 
+import numpy as np
 import scanpy as sc
 from ..obj_utils import write_cluster
 
@@ -66,3 +67,33 @@ def leiden(
         write_cluster(adata, keys, export_cluster)
 
     return keys
+
+
+def leiden_shredding(
+        adata,
+        resolution=0.5,
+        use_graph=None,
+        key_added=None,
+):
+    #resolution_function = lambda x: np.maximum(np.maximum(np.log10(x)-1, 0)**2, 0.1)
+    adj_mat = None
+    if use_graph:
+        if use_graph not in adata.uns:
+            raise KeyError(f'"{use_graph}" is not a valid key of `.uns`.')
+        adj_mat = adata.uns[use_graph]['connectivities']
+    if key_added is not None and not key_added.startswith('leiden_'):
+        key_added = f'leiden_{key_added}'
+    elif key_added is None:
+        key_added = 'leiden'
+    sc.tl.leiden(adata, adjacency=adj_mat, resolution=resolution, key_added=key_added)
+    level1_clusters = np.unique(adata.obs[key_added])
+    for clst in level1_clusters:
+        clst_size = sum(adata.obs[key_added] == clst)
+        if clst_size <= 10:
+            continue
+        sc.tl.leiden(
+                adata, restrict_to=(key_added, [clst]), key_added='leiden_temp',
+                adjacency=adj_mat, resolution=resolution
+        )
+        adata.obs[key_added] = adata.obs['leiden_temp']
+    del adata.obs['leiden_temp']
