@@ -2,6 +2,7 @@
 scanpy diffexp
 """
 
+import numpy as np
 import pandas as pd
 import scanpy as sc
 
@@ -18,10 +19,15 @@ def diffexp(
     """
     Wrapper function for sc.tl.rank_genes_groups.
     """
-    if filter_params == 'sc_default':
-        filter_params = {'min_in_group_fraction': 0.4, 'max_out_group_fraction': 0.1, 'min_fold_change': 1.5}
-    elif filter_params == 'bulk_default':
-        filter_params = {'min_in_group_fraction': 0.5, 'max_out_group_fraction': 1, 'min_fold_change': 1}
+    parameters = ['min_in_group_fraction', 'max_out_group_fraction', 'min_fold_change']
+    if isinstance(filter_params, (tuple, list)) and len(filter_params) == 3:
+        filter_params = {parameters[i]: filter_params[i] for i in range(3)}
+    elif isinstance(filter_params, dict) and np.all(pd.Series(list(filter_params.keys())).isin(parameters)):
+        pass
+    else:
+        if filter_params is not None:
+            sc.logging.warn('Unsupported data format for `filter_params`, reset to None')
+        filter_params = None
 
     if adata.raw is None:
         use_raw = False
@@ -30,7 +36,7 @@ def diffexp(
         n_genes = adata.raw.shape[1] if use_raw else adata.shape[1]
 
     if logreg_param and isinstance(logreg_param, dict):
-        for key, val in logreg_param:
+        for key, val in logreg_param.items():
             kwargs[key] = val
 
     key_added = f'rank_genes_groups_{key_added}' if key_added else 'rank_genes_groups'
