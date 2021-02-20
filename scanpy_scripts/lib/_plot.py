@@ -2,11 +2,14 @@
 Plotting related functions
 """
 
+from collections import defaultdict
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
 from matplotlib.colors import LinearSegmentedColormap, Normalize, to_hex
+import seaborn as sn
+import anndata
 import scanpy as sc
 from scanpy.plotting._tools.scatterplots import plot_scatter
 
@@ -64,7 +67,7 @@ def _is_numeric(x):
     return x.dtype.kind in ('i', 'f')
 
 
-def cross_table(adata, x, y, normalise=None, highlight=None, subset=None, sort_index=False, include_nan=False):
+def cross_table(adata, x, y, normalise=None, exclude_x=None, exclude_y=None, subset=None, sort_index=False, include_nan=False, stylize=None, plot=False, cluster=False, figsize=(4,4), **kwargs):
     """Make a cross table comparing two categorical annotations
     """
     x_attr = adata.obs[x]
@@ -94,10 +97,20 @@ def cross_table(adata, x, y, normalise=None, highlight=None, subset=None, sort_i
         crs_tbl = (crs_tbl / y_sizes * 100).round(2)
         x_sizes = crs_tbl.sum(axis=1)
         crs_tbl = (crs_tbl.T / x_sizes * 100).round(2).T
+    if exclude_x:
+        crs_tbl = crs_tbl.loc[~crs_tbl.index.isin(exclude_x)].copy()
+    if exclude_y:
+        crs_tbl = crs_tbl.loc[:, ~crs_tbl.columns.isin(exclude_y)].copy()
     if sort_index:
         crs_tbl = crs_tbl.sort_index()
-    if highlight is not None:
-        return crs_tbl.style.background_gradient(cmap='viridis', axis=highlight)
+    if stylize is not None:
+        return crs_tbl.style.background_gradient(cmap='viridis', axis=stylize)
+    if plot:
+        if cluster:
+            sn.clustermap(crs_tbl, linewidths=0.01, cmap='viridis_r', figsize=figsize, **kwargs)
+        else:
+            set_figsize(figsize)
+            sn.heatmap(crs_tbl, linewidths=0.01, cmap='viridis_r', **kwargs)
     return crs_tbl
 
 
@@ -394,7 +407,6 @@ def dotplot2(
 def dotplot_combined_coexpression(
     ad, genes, groupby, groups=None, merge=False, title='', save=None, save_dpi=200, **kwargs
 ):
-    print(save)
     n_gene = len(genes)
     assert n_gene == 2, 'genes must be '
 
@@ -691,16 +703,41 @@ def highlight(adata, basis, groupby, groups=None, hide_rest=False, figsize=(4, 4
             clear_colors(adata)
 
 
+def plot_markers(
+    adata: anndata.AnnData,
+    groupby: str,
+    mks: pd.DataFrame,
+    n_genes: int = 5,
+    kind: str = 'dotplot',
+    remove_genes: list = [],
+    **kwargs
+):
+    df = mks.reset_index()[['index', 'top_frac_group']].rename(columns={'index': 'gene', 'top_frac_group': 'cluster'})
+    var_tb = adata.raw.var if kwargs.get('use_raw', None) == True or adata.raw else adata.var
+    remove_gene_set = set()
+    for g_cat in remove_genes:
+        if g_cat in var_tb.columns:
+            remove_gene_set |= set(var_tb.index[var_tb[g_cat].values])
+    df = df[~df.gene.isin(list(remove_gene_set))].copy()
+    df1 = df.groupby('cluster').head(n_genes)
+    mks_dict = defaultdict(list)
+    for c, g in zip(df1.cluster, df1.gene):
+        mks_dict[c].append(g)
+    func = getattr(sc.pl, kind)
+    return func(adata, df1.gene.to_list(), groupby=groupby, **kwargs)
+
+
 def plot_genes(adata, basis, genes, gene_symbols=None, figsize=(2,2), xlim=None, ylim=None, save=None, **kwargs):
     var_df = adata.var if adata.raw is None else adata.raw.var
     var_names = var_df[gene_symbols].values if gene_symbols in var_df.columns else var_df.index
     not_found = [g for g in genes if g not in var_names]
     found = [var_df.index.values[var_names==g][0] for g in genes if g in var_names]
     n = len(found)
-    sc.logging.warn(f'{n} genes found')
-    sc.logging.warn(f'{",".join(not_found)} not found')
+    if not_found:
+        sc.logging.warn(f'{n} genes found')
+        sc.logging.warn(f'{",".join(not_found)} not found')
     set_figsize(figsize)
-    axs = plot_scatter(adata, basis=basis, color=found, ncols=int(24/figsize[0]), wspace=0, hspace=0.2, show=False, **kwargs)
+    axs = plot_scatter(adata, basis=basis, color=found, ncols=int(24/figsize[0])-2, wspace=0, hspace=0.2, show=False, **kwargs)
     if n < 2:
         axs = [axs]
     for i, ax in enumerate(axs):

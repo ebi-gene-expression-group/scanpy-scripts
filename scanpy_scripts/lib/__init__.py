@@ -42,6 +42,7 @@ from ._plot import (
     dotplot2,
     dotplot_combined_coexpression,
     plot_genes,
+    plot_markers,
 )
 from ._utils import (
     lognorm_to_counts,
@@ -60,6 +61,11 @@ from ._annot import (
     LR_train,
     LR_predict,
     annotate,
+)
+from ._markers import (
+    calc_marker_stats,
+    filter_marker_stats,
+    test_markers,
 )
 from ..cmd_utils import _read_obj as read_obj
 from ..cmd_utils import _write_obj as write_obj
@@ -387,7 +393,7 @@ def save_pipeline_object(
     return ad1
 
 
-def integrate(ads, ad_types=None, ad_prefices=None, annotations=None, batches=None, join='inner', n_hvg=4000):
+def integrate(ads, ad_types=None, ad_prefices=None, annotations=None, batches=None, join='inner', n_hvg=4000, pool_only=False):
     n_ad = len(ads)
     if ad_types is not None:
         if isinstance(ad_types, str):
@@ -457,6 +463,10 @@ def integrate(ads, ad_types=None, ad_prefices=None, annotations=None, batches=No
         pooled.obs['dataset'] = pooled.obs['dataset'].astype('category')
 
     calculate_qc(pooled, flag_only=True)
+
+    if pool_only:
+        return pooled
+
     pooled1 = simple_default_pipeline(
         pooled, post_norm_only=True, do_clustering=False,
         batch='dataset' if batches is None else ['dataset', 'batch'],

@@ -85,6 +85,9 @@ def run_harmony(
     embed = adata.obsm[use_rep]
 
     # ===========
+    import warnings
+    from rpy2.rinterface import RRuntimeWarning
+    warnings.filterwarnings("ignore", category=RRuntimeWarning)
     import rpy2.robjects
     from rpy2.robjects.packages import importr
     harmony = importr('harmony')
