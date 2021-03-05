@@ -1773,6 +1773,14 @@ CMD_OPTIONS = {
             'automatically set to np.round(0.5 * np.sqrt(n_obs)).'
         ),
         click.option(
+            '--filter', 'filter',
+            is_flag=True,
+            default=False,
+            help='By default, the output object is annotated but not filtered '
+            'according to the scrublet status. Setting this flag will cause '
+            'predicted multiplet elements to be removed.'
+        ),
+        click.option(
             '--no-verbose', 'verbose',
             is_flag=True,
             default=True,

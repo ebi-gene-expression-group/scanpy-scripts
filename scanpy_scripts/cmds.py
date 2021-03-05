@@ -30,6 +30,7 @@ from .lib._dpt import dpt
 from .lib._bbknn import bbknn
 from .lib._mnn import mnn_correct
 from .lib._combat import combat
+from .lib._scrublet import scrublet
 
 LANG = os.environ.get('LANG', None)
 
@@ -246,7 +247,7 @@ MNN_CORRECT_CMD = make_subcmd(
 
 SCRUBLET_MULTIPLET_CMD = make_subcmd(
     'scrublet',
-    sce.pp.scrublet,
+    scrublet,
     cmd_desc='Filter out likely multiplets from droplet data using Scrublet [Wolock2019].',
     arg_desc=_IO_DESC,
 )
