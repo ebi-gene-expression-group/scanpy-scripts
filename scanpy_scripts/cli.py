@@ -31,6 +31,7 @@ from .cmds import (
     PLOT_MATRIX_CMD,
     PLOT_HEATMAP_CMD,
     HARMONY_INTEGRATE_CMD,
+    SCRUBLET_MULTIPLET_CMD,
     BBKNN_CMD,
     MNN_CORRECT_CMD,
     COMBAT_CMD,
@@ -113,6 +114,12 @@ integrate.add_command(HARMONY_INTEGRATE_CMD)
 integrate.add_command(BBKNN_CMD)
 integrate.add_command(MNN_CORRECT_CMD)
 integrate.add_command(COMBAT_CMD)
+
+@cli.group(cls=NaturalOrderGroup)
+def multiplet():
+    """Execute methods for multiplet removal."""
+
+multiplet.add_command(SCRUBLET_MULTIPLET_CMD)
 
 
 @cli.group(cls=NaturalOrderGroup)
