@@ -12,6 +12,8 @@ setup() {
     read_obj="${output_dir}/read.h5ad"
     filter_opt="--save-raw -p n_genes 200 2500 -p c:n_counts 0 50000 -p n_cells 3 inf -p pct_counts_mito 0 0.2 -c mito '!True' --show-obj stdout"
     filter_obj="${output_dir}/filter.h5ad"
+    scrublet_opt=""
+    scrublet_obj="${output_dir}/scrublet.h5ad"
     norm_mtx="${output_dir}/norm"
     norm_opt="--save-layer filtered -t 10000 -l all -n after -X ${norm_mtx} --show-obj stdout"
     norm_obj="${output_dir}/norm.h5ad"
@@ -145,6 +147,19 @@ setup() {
 
     [ "$status" -eq 0 ]
     [ -f  "$filter_obj" ]
+}
+
+# Detect multiplets with Scrublet
+
+@test "Run Scrublet for multiplet detection" {
+    if [ "$resume" = 'true' ] && [ -f "$scrublet_obj" ]; then
+        skip "$scrublet_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $scrublet_obj && eval "$scanpy multiplet scrublet $scrublet_opt $read_obj $scrublet_obj"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$scrublet_obj" ]
 }
 
 # Normalise

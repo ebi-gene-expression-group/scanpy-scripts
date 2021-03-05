@@ -243,3 +243,10 @@ MNN_CORRECT_CMD = make_subcmd(
     cmd_desc='Correct batch effects by matching mutual nearest neighbors [Haghverdi18] [Kang18].',
     arg_desc=_IO_DESC,
 )
+
+SCRUBLET_MULTIPLET_CMD = make_subcmd(
+    'scrublet',
+    sce.pp.scrublet,
+    cmd_desc='Filter out likely multiplets from droplet data using Scrublet [Wolock2019].',
+    arg_desc=_IO_DESC,
+)

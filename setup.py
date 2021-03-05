@@ -51,5 +51,6 @@ setup(
         'harmonypy>=0.0.5',
         'bbknn>=1.5.0',
         'mnnpy>=0.1.9.5'
+        'scrublet'
     ],
 )
