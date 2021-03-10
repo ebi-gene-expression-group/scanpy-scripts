@@ -1787,6 +1787,13 @@ CMD_OPTIONS = {
             help='Default behaviour is to print progress updates. Use this flag '
             'to disable that.'
         ),
+        click.option(
+            '--export-table',
+            type=click.Path(dir_okay=False, writable=True),
+            default=None,
+            show_default=True,
+            help='Export a table of double scores and calls to the specified file.',
+        ),
         COMMON_OPTIONS['random_state'],
     ],
 
