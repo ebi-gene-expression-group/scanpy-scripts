@@ -3,7 +3,7 @@ scanpy louvain
 """
 
 import scanpy as sc
-from ..obj_utils import write_cluster
+from ..obj_utils import write_obs
 
 
 def louvain(
@@ -61,6 +61,6 @@ def louvain(
             ))
 
     if export_cluster:
-        write_cluster(adata, keys, export_cluster)
+        write_obs(adata, keys, export_cluster)
 
     return keys
