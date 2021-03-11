@@ -251,3 +251,11 @@ SCRUBLET_MULTIPLET_CMD = make_subcmd(
     cmd_desc='Filter out likely multiplets from droplet data using Scrublet [Wolock2019].',
     arg_desc=_IO_DESC,
 )
+
+SCRUBLET_MULTIPLET_PLOT_CMD = make_subcmd(
+    'scrublet',
+    make_plot_function('plot_scrublet'),
+    cmd_desc='Plot histogram of doublet scores for observed transcriptomes and simulated doublets..',
+    arg_desc=_IP_DESC,
+    opt_set='plot_scrublet'
+)
