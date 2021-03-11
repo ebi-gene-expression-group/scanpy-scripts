@@ -1622,6 +1622,25 @@ CMD_OPTIONS = {
         ),
     ],
     
+    'plot_scrublet': [
+        *COMMON_OPTIONS['input'],
+        *COMMON_OPTIONS['plot'],
+         click.option(
+            '--scale-hist-obs', '-b',
+            type=click.Choice(['linear', 'log', 'symlog', 'logit']),
+            default='log',
+            show_default=True,
+            help='Set y axis scale transformation in matplotlib for the plot of observed transcriptomes.'
+        ),
+         click.option(
+            '--scale-hist-sim', '-s',
+            type=click.Choice(['linear', 'log', 'symlog', 'logit']),
+            default='linear',
+            show_default=True,
+            help='Set y axis scale transformation in matplotlib for the plot of observed transcriptomes.'
+        ),
+     ],
+
     'scrublet': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
