@@ -14,8 +14,9 @@ setup() {
     filter_obj="${output_dir}/filter.h5ad"
     scrublet_tsv="${output_dir}/scrublet.tsv"
     scrublet_png="${output_dir}/scrublet.png"
-    scrublet_opt="--filter --export-table ${scrublet_tsv}"
     scrublet_obj="${output_dir}/scrublet.h5ad"
+    scrublet_simulate_obj="${output_dir}/scrublet_simulate.h5ad"
+    scrublet_opt="--input-obj-sim ${scrublet_simulate_obj} --filter --export-table ${scrublet_tsv}"
     norm_mtx="${output_dir}/norm"
     norm_opt="--save-layer filtered -t 10000 -l all -n after -X ${norm_mtx} --show-obj stdout"
     norm_obj="${output_dir}/norm.h5ad"
@@ -151,33 +152,6 @@ setup() {
     [ -f  "$filter_obj" ]
 }
 
-# Detect multiplets with Scrublet
-
-@test "Run Scrublet for multiplet detection" {
-    if [ "$resume" = 'true' ] && [ -f "$scrublet_obj" ]; then
-        skip "$scrublet_obj exists and resume is set to 'true'"
-    fi
-
-    run rm -f $scrublet_obj && eval "$scanpy multiplet scrublet $scrublet_opt $read_obj $scrublet_obj"
-
-    [ "$status" -eq 0 ]
-    [ -f  "$scrublet_obj" ] && [ -f "$scrublet_tsv" ]
-}
-
-# Run the doublet plot from Scrublet
-
-@test "Run Scrublet score distribution plot" {
-    if [ "$resume" = 'true' ] && [ -f "$scrublet_png" ]; then
-        skip "$scrublet_png exists and resume is set to 'true'"
-    fi
-
-    run rm -f $scrublet_png && eval "$scanpy plot scrublet $scrublet_obj $scrublet_png"
-
-    [ "$status" -eq 0 ]
-    [ -f  "$scrublet_png" ]
-
-}
-
 # Normalise
 
 @test "Normalise expression values per cell" {
@@ -202,6 +176,46 @@ setup() {
 
     [ "$status" -eq 0 ]
     [ -f  "$hvg_obj" ]
+}
+
+# Do separate doublet simulation step (normally we'd just let the main scrublet
+# process do this).
+
+@test "Run Scrublet doublet simulation" {
+    if [ "$resume" = 'true' ] && [ -f "$scrublet_simulate_obj" ]; then
+        skip "$scrublet_simulate_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $srublet_simulate_obj && eval "$scanpy multiplet scrublet_simulate_doublets $hvg_obj $scrublet_simulate_obj"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$scrublet_simulate_obj" ]
+}
+
+# Detect multiplets with Scrublet
+
+@test "Run Scrublet for multiplet detection" {
+    if [ "$resume" = 'true' ] && [ -f "$scrublet_obj" ]; then
+        skip "$scrublet_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $scrublet_obj && eval "$scanpy multiplet scrublet $scrublet_opt $hvg_obj $scrublet_obj"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$scrublet_obj" ] && [ -f "$scrublet_tsv" ]
+}
+
+# Run the doublet plot from Scrublet
+
+@test "Run Scrublet score distribution plot" {
+    if [ "$resume" = 'true' ] && [ -f "$scrublet_png" ]; then
+        skip "$scrublet_png exists and resume is set to 'true'"
+    fi
+
+    run rm -f $scrublet_png && eval "$scanpy plot scrublet $scrublet_obj $scrublet_png"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$scrublet_png" ]
 }
 
 # Regress out variables

@@ -30,7 +30,7 @@ from .lib._dpt import dpt
 from .lib._bbknn import bbknn
 from .lib._mnn import mnn_correct
 from .lib._combat import combat
-from .lib._scrublet import scrublet
+from .lib._scrublet import scrublet, scrublet_simulate_doublets
 
 LANG = os.environ.get('LANG', None)
 
@@ -249,6 +249,13 @@ SCRUBLET_MULTIPLET_CMD = make_subcmd(
     'scrublet',
     scrublet,
     cmd_desc='Filter out likely multiplets from droplet data using Scrublet [Wolock2019].',
+    arg_desc=_IO_DESC,
+)
+
+SCRUBLET_MULTIPLET_SIMULATE_CMD = make_subcmd(
+    'scrublet_simulate_doublets',
+    scrublet_simulate_doublets,
+    cmd_desc='Simulate doublets with random transcriptome pairs for Scrublet [Wolock2019].',
     arg_desc=_IO_DESC,
 )
 
