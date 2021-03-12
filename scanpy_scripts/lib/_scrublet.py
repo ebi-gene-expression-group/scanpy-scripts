@@ -5,8 +5,6 @@ scanpy external scrublet
 import scanpy.external as sce
 import numpy as np
 from ..obj_utils import write_obs
-import matplotlib
-import matplotlib.pyplot as plt
 
 # Wrapper for bbknn allowing use of non-standard slot
 
@@ -40,8 +38,6 @@ def plot_scrublet(
     scale_hist_obs="log",
     scale_hist_sim="linear",
     fig_size=(8, 3),
-    dpi=40,
-    save=None,
     **kwargs
 ):
     """
@@ -53,6 +49,5 @@ def plot_scrublet(
         scale_hist_obs=scale_hist_obs,
         scale_hist_sim=scale_hist_sim,
         figsize=fig_size,
+        **kwargs
     )
-    print("Writing scrublet plot to %s" % save)
-    plt.savefig(save, dpi=40)
