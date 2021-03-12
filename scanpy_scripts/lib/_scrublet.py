@@ -2,19 +2,24 @@
 scanpy external scrublet
 """
 
+import scanpy as sc
 import scanpy.external as sce
 import numpy as np
 from ..obj_utils import write_obs
 
-# Wrapper for bbknn allowing use of non-standard slot
+# Wrapper for scrublet allowing text export and filtering
 
-
-def scrublet(adata, filter=False, export_table=None, **kwargs):
+def scrublet(adata, adata_sim=None, filter=False, export_table=None, **kwargs):
     """
     Wrapper function for sce.pp.scrublet(), to allow filtering of resulting object
     """
 
-    sce.pp.scrublet(adata, **kwargs)
+    # Do we need to read an object with the doublet simulations?
+
+    if adata_sim:
+        adata_sim = sc.read(adata_sim)
+
+    sce.pp.scrublet(adata, adata_sim=adata_sim, **kwargs)
 
     # Do any export before optional filtering
 
@@ -28,17 +33,20 @@ def scrublet(adata, filter=False, export_table=None, **kwargs):
 
     return adata
 
+# Run the doublet simulation.
+
+def scrublet_simulate_doublets(adata, **kwargs):
+    adata_sim = sce.pp.scrublet_simulate_doublets(adata, **kwargs)
+    adata._init_as_actual(
+        X=adata_sim.X, obs=adata_sim.obs, obsm=adata_sim.obsm, uns=adata.uns
+    )
 
 # Just absorb the extra plotting args before passing to
 # scanpy.external.pl.scrublet_score_distribution
 
 
 def plot_scrublet(
-    adata,
-    scale_hist_obs="log",
-    scale_hist_sim="linear",
-    fig_size=(8, 3),
-    **kwargs
+    adata, scale_hist_obs="log", scale_hist_sim="linear", fig_size=(8, 3), **kwargs
 ):
     """
     Wrapper function for sce.pl.scrublet_score_distribution(), to allow
