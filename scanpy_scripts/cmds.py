@@ -254,7 +254,7 @@ SCRUBLET_MULTIPLET_CMD = make_subcmd(
 
 SCRUBLET_MULTIPLET_PLOT_CMD = make_subcmd(
     'scrublet',
-    make_plot_function('plot_scrublet'),
+    make_plot_function('plot_scrublet', 'scrublet_score_distribution'),
     cmd_desc='Plot histogram of doublet scores for observed transcriptomes and simulated doublets..',
     arg_desc=_IP_DESC,
     opt_set='plot_scrublet'

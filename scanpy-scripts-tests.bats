@@ -171,7 +171,7 @@ setup() {
         skip "$scrublet_png exists and resume is set to 'true'"
     fi
 
-    run rm -f $scrublet_obj && eval "$scanpy plot scrublet $scrulet_obj $scrublet_png"
+    run rm -f $scrublet_png && eval "$scanpy plot scrublet $scrublet_obj $scrublet_png"
 
     [ "$status" -eq 0 ]
     [ -f  "$scrublet_png" ]
