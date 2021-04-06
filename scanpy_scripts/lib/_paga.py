@@ -100,3 +100,5 @@ def plot_paga(
             )
         finally:
             _restore_default_key(adata.uns, 'paga', use_key)
+
+    return adata

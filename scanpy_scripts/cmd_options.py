@@ -522,6 +522,15 @@ COMMON_OPTIONS = {
     ),
 }
 
+COMMON_OPTIONS['opt_output'] = [
+    click.option(
+        '--output-obj',
+        type=click.Path(dir_okay=False, writable=True),
+        help='Optionally output an object to the specified path.',
+    ),
+    *COMMON_OPTIONS['output'][1:], 
+]
+
 CMD_OPTIONS = {
     'read': [
         click.option(
@@ -1842,6 +1851,7 @@ CMD_OPTIONS = {
             show_default=True,
             help='For directed graphs, specify the length and width of the arrowhead.',
         ),
+        *COMMON_OPTIONS['opt_output'],
     ],
 
     'sviol': [
