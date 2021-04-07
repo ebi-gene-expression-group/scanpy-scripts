@@ -35,7 +35,7 @@ setup() {
     umap_opt="--neighbors-key k10 --min-dist 0.75 --alpha 1 --gamma 1 -E ${umap_embed}"
     umap_obj="${output_dir}/umap.h5ad"
     fdg_embed="${output_dir}/fdg.tsv"
-    fdg_opt="--neighbors-key k10 --layout fr -E ${fdg_embed}"
+    fdg_opt="--neighbors-key k10 --layout fr -E ${fdg_embed} --init-pos paga"
     fdg_obj="${output_dir}/fdg.h5ad"
     louvain_tsv="${output_dir}/louvain.tsv"
     louvain_opt="-r 0.5,1 --neighbors-key k10 --key-added k10 --export-cluster ${louvain_tsv}"
@@ -60,8 +60,9 @@ setup() {
     dpt_obj="${output_dir}/dpt.h5ad"
     plt_embed_opt="--projection 2d --color ${test_clustering} --title test"
     plt_embed_pdf="${output_dir}/umap_${test_clustering}.pdf"
-    plt_paga_opt="--use-key paga_${test_clustering} --node-size-scale 2 --edge-width-scale 0.5 --basis diffmap --color dpt_pseudotime_k10 --frameoff"
     plt_paga_pdf="${output_dir}/paga_k10_r0_7.pdf"
+    plt_paga_obj="${output_dir}/paga_k10_r0_7.h5ad"
+    plt_paga_opt="--use-key paga_${test_clustering} --node-size-scale 2 --edge-width-scale 0.5 --basis diffmap --color dpt_pseudotime_k10 --frameoff --output-obj $plt_paga_obj"
     test_markers='LDHB,CD3D,CD3E'
     diffexp_plot_opt="--var-names $test_markers --use-raw --dendrogram --groupby ${test_clustering}"
     plt_stacked_violin_opt="${diffexp_plot_opt} --no-jitter --swap-axes"
@@ -252,19 +253,6 @@ setup() {
     [ -f  "$umap_obj" ] && [ -f "$umap_embed" ]
 }
 
-# Run FDG
-
-@test "Run FDG analysis" {
-    if [ "$resume" = 'true' ] && [ -f "$fdg_obj" ]; then
-        skip "$fdg_obj exists and resume is set to 'true'"
-    fi
-
-    run rm -f $fdg_obj && eval "$scanpy embed fdg $fdg_opt $neighbor_obj $fdg_obj"
-
-    [ "$status" -eq 0 ]
-    [ -f  "$fdg_obj" ] && [ -f "$fdg_embed" ]
-}
-
 # Find clusters Louvain
 
 @test "Run find cluster (louvain)" {
@@ -379,8 +367,22 @@ setup() {
     run rm -f $plt_paga_pdf && eval "$scanpy plot paga $plt_paga_opt $dpt_obj $plt_paga_pdf"
 
     [ "$status" -eq 0 ]
-    [ -f  "$dpt_obj" ]
+    [ -f  "$plt_paga_pdf" ] && [ -f  "$plt_paga_obj" ]
 }
+
+# Run FDG, with initial coordinates from paga plotting
+
+@test "Run FDG analysis" {
+    if [ "$resume" = 'true' ] && [ -f "$fdg_obj" ]; then
+        skip "$fdg_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $fdg_obj && eval "$scanpy embed fdg $fdg_opt $plt_paga_obj $fdg_obj"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$fdg_obj" ] && [ -f "$fdg_embed" ]
+}
+
 
 # Plot a stacked violin plot for markers
 
