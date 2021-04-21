@@ -107,7 +107,7 @@ def _write_obj(
     return 0
 
 
-def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False):
+def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False, use_layer=None):
     """Export AnnData object to mtx formt
     * Parameters
         + adata : AnnData
@@ -133,7 +133,11 @@ def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False):
     var = list(set(var) & set(adata.var.columns))
 
     import scipy.sparse as sp
-    mat = sp.coo_matrix(adata.X)
+    if use_layer is not None:
+        mat=sp.coo_matrix(adata.layer[use_layer])
+    else
+        mat = sp.coo_matrix(adata.X)
+    
     n_obs, n_var = mat.shape
     n_entry = len(mat.data)
     header = '%%MatrixMarket matrix coordinate real general\n%\n{} {} {}\n'.format(
