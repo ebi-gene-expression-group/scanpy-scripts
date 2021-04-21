@@ -135,7 +135,7 @@ def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False, use_lay
     import scipy.sparse as sp
     if use_layer is not None:
         mat=sp.coo_matrix(adata.layer[use_layer])
-    else
+    else:
         mat = sp.coo_matrix(adata.X)
     
     n_obs, n_var = mat.shape
