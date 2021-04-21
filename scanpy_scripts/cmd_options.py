@@ -585,6 +585,13 @@ CMD_OPTIONS = {
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
         click.option(
+            '--save-raw', '-r',
+            type=click.Choice(['yes', 'no']),
+            default='yes',
+            show_default=True,
+            help='Save unfiltered data to .raw (gene filtering only).',
+        ),
+        click.option(
             '--gene-name', '-g',
             type=click.STRING,
             default='index',
@@ -643,7 +650,19 @@ CMD_OPTIONS = {
             type=click.Choice(['yes', 'no', 'counts']),
             default='yes',
             show_default=True,
-            help='Save raw data existing raw data.',
+            help='Save data to a slot before downstream analysis. Setting as '
+            '[yes] indicates that post-normalisation and (if specified) transformation values '
+            'should be stored. [counts] indicates pre-normalisation values should be '
+            'stored.',
+        ),
+        click.option(
+            '--save-raw-location', '-w',
+            type=click.STRING,
+            default='raw',
+            show_default=True,
+            help='If --save-raw is not set to [no], where should values be '
+            'stored? [raw] indicates that adata will be stored in adata.raw. Any other value '
+            'will create a new layer of that name to which adata.X will be copied.',
         ),
         click.option(
             '--no-log-transform', 'log_transform',

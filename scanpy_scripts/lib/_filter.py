@@ -17,6 +17,7 @@ def filter_anndata(
         category=None,
         subset=None,
         force_recalc=False,
+        save_raw='yes',
 ):
     """
     Wrapper function for sc.pp.filter_cells() and sc.pp.filter_genes(), mainly
@@ -104,6 +105,13 @@ def filter_anndata(
             k_gene = k_gene & attr.isin(values)
 
     adata._inplace_subset_obs(k_cell)
+    
+    # Save raw matrix before gene filteirng (cell filtering has to be
+    # destructive since .obs is fixed over the whole object).
+
+    if save_raw == 'yes':
+        adata.raw = adata
+    
     adata._inplace_subset_var(k_gene)
 
     return adata
