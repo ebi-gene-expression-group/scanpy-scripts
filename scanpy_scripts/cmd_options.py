@@ -587,7 +587,7 @@ CMD_OPTIONS = {
         click.option(
             '--save-raw', '-r',
             type=click.Choice(['yes', 'no']),
-            default='yes',
+            default='no',
             show_default=True,
             help='Save unfiltered data to .raw (gene filtering only).',
         ),
