@@ -13,7 +13,7 @@ def normalize(adata, save_raw='yes', save_raw_location='raw', log_transform=True
     if save_raw == 'counts':
         if save_raw_location == 'raw':
             adata.raw = adata
-        else
+        else:
             adata.layers[save_raw_location] = adata.X
     sc.pp.normalize_total(adata, **kwargs)
     if log_transform:
@@ -21,7 +21,7 @@ def normalize(adata, save_raw='yes', save_raw_location='raw', log_transform=True
     if save_raw == 'yes':
         if save_raw_location == 'raw':
             adata.raw = adata
-        else
+        else;
             adata.layers[save_raw_location] = adata.X
 
     return adata
