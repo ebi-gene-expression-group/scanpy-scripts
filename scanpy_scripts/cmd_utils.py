@@ -8,6 +8,11 @@ import scanpy as sc
 from .exchangeable_loom import read_exchangeable_loom, write_exchangeable_loom
 from .cmd_options import CMD_OPTIONS
 from .lib._paga import plot_paga
+if sc.__version__.startswith('1.4'):
+    from scanpy.plotting._tools.scatterplots import plot_scatter
+else:
+    plot_scatter = sc.pl.embedding
+
 
 def make_subcmd(cmd_name, func, cmd_desc, arg_desc, opt_set = None):
     """
@@ -159,7 +164,7 @@ def make_plot_function(func_name, kind=None):
     # Provide a function translation
 
     plot_funcs = {
-        'scatter': sc.plotting._tools.scatterplots.plot_scatter,
+        'scatter': plot_scatter,
         'sviol': sc.pl.stacked_violin,
         'rgg_sviol': sc.pl.rank_genes_groups_stacked_violin,
         'dot': sc.pl.dotplot,

@@ -6,11 +6,15 @@ import numpy as np
 import pandas as pd
 import anndata
 import scanpy as sc
-from scanpy.plotting._tools.scatterplots import plot_scatter
 import scipy.sparse as sp
 from scipy.stats import norm
 from sklearn.mixture import GaussianMixture
 import matplotlib.pyplot as plt
+
+if sc.__version__.startswith('1.4'):
+    from scanpy.plotting._tools.scatterplots import plot_scatter
+else:
+    plot_scatter = sc.pl.embedding
 
 from ._read import read_10x, read_10x_atac
 from ._filter import filter_anndata

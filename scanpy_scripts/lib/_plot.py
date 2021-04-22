@@ -11,14 +11,15 @@ from matplotlib.colors import LinearSegmentedColormap, Normalize, to_hex
 import seaborn as sn
 import anndata
 import scanpy as sc
-from scanpy.plotting._tools.scatterplots import plot_scatter
+
+if sc.__version__.startswith('1.4'):
+    from scanpy.plotting._tools.scatterplots import plot_scatter
+else:
+    plot_scatter = sc.pl.embedding
 
 from ._diffexp import extract_de_table
 from ._utils import pseudo_bulk
 
-sc_default_10 = rcParams['axes.prop_cycle'].by_key()['color']
-sc_default_26 = sc.plotting.palettes.default_26
-sc_default_64 = sc.plotting.palettes.default_64
 
 def expression_colormap(background_level=0.01):
     """Returns a nice color map for highlighting gene expression
@@ -36,10 +37,22 @@ def make_palette(n, cmap=None, hide_first=False, hide_last=False, hide_color='#E
     i = int(hide_first)
     j = int(hide_last)
     if cmap is None:
-        palette = (sc_default_10[0:(n-i-j)] if n <= 10 + i + j else
-                sc_default_10 + sc_default_26[0:(n-i-j)] if n <= 36 + i + j else
-                sc_default_10 + sc_default_26 + sc_default_64[0:(n-i-j)] if n<= 100 + i + j else
-                ['grey'] * n)
+        if sc.__version__.startswith('1.4'):
+            sc_default_10 = rcParams['axes.prop_cycle'].by_key()['color']
+            sc_default_26 = sc.plotting.palettes.default_26
+            sc_default_64 = sc.plotting.palettes.default_64
+            palette = (sc_default_10[0:(n-i-j)] if n <= 10 + i + j else
+                    sc_default_10 + sc_default_26[0:(n-i-j)] if n <= 36 + i + j else
+                    sc_default_10 + sc_default_26 + sc_default_64[0:(n-i-j)] if n <= 100 + i + j else
+                    ['grey'] * n)
+        else:
+            sc_default_20 = sc.plotting.palettes.default_20
+            sc_default_28 = sc.plotting.palettes.default_28
+            sc_default_102 = sc.plotting.palettes.default_102
+            palette = (sc_default_20[0:(n-i-j)] if n <= 20 + i + j else
+                    sc_default_20 + sc_default_28[0:(n-i-j)] if n <= 48 + i + j else
+                    sc_default_102[0:(n-i-j)] if n<= 102 + i + j else
+                    ['grey'] * n)
     else:
         color_map = plt.get_cmap(cmap)
         palette = [to_hex(color_map(k)) for k in range(n-i-j)]
