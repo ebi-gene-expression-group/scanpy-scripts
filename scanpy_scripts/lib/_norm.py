@@ -5,7 +5,7 @@ scanpy norm
 import scanpy as sc
 
 
-def normalize(adata, save_raw=True, save_layer=None, save_raw_location='raw', log_transform=True, **kwargs):
+def normalize(adata, log_transform=True, **kwargs):
     """
     Wrapper function for sc.pp.normalize_per_cell() and sc.pp.log1p(), mainly
     for supporting different ways of saving raw data.

@@ -17,7 +17,6 @@ def filter_anndata(
         category=None,
         subset=None,
         force_recalc=False,
-        save_raw=False,
 ):
     """
     Wrapper function for sc.pp.filter_cells() and sc.pp.filter_genes(), mainly
