@@ -252,6 +252,8 @@ def make_plot_function(func_name, kind=None):
 
     return plot_function
 
+# Wrap matrix-processing functions in logic to back up .X or specified input
+# layers prior to processing
 
 def make_matrix_function(func): 
 
