@@ -6,8 +6,6 @@ setup() {
     test_dir="post_install_tests"
     data_dir="${test_dir}/data"
     output_dir="${test_dir}/outputs"
-    test_data_url='https://s3-us-west-2.amazonaws.com/10x.files/samples/cell/pbmc3k/pbmc3k_filtered_gene_bc_matrices.tar.gz'
-    test_data_archive="${test_dir}/$(basename $test_data_url)"
     raw_matrix="${data_dir}/matrix.mtx"
     singlet_obs="${data_dir}/singlet_obs.txt"
     read_opt="-x $data_dir --show-obj stdout"
@@ -100,12 +98,12 @@ setup() {
     fi
 }
 
-@test "Download and extract .mtx matrix" {
-    if [ -f "$raw_matrix" ]; then
+@test "Extract test data from Scanpy" {
+    if [ "$resume" = 'true' ] && [ -f "$raw_matrix" ]; then
         skip "$raw_matrix exists"
     fi
 
-    run wget $test_data_url -P $test_dir && tar -xvzf $test_data_archive --strip-components 2 -C $data_dir
+    run rm -rf ${data_dir}/* && eval "echo -e \"import scanpy as sc\nfrom scanpy_scripts.cmd_utils import write_mtx\nimport os\nos.makedirs('$data_dir', exist_ok=True)\nwrite_mtx(sc.datasets.pbmc3k(), '$data_dir/')\" | python"
 
     [ "$status" -eq 0 ]
     [ -f "$raw_matrix" ]
@@ -113,7 +111,7 @@ setup() {
 
 @test "Make .obs with a singlet cell group" {
 
-    if [ -f "$singlet_obs" ]; then
+    if [ "$resume" = 'true' ] && [ -f "$singlet_obs" ]; then
         skip "$singlet_obs exists"
     fi
 
