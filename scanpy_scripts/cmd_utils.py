@@ -7,6 +7,7 @@ import pandas as pd
 import scanpy as sc
 from .cmd_options import CMD_OPTIONS
 from .lib._paga import plot_paga
+from .obj_utils import _save_matrix
 
 def make_subcmd(cmd_name, func, cmd_desc, arg_desc, opt_set = None):
     """
@@ -250,3 +251,29 @@ def make_plot_function(func_name, kind=None):
             plt.close()
 
     return plot_function
+
+
+def make_matrix_function(func): 
+
+    def matrix_function(
+        adata,
+        save_raw=True, 
+        save_layer=None, 
+        **kwargs,
+    ):
+
+        # For the subset of matrix functions that allow layer specification,
+        # pass that as the thing to save.
+        
+        layer=None
+        if 'layer' in kwargs:
+            layer = kwargs['layer']
+
+        _save_matrix(adata, save_raw, save_layer=save_layer, layer=layer)
+        func(
+            adata,
+            **kwargs
+        )
+        return adata
+
+    return matrix_function
