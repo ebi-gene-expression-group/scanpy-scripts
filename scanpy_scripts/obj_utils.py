@@ -131,6 +131,7 @@ def _rename_obsm_key(adata, from_key, to_key):
     del adata.obsm[from_key]
     _restore_obsm_key(adata, from_key)
 
+# Place the content of .X or specified layer in a specified backup location.
 
 def _save_matrix(adata, save_raw = False, save_layer = None, layer = None):
     if save_raw:
