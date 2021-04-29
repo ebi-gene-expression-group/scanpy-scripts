@@ -138,9 +138,8 @@ def _save_matrix(adata, save_raw = False, save_layer = None, layer = None):
         adata.raw = adata
     if save_layer is not None:
         if layer is not None:
-            if not layer in adata.layers():
+            if layer not in adata.layers():
                 raise KeyError(f'Layer {layer} does not exist')
             adata.layers[save_layer] = adata.layers[layer]
         else:
             adata.layers[save_layer] = adata.X
-
