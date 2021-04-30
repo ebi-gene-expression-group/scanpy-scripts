@@ -7,6 +7,7 @@ import pandas as pd
 import scanpy as sc
 from .cmd_options import CMD_OPTIONS
 from .lib._paga import plot_paga
+from .obj_utils import _save_matrix
 
 def make_subcmd(cmd_name, func, cmd_desc, arg_desc, opt_set = None):
     """
@@ -107,7 +108,7 @@ def _write_obj(
     return 0
 
 
-def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False):
+def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False, use_layer=None):
     """Export AnnData object to mtx formt
     * Parameters
         + adata : AnnData
@@ -133,7 +134,11 @@ def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False):
     var = list(set(var) & set(adata.var.columns))
 
     import scipy.sparse as sp
-    mat = sp.coo_matrix(adata.X)
+    if use_layer is not None:
+        mat=sp.coo_matrix(adata.layer[use_layer])
+    else:
+        mat = sp.coo_matrix(adata.X)
+    
     n_obs, n_var = mat.shape
     n_entry = len(mat.data)
     header = '%%MatrixMarket matrix coordinate real general\n%\n{} {} {}\n'.format(
@@ -246,3 +251,31 @@ def make_plot_function(func_name, kind=None):
             plt.close()
 
     return plot_function
+
+# Wrap matrix-processing functions in logic to back up .X or specified input
+# layers prior to processing
+
+def make_matrix_function(func): 
+
+    def matrix_function(
+        adata,
+        save_raw=True, 
+        save_layer=None, 
+        **kwargs,
+    ):
+
+        # For the subset of matrix functions that allow layer specification,
+        # pass that as the thing to save.
+        
+        layer=None
+        if 'layer' in kwargs:
+            layer = kwargs['layer']
+
+        _save_matrix(adata, save_raw, save_layer=save_layer, layer=layer)
+        func(
+            adata,
+            **kwargs
+        )
+        return adata
+
+    return matrix_function

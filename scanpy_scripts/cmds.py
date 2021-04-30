@@ -10,6 +10,7 @@ import scanpy.external as sce
 from .cmd_utils import (
     make_subcmd,
     make_plot_function,
+    make_matrix_function,
 )
 from .lib._read import read_10x
 from .lib._filter import filter_anndata
@@ -57,7 +58,7 @@ READ_CMD = make_subcmd(
 
 FILTER_CMD = make_subcmd(
     'filter',
-    filter_anndata,
+    make_matrix_function(filter_anndata),
     cmd_desc='Filter data based on specified conditions.',
     arg_desc=_IO_DESC,
 )
@@ -65,7 +66,7 @@ FILTER_CMD = make_subcmd(
 
 NORM_CMD = make_subcmd(
     'norm',
-    normalize,
+    make_matrix_function(normalize),
     cmd_desc='Normalise data per cell.',
     arg_desc=_IO_DESC,
 )
@@ -81,7 +82,7 @@ HVG_CMD = make_subcmd(
 
 SCALE_CMD = make_subcmd(
     'scale',
-    sc.pp.scale,
+    make_matrix_function(sc.pp.scale),
     cmd_desc='Scale data per gene.',
     arg_desc=_IO_DESC,
 )
@@ -89,7 +90,7 @@ SCALE_CMD = make_subcmd(
 
 REGRESS_CMD = make_subcmd(
     'regress',
-    sc.pp.regress_out,
+    make_matrix_function(sc.pp.regress_out),
     cmd_desc='Regress-out observation variables.',
     arg_desc=_IO_DESC,
 )
@@ -238,7 +239,7 @@ BBKNN_CMD = make_subcmd(
 
 MNN_CORRECT_CMD = make_subcmd(
     'mnn',
-    mnn_correct,
+    make_matrix_function(mnn_correct),
     cmd_desc='Correct batch effects by matching mutual nearest neighbors [Haghverdi18] [Kang18].',
     arg_desc=_IO_DESC,
 )
