@@ -73,6 +73,23 @@ COMMON_OPTIONS = {
         ),
     ],
 
+    'save': [
+        click.option(
+            '--save-raw', '-r',
+            is_flag=True,
+            default=False,
+            show_default=True,
+            help='Save adata to adata.raw before processing.',
+        ),
+        click.option(
+            '--save-layer', '-y',
+            type=click.STRING,
+            default=None,
+            show_default=True,
+            help='Save adata.X to the specified layer before processing.',
+        ),
+    ],
+
     'plot': [
         click.argument(
             'output_fig',
@@ -584,6 +601,7 @@ CMD_OPTIONS = {
     'filter': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
+        COMMON_OPTIONS['save'][0], # --save-raw
         click.option(
             '--gene-name', '-g',
             type=click.STRING,
@@ -637,14 +655,8 @@ CMD_OPTIONS = {
     'norm': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
+        *COMMON_OPTIONS['save'],
         COMMON_OPTIONS['key_added'],
-        click.option(
-            '--save-raw', '-r',
-            type=click.Choice(['yes', 'no', 'counts']),
-            default='yes',
-            show_default=True,
-            help='Save raw data existing raw data.',
-        ),
         click.option(
             '--no-log-transform', 'log_transform',
             is_flag=True,
@@ -775,6 +787,7 @@ CMD_OPTIONS = {
     'scale': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
+        *COMMON_OPTIONS['save'],
         COMMON_OPTIONS['zero_center'],
         click.option(
             '--max-value', '-m',
@@ -795,6 +808,7 @@ CMD_OPTIONS = {
     'regress': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
+        *COMMON_OPTIONS['save'],
         COMMON_OPTIONS['n_jobs'],
         click.option(
             '--keys', '-k',
@@ -1459,6 +1473,7 @@ CMD_OPTIONS = {
     'mnn': [
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
+        *COMMON_OPTIONS['save'],
         COMMON_OPTIONS['batch_key'],
         COMMON_OPTIONS['batch_layer'],
         click.option(
