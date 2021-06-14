@@ -44,7 +44,6 @@ setup(
         'scanpy>=1.6.0',
         'louvain',
         'leidenalg',
-        'loompy>=2.0.0,<3.0.0',
         'MulticoreTSNE',
         'Click',
         'umap-learn<0.4.0',
