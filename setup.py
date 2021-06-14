@@ -46,7 +46,7 @@ setup(
         'leidenalg',
         'loompy',
         'MulticoreTSNE',
-        'Click',
+        'Click<8',
         'umap-learn<0.4.0',
         'harmonypy>=0.0.5',
         'bbknn>=1.3.12',
