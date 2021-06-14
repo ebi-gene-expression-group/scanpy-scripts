@@ -45,7 +45,6 @@ setup(
         'louvain',
         'leidenalg',
         'MulticoreTSNE',
-        'cmake<3.20',
         'Click',
         'umap-learn<0.4.0',
         'harmonypy>=0.0.5',
