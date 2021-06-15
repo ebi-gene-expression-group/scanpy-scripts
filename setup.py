@@ -49,7 +49,7 @@ setup(
         'Click<8',
         'umap-learn<0.4.0',
         'harmonypy>=0.0.5',
-        'bbknn>=1.5.1',
+        'bbknn>=1.3.12',
         'mnnpy>=0.1.9.5'
     ],
 )
