@@ -1613,7 +1613,7 @@ CMD_OPTIONS = {
             'each cell. Set to 0 to skip.'
         ),
         click.option(
-            '--n-trees',
+            '--annoy-n-trees',
             type=click.INT,
             default=10,
             show_default=True,
