@@ -44,12 +44,12 @@ setup(
         'scanpy>=1.6.0',
         'louvain',
         'leidenalg',
-        'loompy>=2.0.0,<3.0.0',
+        'loompy',
         'MulticoreTSNE',
-        'Click',
+        'Click<8',
         'umap-learn<0.4.0',
         'harmonypy>=0.0.5',
-        'bbknn>=1.3.12',
+        'bbknn>=1.3.12,<1.5.0',
         'mnnpy>=0.1.9.5'
     ],
 )
