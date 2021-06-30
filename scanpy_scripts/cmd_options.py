@@ -1818,10 +1818,10 @@ CMD_OPTIONS = {
         ),
         click.option(
             '--color',
-            type=click.STRING,
+            type=type=CommaSeparatedText(simplify=True),
             default=None,
             show_default=True,
-            help='Key for annotation of observations/cells or variables/genes.',
+            help='Key(s) for annotation of observations/cells or variables/genes. Comma-separated if more than one',
         ),
         click.option(
             '--legend-loc',
