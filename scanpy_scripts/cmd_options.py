@@ -1818,7 +1818,7 @@ CMD_OPTIONS = {
         ),
         click.option(
             '--color',
-            type=type=CommaSeparatedText(simplify=True),
+            type=CommaSeparatedText(simplify=True),
             default=None,
             show_default=True,
             help='Key(s) for annotation of observations/cells or variables/genes. Comma-separated if more than one',
