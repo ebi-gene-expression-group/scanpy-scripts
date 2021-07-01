@@ -93,6 +93,7 @@ def plot_paga(
                 adata,
                 layout=layout,
                 init_pos=init_pos,
+                color=color,
                 title=title,
                 show=show,
                 save=save,

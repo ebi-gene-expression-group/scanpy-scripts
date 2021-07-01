@@ -232,7 +232,7 @@ COMMON_OPTIONS = {
 
     'use_raw': click.option(
         '--use-raw/--no-raw', 'use_raw',
-        default=True,
+        default=None,
         show_default=True,
         help='Use expression values in `.raw` if present.',
     ),
@@ -1613,7 +1613,7 @@ CMD_OPTIONS = {
             'each cell. Set to 0 to skip.'
         ),
         click.option(
-            '--n-trees',
+            '--annoy-n-trees',
             type=click.INT,
             default=10,
             show_default=True,
@@ -1818,10 +1818,10 @@ CMD_OPTIONS = {
         ),
         click.option(
             '--color',
-            type=click.STRING,
+            type=CommaSeparatedText(simplify=True),
             default=None,
             show_default=True,
-            help='Key for annotation of observations/cells or variables/genes.',
+            help='Key(s) for annotation of observations/cells or variables/genes. Comma-separated if more than one',
         ),
         click.option(
             '--legend-loc',
