@@ -232,7 +232,7 @@ COMMON_OPTIONS = {
 
     'use_raw': click.option(
         '--use-raw/--no-raw', 'use_raw',
-        default=True,
+        default=None,
         show_default=True,
         help='Use expression values in `.raw` if present.',
     ),
