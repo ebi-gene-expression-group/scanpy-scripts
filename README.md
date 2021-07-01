@@ -50,5 +50,6 @@ Commands:
   paga       Trajectory inference by abstract graph analysis.
   dpt        Calculate diffusion pseudotime relative to the root cells.
   integrate  Integrate cells from different experimental batches.
+  multiplet  Execute methods for multiplet removal.
   plot       Visualise data.
   ```
