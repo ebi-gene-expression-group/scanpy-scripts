@@ -30,6 +30,7 @@ from .lib._dpt import dpt
 from .lib._bbknn import bbknn
 from .lib._mnn import mnn_correct
 from .lib._combat import combat
+from .lib._scrublet import scrublet, scrublet_simulate_doublets
 
 LANG = os.environ.get('LANG', None)
 
@@ -242,4 +243,26 @@ MNN_CORRECT_CMD = make_subcmd(
     make_matrix_function(mnn_correct),
     cmd_desc='Correct batch effects by matching mutual nearest neighbors [Haghverdi18] [Kang18].',
     arg_desc=_IO_DESC,
+)
+
+SCRUBLET_MULTIPLET_CMD = make_subcmd(
+    'scrublet',
+    scrublet,
+    cmd_desc='Filter out likely multiplets from droplet data using Scrublet [Wolock2019].',
+    arg_desc=_IO_DESC,
+)
+
+SCRUBLET_MULTIPLET_SIMULATE_CMD = make_subcmd(
+    'scrublet_simulate_doublets',
+    scrublet_simulate_doublets,
+    cmd_desc='Simulate doublets with random transcriptome pairs for Scrublet [Wolock2019].',
+    arg_desc=_IO_DESC,
+)
+
+SCRUBLET_MULTIPLET_PLOT_CMD = make_subcmd(
+    'scrublet',
+    make_plot_function('plot_scrublet', 'scrublet_score_distribution'),
+    cmd_desc='Plot histogram of doublet scores for observed transcriptomes and simulated doublets..',
+    arg_desc=_IP_DESC,
+    opt_set='plot_scrublet'
 )

@@ -8,7 +8,7 @@ import logging
 
 def diffexp(
         adata,
-        use_raw=True,
+        use_raw=None,
         n_genes=None,
         key_added='rank_genes_groups',
         layer=None,

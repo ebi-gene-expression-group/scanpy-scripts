@@ -5,9 +5,11 @@ Provide helper functions for constructing sub-commands
 import click
 import pandas as pd
 import scanpy as sc
+import scanpy.external as sce
 from .cmd_options import CMD_OPTIONS
 from .lib._paga import plot_paga
 from .obj_utils import _save_matrix
+from .lib._scrublet import plot_scrublet
 
 def make_subcmd(cmd_name, func, cmd_desc, arg_desc, opt_set = None):
     """

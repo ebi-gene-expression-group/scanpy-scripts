@@ -5,7 +5,7 @@ Provide helper functions for constructing sub-commands
 import scanpy as sc
 import pandas as pd
 
-def write_cluster(adata, keys, cluster_fn, sep='\t'):
+def write_obs(adata, keys, obs_fn, sep='\t'):
     """Export cell clustering as a text table
     """
     if not isinstance(keys, (list, tuple)):
@@ -14,7 +14,7 @@ def write_cluster(adata, keys, cluster_fn, sep='\t'):
         if key not in adata.obs.keys():
             raise KeyError(f'{key} is not a valid `.uns` key')
     adata.obs[keys].reset_index(level=0).rename(columns={'index': 'cells'}).to_csv(
-        cluster_fn, sep=sep, header=True, index=False)
+        obs_fn, sep=sep, header=True, index=False)
 
 
 def write_embedding(adata, key, embed_fn, n_comp=None, sep='\t', key_added=None):
