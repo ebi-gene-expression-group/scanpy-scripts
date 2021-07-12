@@ -5,7 +5,7 @@ on: [pull_request]
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     strategy:
       matrix:
         python-version: [3.7, 3.8, 3.9]
@@ -25,7 +25,7 @@ jobs:
     
     - name: Install dependencies
       run: |
-        sudo apt-get install libhdf5-dev binutils=2.30
+        sudo apt-get install libhdf5-dev
         pip install -U setuptools>=40.1 wheel 'cmake<3.20'
         pip install .
     
