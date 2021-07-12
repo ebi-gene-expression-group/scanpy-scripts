@@ -47,7 +47,7 @@ setup(
         'loompy',
         'MulticoreTSNE',
         'Click<8',
-        'umap-learn<0.4.0',
+        'umap-learn',
         'harmonypy>=0.0.5',
         'bbknn>=1.5.0',
         'mnnpy>=0.1.9.5',
