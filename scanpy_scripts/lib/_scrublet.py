@@ -21,7 +21,8 @@ def scrublet(adata, adata_sim=None, filter=False, batch_key=None, export_table=N
     if adata_sim:
         adata_sim = sc.read(adata_sim)
 
-    # Scrublet shouldn't be run on multi-batch data, so we split and recombine
+    # Scrublet shouldn't be run on multi-batch data, so we run the batches
+    # separately and copy the stats back to the input object
 
     alldata = []
     if batch_key is not None:
