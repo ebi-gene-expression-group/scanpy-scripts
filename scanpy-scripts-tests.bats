@@ -12,11 +12,14 @@ setup() {
     read_obj="${output_dir}/read.h5ad"
     filter_opt="--save-raw -p n_genes 200 2500 -p c:n_counts 0 50000 -p n_cells 3 inf -p pct_counts_mito 0 0.2 -c mito '!True' --show-obj stdout"
     filter_obj="${output_dir}/filter.h5ad"
+    test_clustering='louvain_k10_r0_5'
     scrublet_tsv="${output_dir}/scrublet.tsv"
     scrublet_png="${output_dir}/scrublet.png"
     scrublet_obj="${output_dir}/scrublet.h5ad"
+    scrublet_obj_batched="${output_dir}/scrublet_batched.h5ad"
     scrublet_simulate_obj="${output_dir}/scrublet_simulate.h5ad"
     scrublet_opt="--input-obj-sim ${scrublet_simulate_obj} --filter --export-table ${scrublet_tsv}"
+    scrublet_batched_opt="$scrublet_opt --batch-key ${test_clustering}"
     norm_mtx="${output_dir}/norm"
     norm_opt="--save-layer filtered -t 10000 -l all -n after -X ${norm_mtx} --show-obj stdout"
     norm_obj="${output_dir}/norm.h5ad"
@@ -46,7 +49,6 @@ setup() {
     leiden_tsv="${output_dir}/leiden.tsv"
     leiden_opt="-r 0.3,0.7 --neighbors-key k10 --key-added k10 -F loom --loom-write-obsm-varm --export-cluster ${leiden_tsv}"
     leiden_obj="${output_dir}/leiden.loom"
-    test_clustering='louvain_k10_r0_5'
     diffexp_tsv="${output_dir}/diffexp.tsv"
     diffexp_opt="-g ${test_clustering} --reference rest --filter-params min_in_group_fraction:0.25,min_fold_change:1.5 --save ${diffexp_tsv}"
     diffexp_obj="${output_dir}/diffexp.h5ad"
@@ -203,6 +205,19 @@ setup() {
 
     [ "$status" -eq 0 ]
     [ -f  "$scrublet_obj" ] && [ -f "$scrublet_tsv" ]
+}
+
+# Detect multiplets with Scrublet (batched)
+
+@test "Run Scrublet for multiplet detection (batched)" {
+    if [ "$resume" = 'true' ] && [ -f "$scrublet_batched_obj" ]; then
+        skip "$scrublet_batched_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $scrublet_batched_obj && eval "$scanpy multiplet scrublet $scrublet_opt $hvg_obj $scrublet_batched_obj"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$scrublet_batched_obj" ]
 }
 
 # Run the doublet plot from Scrublet

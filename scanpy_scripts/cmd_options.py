@@ -1693,6 +1693,7 @@ CMD_OPTIONS = {
             'predicted doublets in a 2-D embedding.'
         ),
         *COMMON_OPTIONS['scrublet'],
+        COMMON_OPTIONS['batch_key'],
         click.option(
             '--expected-doublet-rate',
             type=click.FLOAT,

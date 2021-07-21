@@ -6,10 +6,11 @@ import scanpy as sc
 import scanpy.external as sce
 import numpy as np
 from ..obj_utils import write_obs
+import anndata
 
 # Wrapper for scrublet allowing text export and filtering
 
-def scrublet(adata, adata_sim=None, filter=False, export_table=None, **kwargs):
+def scrublet(adata, adata_sim=None, filter=False, batch_key=None, export_table=None, **kwargs):
     """
     Wrapper function for sce.pp.scrublet(), to allow filtering of resulting object
     """
@@ -19,7 +20,34 @@ def scrublet(adata, adata_sim=None, filter=False, export_table=None, **kwargs):
     if adata_sim:
         adata_sim = sc.read(adata_sim)
 
-    sce.pp.scrublet(adata, adata_sim=adata_sim, **kwargs)
+    # Scrublet shouldn't be run on multi-batch data, so we split and recombine
+
+    alldata = []
+    
+    if batch_key is not None:
+        batches = np.unique(adata.obs[batch_key])
+    
+        for batch in batches:
+            alldata.append( adata[adata.obs[batch_key] == batch,] )
+    else:
+        alldata = [ adata ]
+
+    # Run Scrublet independently on batches
+
+    sce.pp.scrublet(*alldata, adata_sim=adata_sim, **kwargs)
+    adata = anndata.concat(alldata)
+
+    # The concatentate doesn't preserve .uns content, so we need to put it back. 
+
+    for scrub_field in [ 'doublet_parents', 'doublet_scores_sim' ]:
+        adata.uns['scrublet'][scrub_field] = np.concatenate([ ad.uns['scrublet'][scrub_field] for ad in alldata ])
+
+    adata.uns['scrublet']['parameters'] = alldata[0].uns['scrublet']['parameters']
+
+    # Try and leave threshold as a single value to match what we expect from a
+    # single Scrublet run, but may be different between batches so needs to be
+    # an array then
+    adata.uns['scrublet']['threshold'] = [ ad.uns['scrublet']['threshold'] for ad in alldata ] if len(alldata) > 1 else alldata[0].uns['scrublet'][scrub_field] 
 
     # Do any export before optional filtering
 
