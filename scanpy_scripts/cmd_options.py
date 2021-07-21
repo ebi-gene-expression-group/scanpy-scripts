@@ -1672,6 +1672,13 @@ CMD_OPTIONS = {
         *COMMON_OPTIONS['input'],
         *COMMON_OPTIONS['output'],
         click.option(
+            '--batch-key', 'batch_key',
+            type=click.STRING,
+            default=None,
+            help='The name of the column in adata.obs that differentiates among '
+            'experiments/batches. Doublets will be detected in each batch separately.'
+        ),
+        click.option(
             '--input-obj-sim', 'adata_sim',
             type=click.Path(exists=True, dir_okay=False),
             default=None,
@@ -1693,7 +1700,6 @@ CMD_OPTIONS = {
             'predicted doublets in a 2-D embedding.'
         ),
         *COMMON_OPTIONS['scrublet'],
-        COMMON_OPTIONS['batch_key'],
         click.option(
             '--expected-doublet-rate',
             type=click.FLOAT,

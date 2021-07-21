@@ -8,6 +8,7 @@ setup() {
     output_dir="${test_dir}/outputs"
     raw_matrix="${data_dir}/matrix.mtx"
     singlet_obs="${data_dir}/singlet_obs.txt"
+    batch_obs="${data_dir}/batch_obs.txt"
     read_opt="-x $data_dir --show-obj stdout"
     read_obj="${output_dir}/read.h5ad"
     filter_opt="--save-raw -p n_genes 200 2500 -p c:n_counts 0 50000 -p n_cells 3 inf -p pct_counts_mito 0 0.2 -c mito '!True' --show-obj stdout"
@@ -16,10 +17,10 @@ setup() {
     scrublet_tsv="${output_dir}/scrublet.tsv"
     scrublet_png="${output_dir}/scrublet.png"
     scrublet_obj="${output_dir}/scrublet.h5ad"
-    scrublet_obj_batched="${output_dir}/scrublet_batched.h5ad"
+    scrublet_batched_obj="${output_dir}/scrublet_batched.h5ad"
     scrublet_simulate_obj="${output_dir}/scrublet_simulate.h5ad"
     scrublet_opt="--input-obj-sim ${scrublet_simulate_obj} --filter --export-table ${scrublet_tsv}"
-    scrublet_batched_opt="$scrublet_opt --batch-key ${test_clustering}"
+    scrublet_batched_opt="--filter --batch-key batch"
     norm_mtx="${output_dir}/norm"
     norm_opt="--save-layer filtered -t 10000 -l all -n after -X ${norm_mtx} --show-obj stdout"
     norm_obj="${output_dir}/norm.h5ad"
@@ -44,7 +45,7 @@ setup() {
     fdg_opt="--neighbors-key k10 --layout fr -E ${fdg_embed} --init-pos paga"
     fdg_obj="${output_dir}/fdg.h5ad"
     louvain_tsv="${output_dir}/louvain.tsv"
-    louvain_opt="-r 0.5,1 --neighbors-key k10 --key-added k10 --export-cluster ${louvain_tsv}"
+    louvain_opt="-r 0.1,0.5,1 --neighbors-key k10 --key-added k10 --export-cluster ${louvain_tsv}"
     louvain_obj="${output_dir}/louvain.h5ad"
     leiden_tsv="${output_dir}/leiden.tsv"
     leiden_opt="-r 0.3,0.7 --neighbors-key k10 --key-added k10 -F loom --loom-write-obsm-varm --export-cluster ${leiden_tsv}"
@@ -128,6 +129,18 @@ setup() {
     [ -f "$singlet_obs" ]
 }
 
+@test "Make a batch variable" {
+
+    if [ "$resume" = 'true' ] && [ -f "$batch_obs" ]; then
+        skip "$singlet_obs exists"
+    fi
+
+    run rm -rf $batch_obs && echo -e "batch\n$(printf "%0.sbatch1\n" {1..1350})\n$(printf "%0.sbatch2\n" {1..1350})" > $batch_obs
+
+    [ "$status" -eq 0 ]
+    [ -f "$batch_obs" ]
+}
+
 # Read 10x dataset
 
 @test "Scanpy object creation from 10x" {
@@ -135,7 +148,7 @@ setup() {
         skip "$read_obj exists and resume is set to 'true'"
     fi
 
-    run rm -f $read_obj && eval "$scanpy read --extra-obs $singlet_obs $read_opt $read_obj"
+    run rm -f $read_obj && eval "paste -d $'\t' $singlet_obs $batch_obs > obs.txt && $scanpy read --extra-obs obs.txt $read_opt $read_obj"
 
     [ "$status" -eq 0 ]
     [ -f  "$read_obj" ]
@@ -207,19 +220,6 @@ setup() {
     [ -f  "$scrublet_obj" ] && [ -f "$scrublet_tsv" ]
 }
 
-# Detect multiplets with Scrublet (batched)
-
-@test "Run Scrublet for multiplet detection (batched)" {
-    if [ "$resume" = 'true' ] && [ -f "$scrublet_batched_obj" ]; then
-        skip "$scrublet_batched_obj exists and resume is set to 'true'"
-    fi
-
-    run rm -f $scrublet_batched_obj && eval "$scanpy multiplet scrublet $scrublet_opt $hvg_obj $scrublet_batched_obj"
-
-    [ "$status" -eq 0 ]
-    [ -f  "$scrublet_batched_obj" ]
-}
-
 # Run the doublet plot from Scrublet
 
 @test "Run Scrublet score distribution plot" {
@@ -232,6 +232,20 @@ setup() {
     [ "$status" -eq 0 ]
     [ -f  "$scrublet_png" ]
 }
+
+# Detect multiplets with Scrublet (batched)
+
+@test "Run Scrublet for multiplet detection (batched)" {
+    if [ "$resume" = 'true' ] && [ -f "$scrublet_batched_obj" ]; then
+        skip "$scrublet_batched_obj exists and resume is set to 'true'"
+    fi
+
+    run rm -f $scrublet_batched_obj && eval "$scanpy multiplet scrublet $scrublet_batched_opt $read_obj $scrublet_batched_obj"
+
+    [ "$status" -eq 0 ]
+    [ -f  "$scrublet_batched_obj" ]
+}
+
 
 # Regress out variables
 
