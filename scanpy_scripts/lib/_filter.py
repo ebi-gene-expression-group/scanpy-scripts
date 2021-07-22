@@ -66,8 +66,15 @@ def filter_anndata(
             logging.warning('`pct_counts_%s` exists, not overwriting '
                             'without --force-recalc', pt)
             pct_top.remove(pt)
+
+    # Calculate mito stats if we can, even if we're not filtering by them   
+
+    if 'mito' not in qc_vars and 'mito' in adata.var.keys():
+        qc_vars.append('mito')
+
     sc.pp.calculate_qc_metrics(
         adata, layer=layer, qc_vars=qc_vars, percent_top=pct_top, inplace=True)
+
     adata.obs['n_counts'] = adata.obs['total_counts']
     adata.obs['n_genes'] = adata.obs['n_genes_by_counts']
     adata.var['n_counts'] = adata.var['total_counts']
