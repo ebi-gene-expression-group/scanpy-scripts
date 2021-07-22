@@ -26,11 +26,9 @@ def scrublet(adata, adata_sim=None, filter=False, batch_key=None, export_table=N
 
     alldata = []
     if batch_key is not None:
-        if batch_key in adata.obs.keys():
-            print("batch key %s is in obs" % batch_key)
-        else:
-            print("batch key %s is NOT in obs" % batch_key)
-        
+        if batch_key not in adata.obs.keys():
+            raise ValueError('`batch_key` must be a column of .obs in the input annData object.')
+
         batches = np.unique(adata.obs[batch_key])
     
         # Run Scrublet independently on batches and return just the
