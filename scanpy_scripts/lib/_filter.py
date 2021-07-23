@@ -46,6 +46,15 @@ def filter_anndata(
                 'Specified gene column [%s] not found, skip calculating '
                 'expression of mitochondria genes', gene_name)
 
+    layer = 'counts' if 'counts' in adata.layers.keys() else None
+    
+    # Calculate mito stats if we can
+
+    if 'mito' in adata.var.keys() and 'pct_counts_mito' not in adata.obs.keys():  
+        adata.var['mito'] = adata.var['mito'] == 'True'
+        sc.pp.calculate_qc_metrics( adata, layer=layer, qc_vars=['mito'],
+            percent_top = None, inplace=True)
+
     attributes = _get_attributes(adata)
     if list_attr:
         click.echo(_repr_obj(attributes))
@@ -54,7 +63,6 @@ def filter_anndata(
     conditions, qc_vars, pct_top = _get_filter_conditions(
         attributes, param, category, subset)
 
-    layer = 'counts' if 'counts' in adata.layers.keys() else None
     obs_columns = adata.obs.columns
     for qv in qc_vars:
         if f'pct_counts_{qv}' in obs_columns and not force_recalc:
@@ -67,14 +75,8 @@ def filter_anndata(
                             'without --force-recalc', pt)
             pct_top.remove(pt)
 
-    # Calculate mito stats if we can, even if we're not filtering by them   
-
-    if 'mito' not in qc_vars and 'mito' in adata.var.keys():
-        qc_vars.append('mito')
-
     sc.pp.calculate_qc_metrics(
         adata, layer=layer, qc_vars=qc_vars, percent_top=pct_top, inplace=True)
-
     adata.obs['n_counts'] = adata.obs['total_counts']
     adata.obs['n_genes'] = adata.obs['n_genes_by_counts']
     adata.var['n_counts'] = adata.var['total_counts']
