@@ -51,7 +51,6 @@ def filter_anndata(
     # Calculate mito stats if we can
 
     if 'mito' in adata.var.keys() and 'pct_counts_mito' not in adata.obs.keys():  
-        adata.var['mito'] = adata.var['mito'] == 'True'
         sc.pp.calculate_qc_metrics( adata, layer=layer, qc_vars=['mito'],
             percent_top = None, inplace=True)
 
