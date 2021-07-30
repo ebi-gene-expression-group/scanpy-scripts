@@ -34,7 +34,7 @@ jobs:
     - name: Install dependencies
       run: |
         pushd scanpy
-        patch -p1 < ../scanpy-scripts.patch
+        patch -p1 < ../scanpy-scripts/scrublet.patch
         popd
 
         sudo apt-get install libhdf5-dev
