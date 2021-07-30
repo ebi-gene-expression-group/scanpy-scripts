@@ -1674,7 +1674,6 @@ CMD_OPTIONS = {
         click.option(
             '--batch-key', 'batch_key',
             type=click.STRING,
-            default=None,
             help='The name of the column in adata.obs that differentiates among '
             'experiments/batches. Doublets will be detected in each batch separately.'
         ),
