@@ -11,7 +11,7 @@ import pandas as pd
 
 # Wrapper for scrublet allowing text export and filtering
 
-def scrublet(adata, adata_sim=None, filter=False, batch_key=None, export_table=None, **kwargs):
+def scrublet(adata, adata_sim=None, filter=False, export_table=None, **kwargs):
     """
     Wrapper function for sce.pp.scrublet(), to allow filtering of resulting object
     """
@@ -21,35 +21,7 @@ def scrublet(adata, adata_sim=None, filter=False, batch_key=None, export_table=N
     if adata_sim:
         adata_sim = sc.read(adata_sim)
 
-    # Scrublet shouldn't be run on multi-batch data, so we run the batches
-    # separately and copy the stats back to the input object
-
-    alldata = []
-    if batch_key is not None:
-        if batch_key not in adata.obs.keys():
-            raise ValueError('`batch_key` must be a column of .obs in the input annData object.')
-
-        batches = np.unique(adata.obs[batch_key])
-    
-        # Run Scrublet independently on batches and return just the
-        # scrublet-relevant parts of the objects to add to the input object
-
-        def get_adata_scrub_parts(ad):
-            return {'obs': ad.obs, 'uns': ad.uns['scrublet']}
-
-        scrubbed = [ get_adata_scrub_parts(sce.pp.scrublet(adata[adata.obs[batch_key] == batch,], adata_sim=adata_sim, copy = True, **kwargs)) for batch in batches ] 
-        scrubbed_obs = pd.concat([ scrub['obs'] for scrub in scrubbed])        
-
-        # Now reset the obs to get the scrublet scores
-        
-        adata.obs = scrubbed_obs.loc[adata.obs_names.values]
-
-        # Save the .uns from each batch separately
-    
-        adata.uns['scrublet'] = dict(zip(batches, [ scrub['uns'] for scrub in scrubbed ]))
-
-    else:
-        sce.pp.scrublet(adata, adata_sim=adata_sim, **kwargs)
+    sce.pp.scrublet(adata, adata_sim=adata_sim, **kwargs)
     
     # Do any export before optional filtering
 
