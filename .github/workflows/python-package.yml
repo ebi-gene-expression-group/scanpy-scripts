@@ -15,7 +15,6 @@ jobs:
       with:
         path: scanpy-scripts
 
-    steps:
     - uses: actions/checkout@v2
       with:
         repository: theislab/scanpy 
