@@ -31,7 +31,7 @@ jobs:
         wget https://github.com/theislab/scanpy/archive/refs/tags/1.8.1.tar.gz
         tar -xvzf 1.8.1.tar.gz
         cd scanpy-1.8.1
-        patch -p1 < $PREFIX/scrublet.patch
+        patch -p1 < ../scrublet.patch
         python -m pip install . --no-deps --ignore-installed -vv
     
     - name: Test with bats
