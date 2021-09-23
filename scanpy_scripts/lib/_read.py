@@ -25,21 +25,31 @@ def read_10x(
 
     if extra_obs:
         obs_tbl = pd.read_csv(extra_obs, sep='\t', header=0, index_col=0)
-        adata.obs = adata.obs.merge(
+        adata.obs = _fix_booleans(adata.obs.merge(
             obs_tbl,
             how='left',
             left_index=True,
             right_index=True,
             suffixes=(False, False),
-        )
+        ))
 
     if extra_var:
         var_tbl = pd.read_csv(extra_var, sep='\t', header=0, index_col=0)
-        adata.var = adata.var.merge(
+        adata.var = _fix_booleans(adata.var.merge(
             var_tbl,
             how='left',
             left_index=True,
             right_index=True,
             suffixes=(False, False),
-        )
+        ))
     return adata
+
+def _fix_booleans(df):
+  for var in df.columns:
+    if (df[var].dtype.kind == 'O' and 
+        df[var].dtype.name == 'object' and 
+        set(pd.Categorical(df[var][df[var] != 'nan'])).issubset(set(['True', 'False']))
+        ):
+      d = {'False': True, 'False': False}
+      df[var] = df[var].map(d)
+  return(df)
