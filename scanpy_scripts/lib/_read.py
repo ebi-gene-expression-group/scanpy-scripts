@@ -48,7 +48,7 @@ def _fix_booleans(df):
   for var in df.columns:
     if (df[var].dtype.kind == 'O' and 
         df[var].dtype.name == 'object' and 
-        set(pd.Categorical(df[var][df[var] != 'nan'])).issubset(set(['True', 'False']))
+        set(pd.Categorical(df[var])).issubset(set(['True', 'False', 'nan']))
         ):
       d = {'False': True, 'False': False}
       df[var] = df[var].map(d)
