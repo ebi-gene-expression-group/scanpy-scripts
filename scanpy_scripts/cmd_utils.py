@@ -72,6 +72,15 @@ def add_options(options):
         return func
     return _add_options
 
+def _fix_booleans(df):
+  for var in df.columns:
+    if (df[var].dtype.kind == 'O' and 
+        df[var].dtype.name == 'object' and 
+        set(pd.Categorical(df[var])).issubset(set(['True', 'False', 'nan']))
+        ):
+      d = {'False': True, 'False': False, 'nan': False}
+      df[var] = df[var].map(d).astype(bool)
+  return(df)
 
 def _read_obj(input_obj, input_format='anndata', **kwargs):
     if input_format == 'anndata':
@@ -81,8 +90,10 @@ def _read_obj(input_obj, input_format='anndata', **kwargs):
     else:
         raise NotImplementedError(
             'Unsupported input format: {}'.format(input_format))
-    return adata
+    adata.var = _fix_booleans(adata.var)
+    adata.obs = _fix_booleans(adata.obs)
 
+    return adata
 
 def _write_obj(
         adata,
