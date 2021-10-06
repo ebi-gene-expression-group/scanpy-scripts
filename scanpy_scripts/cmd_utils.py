@@ -120,7 +120,6 @@ def _write_obj(
         click.echo(adata, err=show_obj == 'stderr')
     return 0
 
-
 def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False, use_layer=None):
     """Export AnnData object to mtx formt
     * Parameters
@@ -141,17 +140,21 @@ def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False, use_lay
         var = []
     if obs is None:
         obs = []
-    if use_raw:
-        adata = adata.raw
-    obs = list(set(obs) & set(adata.obs.columns))
-    var = list(set(var) & set(adata.var.columns))
 
     import scipy.sparse as sp
-    if use_layer is not None:
-        mat=sp.coo_matrix(adata.layer[use_layer])
+    if use_raw:
+        var_source = adata.raw.var
+        mat = sp.coo_matrix(adata.raw.X)
     else:
-        mat = sp.coo_matrix(adata.X)
-    
+        var_source = adata.var
+        if use_layer is not None:
+            mat=sp.coo_matrix(adata.layer[use_layer])
+        else:
+            mat = sp.coo_matrix(adata.X)
+
+    obs = list(set(obs) & set(adata.obs.columns))
+    var = list(set(var) & set(var_source.columns))
+
     n_obs, n_var = mat.shape
     n_entry = len(mat.data)
     header = '%%MatrixMarket matrix coordinate real general\n%\n{} {} {}\n'.format(
@@ -166,7 +169,7 @@ def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False, use_lay
 
     obs_df = adata.obs[obs].reset_index(level=0)
     obs_df.to_csv(barcode_fname, sep='\t', header=False, index=False)
-    var_df = adata.var[var].reset_index(level=0)
+    var_df = var_source[var].reset_index(level=0)
     if not var:
         var_df['gene'] = var_df['index']
     var_df.to_csv(gene_fname, sep='\t', header=False, index=False)
