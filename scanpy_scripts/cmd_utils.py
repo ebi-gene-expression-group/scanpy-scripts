@@ -148,7 +148,7 @@ def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False, use_lay
     else:
         var_source = adata.var
         if use_layer is not None:
-            mat=sp.coo_matrix(adata.layer[use_layer])
+            mat=sp.coo_matrix(adata.layers[use_layer])
         else:
             mat = sp.coo_matrix(adata.X)
 
