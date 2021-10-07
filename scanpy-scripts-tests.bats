@@ -7,6 +7,8 @@ setup() {
     data_dir="${test_dir}/data"
     output_dir="${test_dir}/outputs"
     raw_matrix="${data_dir}/matrix.mtx"
+    raw_matrix_from_raw="${data_dir}/raw/matrix.mtx"
+    raw_matrix_from_layer="${data_dir}/layer/matrix.mtx"
     singlet_obs="${data_dir}/singlet_obs.txt"
     batch_obs="${data_dir}/batch_obs.txt"
     read_opt="-x $data_dir --show-obj stdout"
@@ -115,6 +117,28 @@ setup() {
 
     [ "$status" -eq 0 ]
     [ -f "$raw_matrix" ]
+}
+
+@test "Test MTX write from .raw" {
+    if [ "$resume" = 'true' ] && [ -f "$raw_matrix_from_raw" ]; then
+        skip "$raw_matrix exists"
+    fi
+
+    run rm -rf ${data_dir}/raw/* && eval "echo -e \"import scanpy as sc\nfrom scanpy_scripts.cmd_utils import write_mtx\nimport os\nos.makedirs('$data_dir/raw', exist_ok=True)\nadata=sc.datasets.pbmc3k();adata.raw=adata\nwrite_mtx(adata, '$data_dir/raw/', use_raw=True)\" | python"
+
+    [ "$status" -eq 0 ]
+    [ -f "$raw_matrix_from_raw" ]
+}
+
+@test "Test MTX write from layers" {
+    if [ "$resume" = 'true' ] && [ -f "$raw_matrix_from_layer" ]; then
+        skip "$raw_matrix exists"
+    fi
+
+    run rm -rf ${data_dir}/layer/* && eval "echo -e \"import scanpy as sc\nfrom scanpy_scripts.cmd_utils import write_mtx\nimport os\nos.makedirs('$data_dir/layer', exist_ok=True)\nadata=sc.datasets.pbmc3k();adata.layers['test']=adata.X\nwrite_mtx(adata, '$data_dir/layer/', use_layer='test')\" | python"
+
+    [ "$status" -eq 0 ]
+    [ -f "$raw_matrix_from_layer" ]
 }
 
 @test "Make .obs with a singlet cell group" {
