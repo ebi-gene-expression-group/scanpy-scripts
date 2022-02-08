@@ -1,0 +1,23 @@
+name: Unit testing scanpy_scripts
+
+on: [push, pull_request]
+
+jobs:
+  unittest_sc:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.9]
+    steps:
+      - name: Check out repository
+      - uses: actions/checkout@v2
+      - name: Set up Python environment
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          pip install click          
+      - name: Run unit tests
+        run: |
+          python scanpy-scripts/scanpy_scripts/click_utils.py
