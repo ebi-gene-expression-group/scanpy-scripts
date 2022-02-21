@@ -42,6 +42,8 @@ jobs:
         pip install $(pwd)/scanpy-scripts
         python -m pip install $(pwd)/scanpy --no-deps --ignore-installed -vv
         pip install pytest
+        pip install -U sphinx
+        pip install docutils
     
     - name: Test with bats
       run: |
