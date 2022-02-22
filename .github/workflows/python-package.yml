@@ -50,5 +50,5 @@ jobs:
         ./scanpy-scripts/scanpy-scripts-tests.bats
 
     - name: Run unit tests
-      run: pytest --doctest-modules -v
+      run: pytest --doctest-modules -v ./scanpy-scripts
  
