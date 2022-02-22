@@ -3,6 +3,7 @@ Provide helper functions for command line parsing with click
 """
 
 import click
+import sys
 
 
 class NaturalOrderGroup(click.Group):
@@ -36,6 +37,32 @@ class CommaSeparatedText(click.ParamType):
             self.name = '{}[,{}...]'.format(self.dtype_name, self.dtype_name)
 
     def convert(self, value, param, ctx):
+        """
+        >>> @click.command()
+        ... @click.option('--test-param')
+        ... def test_cmd():
+        ...     pass
+        ...
+        >>> ctx = click.Context(test_cmd)
+        >>> param = test_cmd.params[0]
+        >>> test_cst1 = CommaSeparatedText()
+        >>> test_cst2 = CommaSeparatedText(click.INT, length=2)
+        >>> test_cst3 = CommaSeparatedText(click.FLOAT, simplify=True)
+        >>>
+        >>> test_cst1.convert(None, param, ctx)
+        >>> test_cst2.convert('7,2', param, ctx)
+        [7, 2]
+        >>> test_cst2.convert('7.2', param, ctx)
+        Traceback (most recent call last):
+        ...
+        click.exceptions.BadParameter: 7.2 is not a valid integer
+        >>> test_cst2.convert('7', param, ctx)
+        Traceback (most recent call last):
+        ...
+        click.exceptions.BadParameter: 7 is not a valid comma separated list of length 2
+        >>> test_cst3.convert('7.2', param, ctx)
+        7.2
+        """
         try:
             if value is None:
                 converted = None
@@ -70,6 +97,29 @@ class Dictionary(click.ParamType):
         self.keys = keys
 
     def convert(self, value, param, ctx):
+        """
+        >>> @click.command()
+        ... @click.option('--my-param', type=Dictionary(keys=('abc', 'def', 'ghi', 'jkl', 'mno')))
+        ... def test_cmd():
+        ...     pass
+        ...
+        >>> ctx = click.Context(test_cmd)
+        >>> param = test_cmd.params[0]
+        >>> dict_param = param.type
+        >>> dict_str1 = 'abc:0.1,def:TRUE,ghi:False,jkl:None,mno:some_string'
+        >>> dict_str2 = 'abc:0.1,def:TRUE,ghi:False,jkl:None,mnp:some_string'
+        >>> dict_str3 = ''
+        >>> dict_param.convert(dict_str1, param, ctx)
+        {'abc': 0.1, 'def': True, 'ghi': False, 'jkl': None, 'mno': 'some_string'}
+        >>> dict_param.convert(dict_str2, param, ctx)
+        Traceback (most recent call last):
+        ...
+        click.exceptions.BadParameter: mnp is not a valid key (('abc', 'def', 'ghi', 'jkl', 'mno'))
+        >>> dict_param.convert(dict_str3, param, ctx)
+        Traceback (most recent call last):
+        ...
+        click.exceptions.BadParameter:  is not a valid python dict definition
+        """
         try:
             converted = dict()
             for token in value.split(','):
@@ -111,6 +161,25 @@ def _get_type_name(obj):
 
 
 def valid_limit(ctx, param, value):
+    """
+    Callback function that checks order of numeric inputs
+
+    >>> @click.command()
+    ... @click.option('--test-param', help='Sample help')
+    ... def test_cmd():
+    ...     pass
+    ...
+    >>> ctx = click.Context(test_cmd)
+    >>> param = test_cmd.params[0]
+    >>> valid_limit(ctx, param, value=[0.0125, 3])
+    [0.0125, 3]
+    >>> valid_limit(ctx, param, value=[0.0125, -0.0125])
+    Traceback (most recent call last):
+        ...
+    click.exceptions.BadParameter: lower limit must not exceed upper limit
+    >>> valid_limit(ctx, param, value=[0.0125, 0.0125])
+    [0.0125, 0.0125]
+    """
     if value[0] > value[1]:
         param.type.fail(
             'lower limit must not exceed upper limit', param, ctx)
@@ -118,6 +187,29 @@ def valid_limit(ctx, param, value):
 
 
 def valid_parameter_limits(ctx, param, value):
+    """
+    Callback function that checks order of multiple numeric inputs
+
+    >>> @click.command()
+    ... @click.option('--test-param', type=(click.STRING, click.FLOAT, click.FLOAT), multiple=True)
+    ... def test_cmd():
+    ...     pass
+    ...
+    >>> ctx = click.Context(test_cmd)
+    >>> param = test_cmd.params[0]
+    >>> valid_parameter_limits(ctx, param, [['a', 0.0, 2.0]])
+    [['a', 0.0, 2.0]]
+    >>> valid_parameter_limits(ctx, param, [['b', 0.0, 0.0]])
+    [['b', 0.0, 0.0]]
+    >>> valid_parameter_limits(ctx, param, [['c', 0.0, -1.0]])
+    Traceback (most recent call last):
+        ...
+    click.exceptions.BadParameter: lower limit must not exceed upper limit
+    >>> valid_parameter_limits(ctx, param, [['a', 0.0, 2.0], ['c', 0.0, -1.0]])
+    Traceback (most recent call last):
+        ...
+    click.exceptions.BadParameter: lower limit must not exceed upper limit
+    """
     for val in value:
         if val[1] > val[2]:
             param.type.fail(
@@ -154,3 +246,8 @@ def required_by(param_name):
             param.type.fail('required by "{}".'.format(param_name), param, ctx,)
         return value
     return required
+
+
+if __name__ == '__main__':
+    import doctest
+    sys.exit(doctest.testmod(verbose=True)[0])
