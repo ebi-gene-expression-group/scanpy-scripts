@@ -2,7 +2,6 @@
 Provide helper functions for constructing sub-commands
 """
 
-import os
 import click
 import pandas as pd
 import scanpy as sc
@@ -143,13 +142,15 @@ def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False, use_lay
         with a 'method' key, e.g. {'method': 'gzip', 'compresslevel': 1,
         'mtime': 1}
 
+    >>> import os
+    >>> from pathlib import Path
     >>> adata = sc.datasets.pbmc3k()
-    >>> os.mkdir('uncompressed')
-    >>> ss.cmd_utils.write_mtx(adata, fname_prefix = 'uncompressed/', use_raw = False, use_layer = None, var = ['gene_name'])
+    >>> Path("uncompressed").mkdir(parents=True, exist_ok=True)
+    >>> write_mtx(adata, fname_prefix = 'uncompressed/', use_raw = False, use_layer = None, var = ['gene_name'])
     >>> os.listdir('uncompressed')
     ['barcodes.tsv', 'genes.tsv', 'matrix.mtx']
-    >>> os.mkdir('compressed')
-    >>> ss.cmd_utils.write_mtx(adata, fname_prefix = 'compressed/', use_raw = False, use_layer = None, var = ['gene_name'], compression = {'method': 'gzip'})
+    >>> Path("compressed").mkdir(parents=True, exist_ok=True)
+    >>> write_mtx(adata, fname_prefix = 'compressed/', use_raw = False, use_layer = None, var = ['gene_name'], compression = {'method': 'gzip'})
     >>> os.listdir('compressed')
     ['barcodes.tsv.gz', 'genes.tsv.gz', 'matrix.mtx.gz']
     """
