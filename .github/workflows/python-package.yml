@@ -42,10 +42,11 @@ jobs:
         pip install $(pwd)/scanpy-scripts
         python -m pip install $(pwd)/scanpy --no-deps --ignore-installed -vv
     
+    - name: Run unit tests
+      run: pytest --doctest-modules -v ./scanpy-scripts
+    
     - name: Test with bats
       run: |
         ./scanpy-scripts/scanpy-scripts-tests.bats
 
-    - name: Run unit tests
-      run: pytest --doctest-modules -v ./scanpy-scripts
  
