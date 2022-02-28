@@ -120,7 +120,7 @@ def _write_obj(
         click.echo(adata, err=show_obj == 'stderr')
     return 0
 
-def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False, use_layer=None):
+def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False, use_layer=None, compression = None):
     """Export AnnData object to mtx formt
     * Parameters
         + adata : AnnData
@@ -133,6 +133,14 @@ def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False, use_lay
         A list of column names to be exported to gene table
         + obs : list
         A list of column names to be exported to barcode/cell table
+        + use_raw : bool
+        Take data the matrix from .raw.X?
+        + use_layer: str
+        Specify a layer to use instead of .X (non-raw only)
+        + compression: None, str or dict
+        Compression parameter for Pandas' to_csv(). For compression, a dict
+        with a 'method' key, e.g. {'method': 'gzip', 'compresslevel': 1,
+        'mtime': 1}
     """
     if fname_prefix and not (fname_prefix.endswith('/') or fname_prefix.endswith('_')):
         fname_prefix = fname_prefix + '_'
@@ -157,22 +165,46 @@ def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False, use_lay
 
     n_obs, n_var = mat.shape
     n_entry = len(mat.data)
-    header = '%%MatrixMarket matrix coordinate real general\n%\n{} {} {}\n'.format(
-        n_var, n_obs, n_entry)
+
+    # Define the header lines as a Pandas DataFrame so we can use the same compression
+    header = pd.DataFrame(['%%MatrixMarket matrix coordinate real general', f"{n_var} {n_obs} {n_entry}"])
     df = pd.DataFrame({'col': mat.col + 1, 'row': mat.row + 1, 'data': mat.data})
+
+    # Define outputs
     mtx_fname = fname_prefix + 'matrix.mtx'
     gene_fname = fname_prefix + 'genes.tsv'
     barcode_fname = fname_prefix + 'barcodes.tsv'
-    with open(mtx_fname, 'a') as fh:
-        fh.write(header)
-        df.to_csv(fh, sep=' ', header=False, index=False)
 
+    # Write matrix with Pandas CSV and use its compression where requested
+    if compression is not None and type(compression) is dict and 'method' in compression:
+        compressed_exts = {
+            'zip': 'zip',
+            'gzip': 'gz',
+            'bz2': 'bz2', 
+            'zstd': 'zst'
+        }
+        ext = compressed_exts.get(compression['method'], 'None')
+
+        if ext is None:
+            errmsg = "Invalid compression method"
+            raise Exception(errmsg) 
+      
+        mtx_fname += f".{ext}"
+        gene_fname += f".{ext}"
+        barcode_fname += f".{ext}"
+    else:
+        compression = None
+
+    header.to_csv(mtx_fname, header = False, index = False, compression = compression)
+    df.to_csv(mtx_fname, sep=' ', header=False, index=False, compression = compression, mode = 'a')
+        
+    # Now write the obs and var, also with compression if appropriate
     obs_df = adata.obs[obs].reset_index(level=0)
-    obs_df.to_csv(barcode_fname, sep='\t', header=False, index=False)
+    obs_df.to_csv(barcode_fname, sep='\t', header=False, index=False, compression = compression)
     var_df = var_source[var].reset_index(level=0)
     if not var:
         var_df['gene'] = var_df['index']
-    var_df.to_csv(gene_fname, sep='\t', header=False, index=False)
+    var_df.to_csv(gene_fname, sep='\t', header=False, index=False, compression = compression)
 
 
 def make_plot_function(func_name, kind=None):
