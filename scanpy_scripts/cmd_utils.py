@@ -147,11 +147,11 @@ def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False, use_lay
     >>> adata = sc.datasets.pbmc3k()
     >>> Path("uncompressed").mkdir(parents=True, exist_ok=True)
     >>> write_mtx(adata, fname_prefix = 'uncompressed/', use_raw = False, use_layer = None, var = ['gene_name'])
-    >>> os.listdir('uncompressed')
+    >>> sorted(os.listdir('uncompressed'))
     ['barcodes.tsv', 'genes.tsv', 'matrix.mtx']
     >>> Path("compressed").mkdir(parents=True, exist_ok=True)
     >>> write_mtx(adata, fname_prefix = 'compressed/', use_raw = False, use_layer = None, var = ['gene_name'], compression = {'method': 'gzip'})
-    >>> os.listdir('compressed')
+    >>> sorted(os.listdir('compressed'))
     ['barcodes.tsv.gz', 'genes.tsv.gz', 'matrix.mtx.gz']
     """
     if fname_prefix and not (fname_prefix.endswith('/') or fname_prefix.endswith('_')):
