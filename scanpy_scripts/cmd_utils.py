@@ -145,10 +145,16 @@ def write_mtx(adata, fname_prefix='', var=None, obs=None, use_raw=False, use_lay
     >>> import os
     >>> from pathlib import Path
     >>> adata = sc.datasets.pbmc3k()
+    >>> # Test uncompressed write
     >>> Path("uncompressed").mkdir(parents=True, exist_ok=True)
     >>> write_mtx(adata, fname_prefix = 'uncompressed/', use_raw = False, use_layer = None, var = ['gene_name'])
     >>> sorted(os.listdir('uncompressed'))
     ['barcodes.tsv', 'genes.tsv', 'matrix.mtx']
+    >>> # Test that the matrix is the same when we read it back 
+    >>> test_readable = sc.read_10x_mtx('uncompressed')
+    >>> if any(test_readable.obs_names != adata.obs_names) or any(test_readable.var_names != adata.var_names) or (test_readable.X[1].sum() - adata.X[1].sum()) > 1e-5:
+    ...   print("Re-read matrix is different to the one we stored, something is wrong with the writing")
+    >>> # Test compressed write
     >>> Path("compressed").mkdir(parents=True, exist_ok=True)
     >>> write_mtx(adata, fname_prefix = 'compressed/', use_raw = False, use_layer = None, var = ['gene_name'], compression = {'method': 'gzip'})
     >>> sorted(os.listdir('compressed'))
