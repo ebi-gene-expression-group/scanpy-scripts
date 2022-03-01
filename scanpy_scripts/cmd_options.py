@@ -69,6 +69,14 @@ COMMON_OPTIONS = {
             "appended.",
         ),
         click.option(
+            "--mtx-compression",
+            "-G",
+            type=click.Choice(["zip", "gzip", "bz2", "zstd"]),
+            default=None,
+            show_default=True,
+            help="Compression type for MTX output.",
+        ),
+        click.option(
             "--show-obj",
             type=click.Choice(["stdout", "stderr"]),
             default=None,
