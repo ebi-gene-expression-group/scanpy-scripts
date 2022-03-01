@@ -11,10 +11,15 @@ jobs:
         python-version: [3.7, 3.8]
 
     steps:
+    
     - uses: actions/checkout@v2
       with:
         path: scanpy-scripts
-
+      
+    - uses: psf/black@stable
+      with:
+        options: '--check --verbose --include="\.pyi?$" .'
+    
     - uses: actions/checkout@v2
       with:
         repository: theislab/scanpy 
@@ -38,11 +43,13 @@ jobs:
         popd
 
         sudo apt-get install libhdf5-dev
-        pip install -U setuptools>=40.1 wheel 'cmake<3.20'
+        pip install -U setuptools>=40.1 wheel 'cmake<3.20' pytest
         pip install $(pwd)/scanpy-scripts
         python -m pip install $(pwd)/scanpy --no-deps --ignore-installed -vv
+    
+    - name: Run unit tests
+      run: pytest --doctest-modules -v ./scanpy-scripts
     
     - name: Test with bats
       run: |
         ./scanpy-scripts/scanpy-scripts-tests.bats
- 
