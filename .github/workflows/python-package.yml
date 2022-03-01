@@ -11,10 +11,15 @@ jobs:
         python-version: [3.7, 3.8]
 
     steps:
+    
     - uses: actions/checkout@v2
       with:
         path: scanpy-scripts
-
+      
+    - uses: psf/black@stable
+      with:
+        options: '--check --verbose --include="\.pyi?$" .'
+    
     - uses: actions/checkout@v2
       with:
         repository: theislab/scanpy 
