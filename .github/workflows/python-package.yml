@@ -48,5 +48,4 @@ jobs:
     - name: Test with bats
       run: |
         ./scanpy-scripts/scanpy-scripts-tests.bats
-
  
