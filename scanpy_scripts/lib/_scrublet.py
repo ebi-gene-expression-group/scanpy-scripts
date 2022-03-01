@@ -11,6 +11,7 @@ import pandas as pd
 
 # Wrapper for scrublet allowing text export and filtering
 
+
 def scrublet(adata, adata_sim=None, filter=False, export_table=None, **kwargs):
     """
     Wrapper function for sce.pp.scrublet(), to allow filtering of resulting object
@@ -22,7 +23,7 @@ def scrublet(adata, adata_sim=None, filter=False, export_table=None, **kwargs):
         adata_sim = sc.read(adata_sim)
 
     sce.pp.scrublet(adata, adata_sim=adata_sim, **kwargs)
-    
+
     # Do any export before optional filtering
 
     if export_table:
@@ -35,13 +36,16 @@ def scrublet(adata, adata_sim=None, filter=False, export_table=None, **kwargs):
 
     return adata
 
+
 # Run the doublet simulation.
+
 
 def scrublet_simulate_doublets(adata, **kwargs):
     adata_sim = sce.pp.scrublet_simulate_doublets(adata, **kwargs)
     adata._init_as_actual(
         X=adata_sim.X, obs=adata_sim.obs, obsm=adata_sim.obsm, uns=adata.uns
     )
+
 
 # Just absorb the extra plotting args before passing to
 # scanpy.external.pl.scrublet_score_distribution

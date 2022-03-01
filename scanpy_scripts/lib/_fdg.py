@@ -12,12 +12,12 @@ from ..obj_utils import (
 
 
 def fdg(
-        adata,
-        layout='fa',
-        key_added_ext=None,
-        random_state=0,
-        export_embedding=None,
-        **kwargs
+    adata,
+    layout="fa",
+    key_added_ext=None,
+    random_state=0,
+    export_embedding=None,
+    **kwargs,
 ):
     """
     Wrapper function for sc.tl.draw_graph, for supporting named slot of fdg
@@ -31,7 +31,7 @@ def fdg(
         **kwargs,
     )
 
-    fdg_key  = f'X_draw_graph_{key_added_ext or layout}'
+    fdg_key = f"X_draw_graph_{key_added_ext or layout}"
 
     if export_embedding is not None:
         write_embedding(adata, fdg_key, export_embedding, key_added=key_added_ext)
