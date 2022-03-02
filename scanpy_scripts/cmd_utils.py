@@ -38,6 +38,7 @@ def make_subcmd(cmd_name, func, cmd_desc, arg_desc, opt_set=None):
         zarr_chunk_size=None,
         loom_write_obsm_varm=False,
         export_mtx=None,
+        mtx_compression=None,
         show_obj=None,
         **kwargs,
     ):
@@ -56,6 +57,7 @@ def make_subcmd(cmd_name, func, cmd_desc, arg_desc, opt_set=None):
                 chunk_size=zarr_chunk_size,
                 write_obsm_varm=loom_write_obsm_varm,
                 export_mtx=export_mtx,
+                mtx_compression=mtx_compression,
                 show_obj=show_obj,
             )
         return 0
@@ -107,6 +109,7 @@ def _write_obj(
     output_format="anndata",
     chunk_size=None,
     export_mtx=None,
+    mtx_compression=None,
     show_obj=None,
     write_obsm_varm=False,
     **kwargs,
@@ -120,7 +123,11 @@ def _write_obj(
     else:
         raise NotImplementedError("Unsupported output format: {}".format(output_format))
     if export_mtx:
-        write_mtx(adata, fname_prefix=export_mtx, **kwargs)
+        compression = None
+        if mtx_compression is not None:
+            compression = {"method": mtx_compression}
+
+        write_mtx(adata, fname_prefix=export_mtx, compression=compression, **kwargs)
     if show_obj:
         click.echo(adata, err=show_obj == "stderr")
     return 0
