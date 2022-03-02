@@ -13,8 +13,9 @@ setup() {
     batch_obs="${data_dir}/batch_obs.txt"
     read_opt="-x $data_dir --show-obj stdout"
     read_obj="${output_dir}/read.h5ad"
-    filter_opt="--save-raw -p n_genes 200 2500 -p c:n_counts 0 50000 -p n_cells 3 inf -p pct_counts_mito 0 0.2 -c mito '!True' --show-obj stdout"
+    filter_opt="--save-raw -p n_genes 200 2500 -p c:n_counts 0 50000 -p n_cells 3 inf -p pct_counts_mito 0 0.2 -c mito '!True' --show-obj stdout --export-mtx ${output_dir}/filtered --mtx-compression gzip"
     filter_obj="${output_dir}/filter.h5ad"
+    filter_mtx_gz="${output_dir}/filtered_matrix.mtx.gz"
     test_clustering='louvain_k10_r0_5'
     scrublet_tsv="${output_dir}/scrublet.tsv"
     scrublet_png="${output_dir}/scrublet.png"
@@ -189,6 +190,7 @@ setup() {
 
     [ "$status" -eq 0 ]
     [ -f  "$filter_obj" ]
+    [ -f  "$filter_mtx_gz" ]
 }
 
 # Normalise

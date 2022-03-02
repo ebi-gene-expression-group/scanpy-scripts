@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="scanpy-scripts",
-    version="1.1.4",
+    version="1.1.5",
     author="nh3",
     author_email="nh3@users.noreply.github.com",
     description="Scripts for using scanpy from the command line",
