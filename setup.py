@@ -45,7 +45,6 @@ setup(
         "louvain",
         "leidenalg",
         "loompy",
-        "MulticoreTSNE",
         "Click<8",
         "umap-learn",
         "harmonypy>=0.0.5",
