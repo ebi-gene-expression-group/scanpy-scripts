@@ -37,7 +37,7 @@ def filter_anndata(
             k_mito = gene_names.str.startswith("MT-")
             if k_mito.sum() > 0:
                 adata.var["mito"] = k_mito
-                adata.var["mito"] = adata.var["mito"].astype("category")
+                # adata.var["mito"] = adata.var["mito"].astype("category")
             else:
                 logging.warning(
                     "No MT genes found, skip calculating "
