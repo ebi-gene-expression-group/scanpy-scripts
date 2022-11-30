@@ -5,6 +5,7 @@ scanpy diffexp
 import pandas as pd
 import scanpy as sc
 import logging
+import math
 
 
 def diffexp(
@@ -64,16 +65,29 @@ def diffexp(
     de_tbl = extract_de_table(adata.uns[diff_key])
 
     if isinstance(filter_params, dict):
+        key_filtered = diff_key + "_filtered"
         sc.tl.filter_rank_genes_groups(
             adata,
             key=diff_key,
-            key_added=diff_key + "_filtered",
+            key_added=key_filtered,
             use_raw=use_raw,
             **filter_params,
         )
-
-        de_tbl = extract_de_table(adata.uns[diff_key + "_filtered"])
+        # there are non strings on recarray object at this point, in
+        # adata.uns['rank_genes_groups_filtered']['names']
+        # for instance:
+        # adata.uns['rank_genes_groups_filtered']['names'][0]
+        # (nan, nan, 'NKG7', nan, nan, 'PPBP')
+        # this now upsets h5py > 3.0
+        de_tbl = extract_de_table(adata.uns[key_filtered])
         de_tbl = de_tbl.loc[de_tbl.genes.astype(str) != "nan", :]
+
+        # change nan for strings in adata.uns['rank_genes_groups_filtered']['names']
+        for row in range(0, len(adata.uns[key_filtered]["names"])):
+            for col in range(0, len(adata.uns[key_filtered]["names"][row])):
+                element = adata.uns[key_filtered]["names"][row][col]
+                if isinstance(element, float) and math.isnan(element):
+                    adata.uns[key_filtered]["names"][row][col] = "nan"
 
     if save:
         de_tbl.to_csv(save, sep="\t", header=True, index=False)
