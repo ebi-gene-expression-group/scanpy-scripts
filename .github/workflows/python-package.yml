@@ -22,9 +22,9 @@ jobs:
     
     - uses: actions/checkout@v2
       with:
-        repository: theislab/scanpy 
+        repository: scverse/scanpy 
         path: scanpy
-        ref: 1.8.1
+        ref: 1.9.1
     
     - name: Setup BATS
       uses: mig4/setup-bats@v1
@@ -38,10 +38,6 @@ jobs:
     
     - name: Install dependencies
       run: |
-        pushd scanpy
-        patch -p1 < ../scanpy-scripts/scrublet.patch
-        popd
-
         sudo apt-get install libhdf5-dev
         pip install -U setuptools>=40.1 wheel 'cmake<3.20' pytest
         pip install $(pwd)/scanpy-scripts
