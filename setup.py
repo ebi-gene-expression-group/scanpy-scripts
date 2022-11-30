@@ -40,7 +40,7 @@ setup(
         # "scipy",
         # "matplotlib",
         # "pandas",
-        # "h5py<3.0.0",
+        "h5py<3.0.0",
         "scanpy==1.9.1",
         "louvain",
         "igraph",
