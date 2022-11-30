@@ -13,5 +13,8 @@ def normalize(adata, log_transform=True, **kwargs):
     sc.pp.normalize_total(adata, **kwargs)
     if log_transform:
         sc.pp.log1p(adata)
+        # scanpy is not setting base in uns['log1p'] keys, but later on asking for it
+        if 'log1p' in adata.uns_keys() and 'base' not in adata.uns['log1p']:
+            adata.uns['log1p']['base'] = None
 
     return adata
