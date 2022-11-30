@@ -41,7 +41,7 @@ jobs:
         sudo apt-get install libhdf5-dev
         pip install -U setuptools>=40.1 wheel 'cmake<3.20' pytest
         pip install $(pwd)/scanpy-scripts
-        python -m pip install $(pwd)/scanpy --no-deps --ignore-installed -vv
+        # python -m pip install $(pwd)/scanpy --no-deps --ignore-installed -vv
     
     - name: Run unit tests
       run: pytest --doctest-modules -v ./scanpy-scripts
