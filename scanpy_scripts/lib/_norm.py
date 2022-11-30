@@ -22,6 +22,4 @@ def normalize(adata, log_transform=True, **kwargs):
             # as adata.uns["log1p"]["base"] = None gets dropped at either anndata write or read.
             adata.uns["log1p"]["base"] = base
 
-    
-
     return adata
