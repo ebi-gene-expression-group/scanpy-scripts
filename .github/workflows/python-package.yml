@@ -2,6 +2,11 @@ name: Python package
 
 on: [pull_request]
 
+defaults:
+  run:
+    # for conda env activation
+    shell: bash -l {0}
+
 jobs:
   build:
 
@@ -22,7 +27,6 @@ jobs:
     - name: Setup mamba
       uses: mamba-org/provision-with-micromamba@main
       with:
-        environment-name: test-env
         environment-file: test-env.yaml
         cache-downloads: true
         channels: conda-forge, bioconda, defaults
