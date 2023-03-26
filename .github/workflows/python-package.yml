@@ -17,12 +17,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-
-    # list files recursively in the current directory
-    - name: List files recursively
-      run: |
-        pwd
-        ls -lthR
     
     - name: Setup mamba
       uses: mamba-org/provision-with-micromamba@main
@@ -32,11 +26,6 @@ jobs:
         channels: conda-forge, bioconda, defaults
         extra-specs: |
           python=${{ matrix.python-version }}
-
-    - name: List files recursively after conda
-      run: |
-        pwd
-        ls -lthR
 
     - name: Run black manually
       run: |
@@ -50,7 +39,7 @@ jobs:
     #     # python -m pip install $(pwd)/scanpy --no-deps --ignore-installed -vv
     
     - name: Run unit tests
-      run: pytest --doctest-modules -v ./
+      run: pytest --doctest-modules -v ./scanpy-scripts
     
     - name: Test with bats
       run: |
