@@ -83,6 +83,7 @@ def diffexp(
         de_tbl = de_tbl.loc[de_tbl.genes.astype(str) != "nan", :]
 
         # change nan for strings in adata.uns['rank_genes_groups_filtered']['names']
+        # TODO on scanpy updates, check if this is not done within scanpy so that we can remove this
         for row in range(0, len(adata.uns[key_filtered]["names"])):
             for col in range(0, len(adata.uns[key_filtered]["names"][row])):
                 element = adata.uns[key_filtered]["names"][row][col]
