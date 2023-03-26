@@ -34,7 +34,9 @@ jobs:
         pwd
         ls -lthR
 
-    - uses: psf/black@stable
+    - name: Run black manually
+      run: |
+        black --check --verbose ./
 
     # - name: Install dependencies
     #   run: |
