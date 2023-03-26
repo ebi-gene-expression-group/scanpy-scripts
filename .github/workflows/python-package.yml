@@ -16,6 +16,7 @@ jobs:
     # list files recursively in the current directory
     - name: List files recursively
       run: |
+        pwd
         ls -lthR
     
     - name: Setup mamba
@@ -27,6 +28,11 @@ jobs:
         channels: conda-forge, bioconda, defaults
         extra-specs: |
           python=${{ matrix.python-version }}
+
+    - name: List files recursively after conda
+      run: |
+        pwd
+        ls -lthR
 
     - uses: psf/black@stable
 
