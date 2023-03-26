@@ -23,7 +23,7 @@ jobs:
     - name: Setup mamba
       uses: mamba-org/provision-with-micromamba@main
       with:
-        environment-file: test-env.yaml
+        environment-file: scanpy-scripts/test-env.yaml
         cache-downloads: true
         channels: conda-forge, bioconda, defaults
         extra-specs: |
