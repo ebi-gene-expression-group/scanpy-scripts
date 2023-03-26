@@ -17,13 +17,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      with:
-        path: scanpy-scripts
     
     - name: Setup mamba
       uses: mamba-org/provision-with-micromamba@main
       with:
-        environment-file: scanpy-scripts/test-env.yaml
+        environment-file: test-env.yaml
         cache-downloads: true
         channels: conda-forge, bioconda, defaults
         extra-specs: |
@@ -42,9 +40,10 @@ jobs:
     
     - name: Run unit tests
       run: |
-        ls -lhR
-        pytest --doctest-modules -v ./scanpy-scripts
+        # needed for __version__ to be available
+        pip install . --no-deps --ignore-installed
+        pytest --doctest-modules -v ./
     
     - name: Test with bats
       run: |
-        ./scanpy-scripts/scanpy-scripts-tests.bats
+        ./scanpy-scripts-tests.bats
