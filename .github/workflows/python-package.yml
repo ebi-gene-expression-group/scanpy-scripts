@@ -11,23 +11,18 @@ jobs:
         python-version: ["3.9", "3.10"]
 
     steps:
-    
-    - uses: actions/checkout@v2
-    
-    # use a mamba action to setup dependencies
     - name: Setup mamba
       uses: mamba-org/provision-with-micromamba@main
       with:
-        environment-name: scanpy-scripts
+        environment-name: test-env
         environment-file: test-env.yaml
         cache-downloads: true
         channels: conda-forge, bioconda, defaults
         extra-specs: |
           python=${{ matrix.python-version }}
-
+          
+    - uses: actions/checkout@v2
     - uses: psf/black@stable
-      with:
-        options: '--check --verbose --include="\.pyi?$" .'
 
     # - name: Install dependencies
     #   run: |
