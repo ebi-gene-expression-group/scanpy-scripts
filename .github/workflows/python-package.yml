@@ -12,6 +12,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
+    # list files recursively in the current directory
+    - name: List files recursively
+      run: |
+        ls -lthR
     
     - name: Setup mamba
       uses: mamba-org/provision-with-micromamba@main
