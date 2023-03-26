@@ -13,15 +13,13 @@ jobs:
     steps:
     
     - uses: actions/checkout@v2
-      with:
-        path: scanpy-scripts
     
     # use a mamba action to setup dependencies
     - name: Setup mamba
       uses: mamba-org/provision-with-micromamba@main
       with:
         environment-name: scanpy-scripts
-        environment-file: scanpy-scripts/test-env.yaml
+        environment-file: test-env.yaml
         cache-downloads: true
         channels: conda-forge, bioconda, defaults
         extra-specs: |
@@ -39,8 +37,8 @@ jobs:
     #     # python -m pip install $(pwd)/scanpy --no-deps --ignore-installed -vv
     
     - name: Run unit tests
-      run: pytest --doctest-modules -v ./scanpy-scripts
+      run: pytest --doctest-modules -v ./
     
     - name: Test with bats
       run: |
-        ./scanpy-scripts/scanpy-scripts-tests.bats
+        ./scanpy-scripts-tests.bats
