@@ -18,3 +18,4 @@ dependencies:
   # for testing
   - bats
   - black
+  - pytest

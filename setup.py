@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -41,7 +41,7 @@ setup(
         # "matplotlib",
         # "pandas",
         # "h5py<3.0.0",
-        "scanpy==1.9.1",
+        "scanpy==1.9.3",
         "louvain",
         "igraph",
         "leidenalg",

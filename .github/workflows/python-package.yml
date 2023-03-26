@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8]
+        python-version: [3.9, 3.10]
 
     steps:
     
@@ -17,20 +17,20 @@ jobs:
         path: scanpy-scripts
     
     # use a mamba action to setup dependencies
-    - name: Setup conda
-      uses: conda-incubator/setup-miniconda@v2
+    - name: Setup mamba
+      uses: mamba-org/provision-with-micromamba@main
       with:
-        activate-environment: scanpy-scripts
+        environment-name: scanpy-scripts
         environment-file: scanpy-scripts/test-env.yaml
-        python-version: ${{ matrix.python-version }}
-        mamba-version: "*"
-        auto-update-conda: true
+        cache-downloads: true
         channels: conda-forge, bioconda, defaults
+        extra-specs: |
+          python=${{ matrix.python-version }}
 
     - uses: psf/black@stable
       with:
         options: '--check --verbose --include="\.pyi?$" .'
-        
+
     # - name: Install dependencies
     #   run: |
     #     sudo apt-get install libhdf5-dev
