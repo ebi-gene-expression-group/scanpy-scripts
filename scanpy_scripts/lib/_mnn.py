@@ -2,9 +2,9 @@
 scanpy external mnn
 """
 
-import scanpy.external as sce
-import numpy as np
 import click
+import numpy as np
+import scanpy.external as sce
 
 # Wrapper for mnn allowing use of non-standard slot
 

@@ -2,10 +2,11 @@
 scanpy diffexp
 """
 
-import pandas as pd
-import scanpy as sc
 import logging
 import math
+
+import pandas as pd
+import scanpy as sc
 
 
 def diffexp(
@@ -73,6 +74,7 @@ def diffexp(
             use_raw=use_raw,
             **filter_params,
         )
+
         # there are non strings on recarray object at this point, in
         # adata.uns['rank_genes_groups_filtered']['names']
         # for instance:
