@@ -4,11 +4,21 @@ A command-line interface for functions of the Scanpy suite, to facilitate flexib
 
 ## Install
 
+The recommended way of installing scanpy-scripts is via conda:
+
 ```bash
 conda install scanpy-scripts
-# or
-pip3 install scanpy-scripts
 ```
+
+pip installation is also possible, however the version of mnnpy is not patched as in the conda version, and so the `integrate` command will not work.
+
+```bash
+pip install scanpy-scripts
+```
+
+For development installation, we suggest following the github actions python-package.yml file.
+
+Currently, tests run on python 3.9, so those are the recommended versions if not installing via conda. BKNN doesn't currently install on Python 3.10 due to a skip in Bioconda.
 
 ## Test installation
 
