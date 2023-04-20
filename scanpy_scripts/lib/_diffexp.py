@@ -24,6 +24,15 @@ def diffexp(
 ):
     """
     Wrapper function for sc.tl.rank_genes_groups.
+
+    Test that we can load a single group.
+    >>> import os
+    >>> from pathlib import Path
+    >>> adata = sc.datasets.krumsiek11()
+    >>> tbl = diffexp(adata, groupby='cell_type', groups='Mo', reference='progenitor')
+    >>> # get the size of the data frame
+    >>> tbl.shape
+    (11, 8)
     """
     if adata.raw is None:
         use_raw = False
@@ -52,6 +61,11 @@ def diffexp(
             logging.warning(
                 "Singlet groups removed before passing to rank_genes_groups()"
             )
+
+    # avoid issue when groups is a single group as a string simplified by click
+    # https://github.com/ebi-gene-expression-group/scanpy-scripts/issues/123
+    if groups != "all" and isinstance(groups, str):
+        groups = [groups]
 
     sc.tl.rank_genes_groups(
         adata,
