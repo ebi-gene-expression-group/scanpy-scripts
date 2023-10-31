@@ -32,7 +32,7 @@ This requires the [bats](https://github.com/sstephenson/bats) testing framework 
 
 ## Commands
 
-Available commands are described below. Each has usage instructions available via --help, consult function documentation in scanpy for further details.
+Available commands are described below. Each has usage instructions available via `--help`, consult function documentation in scanpy for further details.
 
 ```
 Usage: scanpy-cli [OPTIONS] COMMAND [ARGS]...
