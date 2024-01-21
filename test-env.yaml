@@ -15,6 +15,7 @@ dependencies:
   - mnnpy>=0.1.9.5
   # for mnnpy using n_jobs
   - scipy <1.9.0
+  - sklearn <1.3.0
   - scrublet
   - fa2
   # for testing
