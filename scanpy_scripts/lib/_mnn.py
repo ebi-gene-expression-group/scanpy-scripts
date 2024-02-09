@@ -18,8 +18,8 @@ def mnn_correct(adata, key=None, key_added=None, var_subset=None, layer=None, **
     # mnn will use .X, so we need to put other layers there for processing
 
     logging.warning(
-                "Use mnn_correct at your own risk, environment installation seems faulty for this module."
-            )
+        "Use mnn_correct at your own risk, environment installation seems faulty for this module."
+    )
     
     if layer:
         adata.layers["X_backup"] = adata.X
