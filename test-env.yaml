@@ -1,0 +1,27 @@
+name: scanpy-scripts
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - scanpy=1.9.3
+  - louvain
+  - igraph
+  - leidenalg
+  - loompy
+  - Click <8
+  - harmonypy>=0.0.5
+  - bbknn>=1.5.0,<1.6.0
+  - mnnpy>=0.1.9.5
+  # for mnnpy using n_jobs
+  - scipy <1.8.1
+  - scikit-learn <1.2.0
+  - numba <0.56
+  - numpy <1.22
+  - llvmlite <0.38.1
+  - scrublet
+  - fa2
+  # for testing
+  - bats
+  - black
+  - pytest
