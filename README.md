@@ -32,9 +32,27 @@ Updating the stack that depends on this script is unfortunately complex, it gets
 6. Open a bump branch in bioconda, making sure that it points to the develop branch of this repo rather than the pypi release and that all dependencies in bioconda reflect what is currently in the test-env.yaml file of this repo (which was used to test in the feature branch here in points 2 to 4).
 7. Once the tests pass in bioconda, ask the bot to fetch the artifacts, download the linux artifact. Leave the bioconda branch in waiting, do not merge it (and probably add a message saying so)
 8. Use the image .tar.gz inside the artifact to create a new local docker container on the linux machine where you intend to test the Galaxy tools.
-9. Open a local feature branch on container-galaxy-sc repo to start trying the changes.
-10. Change the scanpy-scripts macro2 requirements part to point to the newly created container.
-11. Run planemo test, it should use the local container.
+   ```
+   # once downloaded and unzipped the artifact, you can do (using the correct image name)
+   gzip -dc LinuxArtifacts/images/scanpy-scripts:1.9.0--pyhdfd78af_0.tar.gz | docker load
+   # this will create locally
+   Loaded image: quay.io/biocontainers/scanpy-scripts:1.9.0--pyhdfd78af_0
+   ```
+10. Open a local feature branch on container-galaxy-sc repo to start trying the changes.
+11. Change the scanpy-scripts macro2 requirements part to point to the newly created container.
+    ```
+    <xml name="requirements">
+     <requirements>
+      <!--
+        <requirement type="package" version="1.1.6">scanpy-scripts</requirement>
+      <yield/>
+      -->
+      <container type="docker">quay.io/biocontainers/scanpy-scripts:1.9.0--pyhdfd78af_0</container>
+     </requirements>
+    ...
+    ```
+  </xml>
+13. Run planemo test, it should use the local container.
 
 ## Test installation
 
