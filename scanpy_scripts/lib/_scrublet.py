@@ -2,12 +2,13 @@
 scanpy external scrublet
 """
 
+import anndata
+import numpy as np
+import pandas as pd
 import scanpy as sc
 import scanpy.external as sce
-import numpy as np
+
 from ..obj_utils import write_obs
-import anndata
-import pandas as pd
 
 # Wrapper for scrublet allowing text export and filtering
 
@@ -20,7 +21,7 @@ def scrublet(adata, adata_sim=None, filter=False, export_table=None, **kwargs):
     # Do we need to read an object with the doublet simulations?
 
     if adata_sim:
-        adata_sim = sc.read(adata_sim)
+        adata_sim = sc.read_h5ad(adata_sim)
 
     sce.pp.scrublet(adata, adata_sim=adata_sim, **kwargs)
 
