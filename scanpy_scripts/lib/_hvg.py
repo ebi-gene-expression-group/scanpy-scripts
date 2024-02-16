@@ -25,15 +25,15 @@ def hvg(
     if "always_hv_genes_file" in kwargs and kwargs["always_hv_genes_file"] is not None:
         with open(kwargs["always_hv_genes_file"], "r") as f:
             always_hv_genes = f.read().splitlines()
-        # to avoid upsetting the scanpy function with unexpected keyword arguments
-        del kwargs["always_hv_genes_file"]
 
     never_hv_genes = None
     if "never_hv_genes_file" in kwargs and kwargs["never_hv_genes_file"] is not None:
         with open(kwargs["never_hv_genes_file"], "r") as f:
             never_hv_genes = f.read().splitlines()
-        # to avoid upsetting the scanpy function with unexpected keyword arguments
-        del kwargs["never_hv_genes_file"]
+
+    # to avoid upsetting the scanpy function with unexpected keyword arguments
+    del kwargs["always_hv_genes_file"]
+    del kwargs["never_hv_genes_file"]
 
     sc.pp.highly_variable_genes(
         adata,
