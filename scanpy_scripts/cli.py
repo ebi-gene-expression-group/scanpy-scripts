@@ -30,25 +30,32 @@ from .cmds import (
     PLOT_DOT_CMD,
     PLOT_MATRIX_CMD,
     PLOT_HEATMAP_CMD,
+    HARMONY_INTEGRATE_CMD,
+    SCRUBLET_MULTIPLET_CMD,
+    SCRUBLET_MULTIPLET_SIMULATE_CMD,
+    SCRUBLET_MULTIPLET_PLOT_CMD,
+    BBKNN_CMD,
+    MNN_CORRECT_CMD,
+    COMBAT_CMD,
 )
 
 
 @click.group(cls=NaturalOrderGroup)
 @click.option(
-    '--debug',
+    "--debug",
     is_flag=True,
     default=False,
-    help='Print debug information',
+    help="Print debug information",
 )
 @click.option(
-    '--verbosity',
+    "--verbosity",
     type=click.INT,
     default=3,
-    help='Set scanpy verbosity',
+    help="Set scanpy verbosity",
 )
 @click.version_option(
-    version='0.2.0',
-    prog_name='scanpy',
+    version="0.2.0",
+    prog_name="scanpy",
 )
 def cli(debug=False, verbosity=3):
     """
@@ -57,11 +64,12 @@ def cli(debug=False, verbosity=3):
     log_level = logging.DEBUG if debug else logging.INFO
     logging.basicConfig(
         level=log_level,
-        format=('%(asctime)s; %(levelname)s; %(filename)s; '
-                '%(funcName)s(): %(message)s'),
-        datefmt='%y-%m-%d %H:%M:%S',
+        format=(
+            "%(asctime)s; %(levelname)s; %(filename)s; " "%(funcName)s(): %(message)s"
+        ),
+        datefmt="%y-%m-%d %H:%M:%S",
     )
-    logging.debug('debugging')
+    logging.debug("debugging")
     sc.settings.verbosity = verbosity
     return 0
 
@@ -102,6 +110,26 @@ cli.add_command(DPT_CMD)
 
 
 @cli.group(cls=NaturalOrderGroup)
+def integrate():
+    """Integrate cells from different experimental batches."""
+
+
+integrate.add_command(HARMONY_INTEGRATE_CMD)
+integrate.add_command(BBKNN_CMD)
+integrate.add_command(MNN_CORRECT_CMD)
+integrate.add_command(COMBAT_CMD)
+
+
+@cli.group(cls=NaturalOrderGroup)
+def multiplet():
+    """Execute methods for multiplet removal."""
+
+
+multiplet.add_command(SCRUBLET_MULTIPLET_CMD)
+multiplet.add_command(SCRUBLET_MULTIPLET_SIMULATE_CMD)
+
+
+@cli.group(cls=NaturalOrderGroup)
 def plot():
     """Visualise data."""
 
@@ -112,3 +140,4 @@ plot.add_command(PLOT_STACKED_VIOLIN_CMD)
 plot.add_command(PLOT_DOT_CMD)
 plot.add_command(PLOT_MATRIX_CMD)
 plot.add_command(PLOT_HEATMAP_CMD)
+plot.add_command(SCRUBLET_MULTIPLET_PLOT_CMD)

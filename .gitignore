@@ -7,3 +7,6 @@
 *.pyc
 /.*history
 /.*swp
+data
+compressed
+uncompressed

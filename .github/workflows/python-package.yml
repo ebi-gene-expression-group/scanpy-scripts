@@ -1,0 +1,49 @@
+name: Python package
+
+on: [pull_request]
+
+defaults:
+  run:
+    # for conda env activation
+    shell: bash -l {0}
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9"]
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Setup mamba
+      uses: mamba-org/provision-with-micromamba@main
+      with:
+        environment-file: test-env.yaml
+        cache-downloads: true
+        channels: conda-forge, bioconda, defaults
+        extra-specs: |
+          python=${{ matrix.python-version }}
+
+    - name: Run black manually
+      run: |
+        black --check --verbose ./
+
+    # - name: Install dependencies
+    #   run: |
+    #     sudo apt-get install libhdf5-dev
+    #     pip install -U setuptools>=40.1 wheel 'cmake<3.20' pytest
+    #     pip install $(pwd)/scanpy-scripts
+    #     # python -m pip install $(pwd)/scanpy --no-deps --ignore-installed -vv
+    
+    - name: Run unit tests
+      run: |
+        # needed for __version__ to be available
+        pip install . --no-deps --ignore-installed
+        pytest --doctest-modules -v ./
+    
+    - name: Test with bats
+      run: |
+        ./scanpy-scripts-tests.bats
