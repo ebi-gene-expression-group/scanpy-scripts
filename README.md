@@ -63,3 +63,7 @@ Commands:
   multiplet  Execute methods for multiplet removal.
   plot       Visualise data.
   ```
+
+  ## Versioning
+
+  Major and major versions will follow the scanpy versions. The first digit of the patch should follow the scanpy patch version as well, subsequent digits in the patch are reserved for changes in this repository.
