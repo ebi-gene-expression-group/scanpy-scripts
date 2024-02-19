@@ -4,7 +4,7 @@ A command-line interface for functions of the Scanpy suite, to facilitate flexib
 
 ## Install
 
-The recommended way of installing scanpy-scripts is via conda:
+The recommended way of using this package is through the latest container produced by Bioconda [here](https://quay.io/repository/biocontainers/scanpy-scripts?tab=tags). If you must, prefer installing scanpy-scripts is via conda:
 
 ```bash
 conda install scanpy-scripts
