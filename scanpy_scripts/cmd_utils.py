@@ -93,7 +93,7 @@ def _fix_booleans(df):
 
 def _read_obj(input_obj, input_format="anndata", **kwargs):
     if input_format == "anndata":
-        adata = sc.read(input_obj, **kwargs)
+        adata = sc.read_h5ad(input_obj, **kwargs)
     elif input_format == "loom":
         adata = sc.read_loom(input_obj, **kwargs)
     else:
