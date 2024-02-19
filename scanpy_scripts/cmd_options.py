@@ -3,13 +3,14 @@ Provide cmd options
 """
 
 import click
+
 from .click_utils import (
     CommaSeparatedText,
     Dictionary,
-    valid_limit,
-    valid_parameter_limits,
     mutually_exclusive_with,
     required_by,
+    valid_limit,
+    valid_parameter_limits,
 )
 
 COMMON_OPTIONS = {
@@ -855,6 +856,20 @@ CMD_OPTIONS = {
             "dispersion-based flavors ties are broken by normalized dispersion. If flavor = "
             "'seurat_v3', ties are broken by the median (across batches) rank based on "
             "within-batch normalized variance.",
+        ),
+        click.option(
+            "--always-hv-genes-file",
+            "always_hv_genes_file",
+            type=click.Path(exists=True),
+            default=None,
+            help="If specified, the gene identifers in this file will be set as highly variable in the var dataframe after HVGs are computed.",
+        ),
+        click.option(
+            "--never-hv-genes-file",
+            "never_hv_genes_file",
+            type=click.Path(exists=True),
+            default=None,
+            help="If specified, the gene identifers in this file will be removed from highly variable in the var dataframe (set to false) after HVGs are computed.",
         ),
     ],
     "scale": [
