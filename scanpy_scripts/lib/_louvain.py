@@ -3,6 +3,7 @@ scanpy louvain
 """
 
 import scanpy as sc
+
 from ..obj_utils import write_obs
 
 

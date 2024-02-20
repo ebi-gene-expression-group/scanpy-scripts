@@ -1,9 +1,9 @@
 """
 Provides version, author and exports
 """
-import pkg_resources
+import importlib.metadata
 
-__version__ = pkg_resources.get_distribution("scanpy-scripts").version
+__version__ = importlib.metadata.version("scanpy-scripts")
 
 __author__ = ", ".join(
     [

@@ -1,11 +1,11 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
     name="scanpy-scripts",
-    version="1.1.6",
+    version="1.9.301",
     author="nh3",
     author_email="nh3@users.noreply.github.com",
     description="Scripts for using scanpy from the command line",
@@ -35,23 +35,25 @@ setup(
         ]
     ),
     install_requires=[
-        "packaging",
-        "anndata",
-        "scipy",
-        "matplotlib",
-        "pandas",
-        "h5py<3.0.0",
-        "scanpy==1.8.1",
+        # "packaging",
+        # "anndata",
+        # "scipy",
+        # "matplotlib",
+        # "pandas",
+        # "h5py<3.0.0",
+        "scanpy==1.9.3",
         "louvain",
+        "igraph",
         "leidenalg",
         "loompy",
         "Click<8",
-        "umap-learn",
+        # "umap-learn",
         "harmonypy>=0.0.5",
-        "bbknn>=1.5.0",
+        "bbknn>=1.5.0,<1.6.0",
         "mnnpy>=0.1.9.5",
+        "scipy<1.9.0",
+        "scikit-learn<1.3.0",
         "scrublet",
-        "scikit-misc",
         "fa2",
     ],
 )

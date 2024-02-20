@@ -6,10 +6,11 @@ import click
 import pandas as pd
 import scanpy as sc
 import scanpy.external as sce
+
 from .cmd_options import CMD_OPTIONS
 from .lib._paga import plot_paga
-from .obj_utils import _save_matrix
 from .lib._scrublet import plot_scrublet
+from .obj_utils import _save_matrix
 
 
 def make_subcmd(cmd_name, func, cmd_desc, arg_desc, opt_set=None):
@@ -92,7 +93,7 @@ def _fix_booleans(df):
 
 def _read_obj(input_obj, input_format="anndata", **kwargs):
     if input_format == "anndata":
-        adata = sc.read(input_obj, **kwargs)
+        adata = sc.read_h5ad(input_obj, **kwargs)
     elif input_format == "loom":
         adata = sc.read_loom(input_obj, **kwargs)
     else:
@@ -313,6 +314,7 @@ def make_plot_function(func_name, kind=None):
         showfig = True
         if output_fig:
             import os
+
             import matplotlib.pyplot as plt
 
             sc.settings.figdir = os.path.dirname(output_fig) or "."

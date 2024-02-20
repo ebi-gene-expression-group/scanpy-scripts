@@ -2,9 +2,11 @@
 scanpy diffexp
 """
 
+import logging
+import math
+
 import pandas as pd
 import scanpy as sc
-import logging
 
 
 def diffexp(
@@ -22,6 +24,15 @@ def diffexp(
 ):
     """
     Wrapper function for sc.tl.rank_genes_groups.
+
+    Test that we can load a single group.
+    >>> import os
+    >>> from pathlib import Path
+    >>> adata = sc.datasets.krumsiek11()
+    >>> tbl = diffexp(adata, groupby='cell_type', groups='Mo', reference='progenitor')
+    >>> # get the size of the data frame
+    >>> tbl.shape
+    (11, 8)
     """
     if adata.raw is None:
         use_raw = False
@@ -51,6 +62,11 @@ def diffexp(
                 "Singlet groups removed before passing to rank_genes_groups()"
             )
 
+    # avoid issue when groups is a single group as a string simplified by click
+    # https://github.com/ebi-gene-expression-group/scanpy-scripts/issues/123
+    if groups != "all" and isinstance(groups, str):
+        groups = [groups]
+
     sc.tl.rank_genes_groups(
         adata,
         use_raw=use_raw,
@@ -64,16 +80,31 @@ def diffexp(
     de_tbl = extract_de_table(adata.uns[diff_key])
 
     if isinstance(filter_params, dict):
+        key_filtered = diff_key + "_filtered"
         sc.tl.filter_rank_genes_groups(
             adata,
             key=diff_key,
-            key_added=diff_key + "_filtered",
+            key_added=key_filtered,
             use_raw=use_raw,
             **filter_params,
         )
 
-        de_tbl = extract_de_table(adata.uns[diff_key + "_filtered"])
+        # there are non strings on recarray object at this point, in
+        # adata.uns['rank_genes_groups_filtered']['names']
+        # for instance:
+        # adata.uns['rank_genes_groups_filtered']['names'][0]
+        # (nan, nan, 'NKG7', nan, nan, 'PPBP')
+        # this now upsets h5py > 3.0
+        de_tbl = extract_de_table(adata.uns[key_filtered])
         de_tbl = de_tbl.loc[de_tbl.genes.astype(str) != "nan", :]
+
+        # change nan for strings in adata.uns['rank_genes_groups_filtered']['names']
+        # TODO on scanpy updates, check if this is not done within scanpy so that we can remove this
+        for row in range(0, len(adata.uns[key_filtered]["names"])):
+            for col in range(0, len(adata.uns[key_filtered]["names"][row])):
+                element = adata.uns[key_filtered]["names"][row][col]
+                if isinstance(element, float) and math.isnan(element):
+                    adata.uns[key_filtered]["names"][row][col] = "nan"
 
     if save:
         de_tbl.to_csv(save, sep="\t", header=True, index=False)

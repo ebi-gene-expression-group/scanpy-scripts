@@ -4,11 +4,21 @@ A command-line interface for functions of the Scanpy suite, to facilitate flexib
 
 ## Install
 
+The recommended way of using this package is through the latest container produced by Bioconda [here](https://quay.io/repository/biocontainers/scanpy-scripts?tab=tags). If you must, one can install scanpy-scripts via conda:
+
 ```bash
 conda install scanpy-scripts
-# or
-pip3 install scanpy-scripts
 ```
+
+pip installation is also possible, however the version of mnnpy is not patched as in the conda version, and so the `integrate` command will not work.
+
+```bash
+pip install scanpy-scripts
+```
+
+For development installation, we suggest following the github actions python-package.yml file.
+
+Currently, tests run on python 3.9, so those are the recommended versions if not installing via conda. BKNN doesn't currently install on Python 3.10 due to a skip in Bioconda.
 
 ## Test installation
 
@@ -22,7 +32,7 @@ This requires the [bats](https://github.com/sstephenson/bats) testing framework 
 
 ## Commands
 
-Available commands are described below. Each has usage instructions available via --help, consult function documentation in scanpy for further details.
+Available commands are described below. Each has usage instructions available via `--help`, consult function documentation in scanpy for further details.
 
 ```
 Usage: scanpy-cli [OPTIONS] COMMAND [ARGS]...
@@ -53,3 +63,7 @@ Commands:
   multiplet  Execute methods for multiplet removal.
   plot       Visualise data.
   ```
+
+  ## Versioning
+
+  Major and major versions will follow the scanpy versions. The first digit of the patch should follow the scanpy patch version as well, subsequent digits in the patch are reserved for changes in this repository.
