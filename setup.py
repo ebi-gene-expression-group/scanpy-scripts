@@ -54,7 +54,6 @@ setup(
         "scipy<1.9.0",
         "scikit-learn<1.3.0",
         "scrublet",
-        # "scikit-misc",
         "fa2",
     ],
 )
