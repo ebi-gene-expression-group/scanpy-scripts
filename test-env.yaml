@@ -11,7 +11,7 @@ dependencies:
   - loompy
   - Click <8
   - harmonypy>=0.0.5
-  - bbknn>=1.5.0,<1.6.0
+  - bbknn=1.6.0
   - mnnpy>=0.1.9.5
   # for mnnpy using n_jobs
   - scipy <1.9.0
