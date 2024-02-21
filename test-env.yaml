@@ -13,9 +13,8 @@ dependencies:
   - harmonypy>=0.0.5
   - bbknn=1.6.0
   - mnnpy>=0.1.9.5
-  # for mnnpy using n_jobs
-  # an option for mnnpy using numpy
-  # - numpy <1.25.0
+  # Current Scipy installed requires certain numpy restrictions
+  - numpy >=1.17.3,<1.25.0
   - scrublet
   - fa2
   # for testing
