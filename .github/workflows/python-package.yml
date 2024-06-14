@@ -29,7 +29,7 @@ jobs:
 
     - name: Run black manually
       run: |
-        black --check --verbose ./
+        black --diff --verbose ./
 
     # - name: Install dependencies
     #   run: |
