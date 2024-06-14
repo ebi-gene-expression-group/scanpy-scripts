@@ -1,6 +1,7 @@
 """
 Provides version, author and exports
 """
+
 import importlib.metadata
 
 __version__ = importlib.metadata.version("scanpy-scripts")
