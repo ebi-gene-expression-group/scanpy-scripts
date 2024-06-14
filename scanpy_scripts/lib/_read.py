@@ -37,10 +37,9 @@ def read_10x(
         var_tbl = pd.read_csv(extra_var, sep="\t", header=0, index_col=0)
         mixed_columns = columns_with_multiple_dtypes(var_tbl)
 
-        # Convert mixed dtype columns to 'object' type to preserve all information
+         # Convert mixed dtype columns to 'object' type to preserve all information
         for column in mixed_columns:
-            var_tbl[column] = var_tbl[column].astype('string')
-    
+             var_tbl[column] = var_tbl[column].astype('string')
         adata.var = adata.var.merge(
             var_tbl,
             how="left",
@@ -50,7 +49,6 @@ def read_10x(
         )
     return adata
 
-
 def columns_with_multiple_dtypes(df):
     mixed_dtype_columns = []
     for column in df.columns:
@@ -59,4 +57,3 @@ def columns_with_multiple_dtypes(df):
         if len(unique_dtypes) > 1:
             mixed_dtype_columns.append(column)
     return mixed_dtype_columns
-
