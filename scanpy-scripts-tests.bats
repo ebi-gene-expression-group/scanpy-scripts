@@ -180,7 +180,7 @@ setup() {
         skip "$singlet_obs exists"
     fi
 
-    run rm -rf $batch_obs && echo -e "batch\n$(printf "%0.sbatch1\n" {1..})$(for i in {1..10}; do printf " \n"; done;)$(for i in {1..1340}; do printf "%d\n" 2; done;)" > $batch_obs
+    run rm -rf $batch_obs && echo -e "batch\n$(printf "%0.sbatch1\n" {1..1350})\n$(printf "%0.sbatch2\n" {1..1350})" > $batch_obs
 
     [ "$status" -eq 0 ]
     [ -f "$batch_obs" ]
