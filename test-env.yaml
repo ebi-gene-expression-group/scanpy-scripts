@@ -15,7 +15,7 @@ dependencies:
   - mnnpy>=0.1.9.5
   # Current Scipy installed requires certain numpy restrictions
   # - numpy >=1.17.3,<1.25.0
-  - numpy
+  - numpy <1.25.0
   - scrublet
   - fa2
   # for testing
