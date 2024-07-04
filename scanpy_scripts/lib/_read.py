@@ -25,6 +25,12 @@ def read_10x(
 
     if extra_obs:
         obs_tbl = pd.read_csv(extra_obs, sep="\t", header=0, index_col=0)
+        mixed_columns = columns_with_multiple_dtypes(obs_tbl)
+
+         # Convert mixed dtype columns to 'object' type to preserve all information
+        for column in mixed_columns:
+             obs_tbl[column] = obs_tbl[column].astype('str')
+            
         adata.obs = adata.obs.merge(
             obs_tbl,
             how="left",
@@ -35,11 +41,7 @@ def read_10x(
 
     if extra_var:
         var_tbl = pd.read_csv(extra_var, sep="\t", header=0, index_col=0)
-        mixed_columns = columns_with_multiple_dtypes(var_tbl)
 
-         # Convert mixed dtype columns to 'object' type to preserve all information
-        for column in mixed_columns:
-             var_tbl[column] = var_tbl[column].astype('string')
         adata.var = adata.var.merge(
             var_tbl,
             how="left",
