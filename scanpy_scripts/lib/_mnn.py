@@ -30,7 +30,11 @@ def mnn_correct(adata, key=None, key_added=None, var_subset=None, layer=None, **
     batches = np.unique(adata.obs[key])
     alldata = []
     for batch in batches:
-        alldata.append(adata[adata.obs[key] == batch,])
+        alldata.append(
+             adata[
+                 adata.obs[key] == batch,
+             ]
+         )
 
     # Process var_subset into a list of strings that can be provided to
     # mnn_correct()
