@@ -11,7 +11,7 @@ dependencies:
   - loompy
   - Click <8
   - harmonypy>=0.0.5
-  - bbknn
+  - bbknn >=1.6.0
   - mnnpy>=0.1.9.5
   # Current Scipy installed requires certain numpy restrictions
   # - numpy >=1.17.3,<1.25.0
