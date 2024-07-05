@@ -29,7 +29,7 @@ def read_10x(
 
         # Convert mixed dtype columns to 'object' type to preserve all information
         for column in mixed_columns:
-            obs_tbl[column] = obs_tbl[column].astype('str')
+            obs_tbl[column] = obs_tbl[column].astype("str")
 
         adata.obs = adata.obs.merge(
             obs_tbl,
