@@ -27,10 +27,10 @@ def read_10x(
         obs_tbl = pd.read_csv(extra_obs, sep="\t", header=0, index_col=0)
         mixed_columns = columns_with_multiple_dtypes(obs_tbl)
 
-         # Convert mixed dtype columns to 'object' type to preserve all information
+        # Convert mixed dtype columns to 'object' type to preserve all information
         for column in mixed_columns:
-             obs_tbl[column] = obs_tbl[column].astype('str')
-            
+            obs_tbl[column] = obs_tbl[column].astype('str')
+
         adata.obs = adata.obs.merge(
             obs_tbl,
             how="left",
@@ -50,6 +50,7 @@ def read_10x(
             suffixes=(False, False),
         )
     return adata
+
 
 def columns_with_multiple_dtypes(df):
     mixed_dtype_columns = []
