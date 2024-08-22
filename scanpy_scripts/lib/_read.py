@@ -43,7 +43,7 @@ def read_10x(
             suffixes=(False, False),
         )
 
-    # Convert mixed dtype columns to 'object' type to preserve all information
+    # Convert mixed dtype columns to 'string' type to preserve all information
     obs_mixed_columns = columns_with_multiple_dtypes(adata.obs)
 
     for column in obs_mixed_columns:
