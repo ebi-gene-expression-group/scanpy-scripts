@@ -53,7 +53,7 @@ def read_10x(
 
     for column in var_mixed_columns:
         adata.var[column] = adata.var[column].astype("str")
-    
+
     return adata
 
 
