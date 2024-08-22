@@ -180,7 +180,7 @@ setup() {
         skip "$singlet_obs exists"
     fi
 
-    run rm -rf $batch_obs && echo -e "batch\n$(printf "%0.sbatch1\n" {1..1350})\n$(printf "%0.sbatch2\n" {1..1350})" | awk '{if (NR == 1) {print $0; next} if (NR % 100 == 0) {print NR / 100; next} if (NR % 250 == 0) {print ""; next} print $0}' > $batch_obs
+    run rm -rf $batch_obs && echo -e "batch\tadditional_column\n$(for i in {1..1350}; do echo -e "batch1\tdata$i"; done)\n$(for i in {1..1350}; do echo -e "batch2\tinfo$i"; done)" > $batch_obs
 
     [ "$status" -eq 0 ]
     [ -f "$batch_obs" ]
