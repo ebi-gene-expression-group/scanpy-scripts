@@ -25,7 +25,6 @@ def read_10x(
 
     if extra_obs:
         obs_tbl = pd.read_csv(extra_obs, sep="\t", header=0, index_col=0)
-
         adata.obs = adata.obs.merge(
             obs_tbl,
             how="left",
@@ -36,7 +35,6 @@ def read_10x(
 
     if extra_var:
         var_tbl = pd.read_csv(extra_var, sep="\t", header=0, index_col=0)
-
         adata.var = adata.var.merge(
             var_tbl,
             how="left",
