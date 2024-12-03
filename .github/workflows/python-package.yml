@@ -23,7 +23,12 @@ jobs:
       with:
         environment-file: test-env.yaml
         cache-downloads: true
-        channels: conda-forge, bioconda, defaults
+        condarc: |
+          channels:
+            - conda-forge
+            - bioconda
+            - defaults
+          channel_priority: strict
         extra-specs: |
           python=${{ matrix.python-version }}
 
