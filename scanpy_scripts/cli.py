@@ -53,6 +53,12 @@ from .cmds import (
     default=3,
     help="Set scanpy verbosity",
 )
+@click.option(
+    "--default_njobs",
+    type=click.INT,
+    default=-1,
+    help="Set scanpy default number of jobs",
+)
 @click.version_option(
     version="0.2.0",
     prog_name="scanpy",
@@ -71,6 +77,7 @@ def cli(debug=False, verbosity=3):
     )
     logging.debug("debugging")
     sc.settings.verbosity = verbosity
+    sc.settings.n_jobs = default_njobs
     return 0
 
 
