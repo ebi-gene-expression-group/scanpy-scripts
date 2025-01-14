@@ -54,16 +54,16 @@ from .cmds import (
     help="Set scanpy verbosity",
 )
 @click.option(
-    "--default_njobs",
+    "--njobs",
     type=click.INT,
     default=-1,
-    help="Set scanpy default number of jobs",
+    help="Set scanpy default number of jobs/CPUs, defaults to all available",
 )
 @click.version_option(
     version="0.2.0",
     prog_name="scanpy",
 )
-def cli(debug=False, verbosity=3):
+def cli(debug=False, verbosity=3, njobs=-1):
     """
     Command line interface to [scanpy](https://github.com/theislab/scanpy)
     """
@@ -77,7 +77,7 @@ def cli(debug=False, verbosity=3):
     )
     logging.debug("debugging")
     sc.settings.verbosity = verbosity
-    sc.settings.n_jobs = default_njobs
+    sc.settings.n_jobs = njobs
     return 0
 
 

@@ -42,6 +42,7 @@ Usage: scanpy-cli [OPTIONS] COMMAND [ARGS]...
 Options:
   --debug              Print debug information
   --verbosity INTEGER  Set scanpy verbosity
+  --njobs INTEGER      Set scanpy default number of jobs/CPUs, defaults to all available
   --version            Show the version and exit.
   --help               Show this message and exit.
 
