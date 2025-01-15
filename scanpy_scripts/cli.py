@@ -56,14 +56,14 @@ from .cmds import (
 @click.option(
     "--njobs",
     type=click.INT,
-    default=-1,
+    default=1,
     help="Set scanpy default number of jobs/CPUs, defaults to all available",
 )
 @click.version_option(
     version="0.2.0",
     prog_name="scanpy",
 )
-def cli(debug=False, verbosity=3, njobs=-1):
+def cli(debug=False, verbosity=3, njobs=1):
     """
     Command line interface to [scanpy](https://github.com/theislab/scanpy)
     """
