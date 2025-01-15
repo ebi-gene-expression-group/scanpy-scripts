@@ -57,7 +57,7 @@ from .cmds import (
     "--njobs",
     type=click.INT,
     default=1,
-    help="Set scanpy default number of jobs/CPUs, defaults to all available",
+    help="Set scanpy default number of jobs/CPUs, defaults 1",
 )
 @click.version_option(
     version="0.2.0",
