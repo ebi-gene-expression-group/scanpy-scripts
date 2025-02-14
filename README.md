@@ -30,7 +30,7 @@ Updating the stack that depends on this script is unfortunately complex, it gets
 4. Iterate with the CI on the branch until all test pass with the new changes and dependencies.
 5. Get reviews and merge to develop.
 6. Open a bump branch in bioconda, making sure that it points to the develop branch of this repo rather than the pypi release and that all dependencies in bioconda reflect what is currently in the test-env.yaml file of this repo (which was used to test in the feature branch here in points 2 to 4).
-7. Once the tests pass in bioconda, ask the bot to fetch the artifacts, download the linux artifact. Leave the bioconda branch in waiting, do not merge it (and probably add a message saying so)
+7. Once the tests passes in bioconda, ask the bot to fetch the artifacts, download the linux artifact (to run the  tests against that artifact or inside the artifact container). Leave the bioconda branch in draft and do not merge it (and probably add a message saying so) until you can verify that the created artifact can be used to run the tests (see steps below).
 8. Use the image .tar.gz inside the artifact to create a new local docker container on the linux machine where you intend to test the Galaxy tools.
    ```
    # once downloaded and unzipped the artifact, you can do (using the correct image name)
