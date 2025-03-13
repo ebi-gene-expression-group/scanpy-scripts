@@ -23,8 +23,12 @@ jobs:
       with:
         environment-file: test-env.yaml
         cache-downloads: true
-        channels: conda-forge, bioconda, defaults
-        extra-specs: |
+        condarc: |
+          channels: 
+            - conda-forge
+            - bioconda
+            - defaults
+        create-args: |
           python=${{ matrix.python-version }}
 
     - name: Run black manually
