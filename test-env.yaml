@@ -4,7 +4,10 @@ channels:
   - bioconda
   - defaults
 dependencies:
+  - python=3.9.18
   - scanpy=1.9.3
+  - h5py=3.10.0
+  - anndata=0.10.5.post1
   - louvain
   - igraph
   - leidenalg
