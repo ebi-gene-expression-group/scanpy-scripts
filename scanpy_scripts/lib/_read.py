@@ -42,4 +42,26 @@ def read_10x(
             right_index=True,
             suffixes=(False, False),
         )
+
+    # Convert mixed dtype columns to 'string' type to preserve all information
+    obs_mixed_columns = columns_with_multiple_dtypes(adata.obs)
+
+    for column in obs_mixed_columns:
+        adata.obs[column] = adata.obs[column].astype("str")
+
+    var_mixed_columns = columns_with_multiple_dtypes(adata.var)
+
+    for column in var_mixed_columns:
+        adata.var[column] = adata.var[column].astype("str")
+
     return adata
+
+
+def columns_with_multiple_dtypes(df):
+    mixed_dtype_columns = []
+    for column in df.columns:
+        # Get unique dtypes in the column
+        unique_dtypes = df[column].apply(type).unique()
+        if len(unique_dtypes) > 1:
+            mixed_dtype_columns.append(column)
+    return mixed_dtype_columns
